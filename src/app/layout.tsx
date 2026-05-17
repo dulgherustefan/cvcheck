@@ -1,22 +1,28 @@
-// src/app/layout.tsx
 import type { Metadata } from 'next'
+import './globals.css'
+import { ThemeScript } from '@/components/ThemeScript'
 
 export const metadata: Metadata = {
-  title: 'Roastd — Brutally honest portfolio feedback',
-  description: 'Submit your portfolio, resume, or landing page. Get a brutal AI roast scored out of 100 in under 60 seconds.',
+  title: 'Roastd',
+  description: 'Get an honest, AI-powered score and roast of your portfolio, CV, or landing page. No sugarcoating.',
   openGraph: {
-    title: 'Roastd — Get your portfolio roasted',
-    description: 'Brutally honest AI feedback on your portfolio, resume, or landing page.',
+    title: 'Roastd — Get roasted',
+    description: 'AI-powered brutal feedback for portfolios, CVs, and landing pages.',
     type: 'website',
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
-      <body style={{ margin: 0, padding: 0 }}>
-        {children}
-      </body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body>{children}</body>
     </html>
   )
 }

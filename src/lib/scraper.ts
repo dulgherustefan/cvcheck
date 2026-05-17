@@ -1,88 +1,84 @@
-// src/lib/scraper.ts
-// Extrage conținutul unei pagini web folosind Playwright
-// Rulează DOAR server-side (în API routes), niciodată în browser
-
 import { chromium } from 'playwright'
 
-export interface ScrapeResult {
-  success: boolean
-  content?: string
-  error?: string
-}
-
-export async function scrapePage(url: string): Promise<ScrapeResult> {
-  // Validare URL înainte să deschidem browserul
-  try {
-    const parsed = new URL(url)
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return { success: false, error: 'URL-ul trebuie să înceapă cu http:// sau https://' }
-    }
-  } catch {
-    return { success: false, error: 'URL invalid' }
-  }
-
-  let browser = null
+export async function scrapeUrl(url: string): Promise<string> {
+  const browser = await chromium.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+  })
 
   try {
-    // Deschidem Chromium headless (fără interfață grafică)
-    browser = await chromium.launch({ headless: true })
-    const page = await browser.newPage()
-
-    // Setăm un user agent ca să nu fim blocați ca bot
-    await page.setExtraHTTPHeaders({
-      'User-Agent': 'Mozilla/5.0 (compatible; Roastd/1.0; +https://roastd.com/bot)'
+    const context = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     })
+    const page = await context.newPage()
 
-    // Navigăm la pagină cu timeout de 15 secunde
     await page.goto(url, {
-      waitUntil: 'networkidle',
-      timeout: 15000
+      waitUntil: 'domcontentloaded',
+      timeout: 20000,
     })
 
-    // Extragem conținutul relevant (text + structură, fără HTML brut)
+    // Wait a moment for JS rendering
+    await page.waitForTimeout(1500)
+
+    // Extract meaningful text content
     const content = await page.evaluate(() => {
-      // Eliminăm elementele care nu sunt utile pentru analiză
-      const toRemove = document.querySelectorAll(
-        'script, style, noscript, svg, img, video, audio, iframe, nav, footer'
-      )
-      toRemove.forEach(el => el.remove())
+      // Remove noise elements
+      const noiseSelectors = [
+        'script', 'style', 'noscript', 'svg', 'canvas',
+        'header nav', 'footer nav', '[aria-hidden="true"]',
+        '.cookie-banner', '#cookie-consent', '.ads', '.advertisement',
+      ]
+      noiseSelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => el.remove())
+      })
 
-      // Extragem textul structurat
-      const title = document.title || ''
-      const metaDesc = document.querySelector('meta[name="description"]')?.getAttribute('content') || ''
-      const h1s = Array.from(document.querySelectorAll('h1')).map(el => el.textContent?.trim()).filter(Boolean)
-      const h2s = Array.from(document.querySelectorAll('h2')).map(el => el.textContent?.trim()).filter(Boolean)
+      // Get structured content
+      const parts: string[] = []
+
+      // Title
+      const title = document.title
+      if (title) parts.push(`PAGE TITLE: ${title}`)
+
+      // Meta description
+      const metaDesc = document.querySelector('meta[name="description"]')?.getAttribute('content')
+      if (metaDesc) parts.push(`META DESCRIPTION: ${metaDesc}`)
+
+      // H1s
+      document.querySelectorAll('h1').forEach(h => {
+        const t = h.textContent?.trim()
+        if (t) parts.push(`H1: ${t}`)
+      })
+
+      // H2s
+      document.querySelectorAll('h2').forEach(h => {
+        const t = h.textContent?.trim()
+        if (t) parts.push(`H2: ${t}`)
+      })
+
+      // H3s (first 5)
+      let h3Count = 0
+      document.querySelectorAll('h3').forEach(h => {
+        if (h3Count >= 5) return
+        const t = h.textContent?.trim()
+        if (t) { parts.push(`H3: ${t}`); h3Count++ }
+      })
+
+      // Main body text
       const bodyText = document.body?.innerText || ''
+      const cleaned = bodyText
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 20)
+        .slice(0, 100)
+        .join('\n')
 
-      // Limităm la 8000 caractere ca să nu depășim contextul Claude
-      const truncated = bodyText.length > 8000
-        ? bodyText.substring(0, 8000) + '\n[... conținut trunchiat ...]'
-        : bodyText
+      if (cleaned) parts.push(`\nCONTENT:\n${cleaned}`)
 
-      return `PAGE TITLE: ${title}
-META DESCRIPTION: ${metaDesc}
-H1 HEADINGS: ${h1s.join(' | ')}
-H2 HEADINGS: ${h2s.slice(0, 10).join(' | ')}
-
-FULL PAGE TEXT:
-${truncated}`
+      return parts.join('\n')
     })
 
+    return content || 'No content could be extracted from this page.'
+  } finally {
     await browser.close()
-    return { success: true, content }
-
-  } catch (err) {
-    await browser?.close()
-    const message = err instanceof Error ? err.message : 'Eroare necunoscută'
-
-    // Mesaje de eroare prietenoase pentru cazuri comune
-    if (message.includes('timeout')) {
-      return { success: false, error: 'Pagina a durat prea mult să se încarce (>15s). Încearcă din nou.' }
-    }
-    if (message.includes('net::ERR')) {
-      return { success: false, error: 'Nu am putut accesa URL-ul. Verifică că site-ul e live.' }
-    }
-
-    return { success: false, error: `Eroare scraper: ${message}` }
   }
 }

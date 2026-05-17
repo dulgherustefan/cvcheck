@@ -1,61 +1,76 @@
-// src/lib/claude.ts
-// Trimite conținutul paginii la Claude și parsează răspunsul JSON
-
 import Anthropic from '@anthropic-ai/sdk'
-import { RoastResult } from './types'
-import { ROAST_SYSTEM_PROMPT, buildUserMessage } from './prompt'
+import { SYSTEM_PROMPT } from './prompt'
+import type { RoastResult } from './types'
 
-// Clientul Anthropic se inițializează cu API key din environment
-const anthropic = new Anthropic({
+const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-export async function getRoast(url: string, scrapedContent: string): Promise<RoastResult> {
-  const response = await anthropic.messages.create({
-    // Haiku = rapid + ieftin (~$0.01/roast). Schimbă la claude-sonnet-4-6 pentru calitate mai mare.
+export async function getRoast(content: string): Promise<RoastResult> {
+  const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1500,
-    system: ROAST_SYSTEM_PROMPT,
+    max_tokens: 2048,
+    system: SYSTEM_PROMPT,
     messages: [
       {
         role: 'user',
-        content: buildUserMessage(url, scrapedContent),
+        content: `Here is the content to analyze:\n\n${content.slice(0, 14000)}`,
       },
     ],
   })
 
-  // Extragem textul din răspuns
-  const rawText = response.content
-    .filter(block => block.type === 'text')
-    .map(block => block.type === 'text' ? block.text : '')
+  const raw = message.content
+    .filter((b) => b.type === 'text')
+    .map((b) => (b as { type: 'text'; text: string }).text)
     .join('')
 
-  // Curățăm markdown fences dacă Claude le-a adăugat (uneori le adaugă)
-  const cleaned = rawText
-    .replace(/^```json\n?/, '')
-    .replace(/\n?```$/, '')
+  const cleaned = raw
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/```\s*$/i, '')
     .trim()
 
-  // Parsăm JSON-ul
-  let result: RoastResult
+  let parsed: RoastResult
   try {
-    result = JSON.parse(cleaned)
+    parsed = JSON.parse(cleaned)
   } catch {
-    throw new Error(`Claude a returnat JSON invalid: ${cleaned.substring(0, 200)}`)
+    throw new Error(`Failed to parse AI response as JSON: ${cleaned.slice(0, 200)}`)
   }
 
-  // Validare de bază — asigurăm că avem câmpurile esențiale
   if (
-    typeof result.total_score !== 'number' ||
-    !result.pull_quote ||
-    !Array.isArray(result.roast_lines) ||
-    !result.vibe_check
+    typeof parsed.total_score !== 'number' ||
+    !parsed.scores ||
+    !parsed.pull_quote ||
+    !Array.isArray(parsed.roast_lines) ||
+    !Array.isArray(parsed.tips) ||
+    !parsed.one_priority ||
+    !parsed.vibe_check
   ) {
-    throw new Error('Răspuns Claude incomplet — lipsesc câmpuri esențiale')
+    throw new Error('AI response missing required fields')
   }
 
-  // Asigurăm că scorul e în range 0-100
-  result.total_score = Math.max(0, Math.min(100, result.total_score))
+  const s = parsed.scores
+  s.first_impression      = Math.max(0, Math.min(10, Math.round(s.first_impression ?? 0)))
+  s.positioning           = Math.max(0, Math.min(10, Math.round(s.positioning ?? 0)))
+  s.experience_proof      = Math.max(0, Math.min(20, Math.round(s.experience_proof ?? 0)))
+  s.skills_relevance      = Math.max(0, Math.min(10, Math.round(s.skills_relevance ?? 0)))
+  s.credibility_signals   = Math.max(0, Math.min(15, Math.round(s.credibility_signals ?? 0)))
+  s.structure_readability = Math.max(0, Math.min(15, Math.round(s.structure_readability ?? 0)))
+  s.language_quality      = Math.max(0, Math.min(10, Math.round(s.language_quality ?? 0)))
+  s.cta_clarity           = Math.max(0, Math.min(10, Math.round(s.cta_clarity ?? 0)))
 
-  return result
+  parsed.total_score =
+    s.first_impression + s.positioning + s.experience_proof +
+    s.skills_relevance + s.credibility_signals + s.structure_readability +
+    s.language_quality + s.cta_clarity
+
+  const t = parsed.total_score
+  parsed.vibe_check =
+    t <= 20 ? 'nightmare' :
+    t <= 35 ? 'rough' :
+    t <= 50 ? 'meh' :
+    t <= 65 ? 'decent' :
+    t <= 80 ? 'solid' : 'impressive'
+
+  return parsed
 }

@@ -1,68 +1,86 @@
-// src/app/api/roast/route.ts
-// Endpoint principal: primește un URL, returnează un roast
-// POST /api/roast
-// Body: { "url": "https://example.com" }
-
 import { NextRequest, NextResponse } from 'next/server'
-import { scrapePage } from '@/lib/scraper'
 import { getRoast } from '@/lib/claude'
-import { RoastResponse } from '@/lib/types'
+import { gateResult } from '@/lib/tiers'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+import type { Tier } from '@/lib/types'
 
-// Setăm un timeout mai mare pentru Vercel (scraping + AI = lent)
-export const maxDuration = 60 // secunde
+export const runtime = 'nodejs'
 
-export async function POST(request: NextRequest): Promise<NextResponse<RoastResponse>> {
+async function getTierForUser(userId: string | null): Promise<Tier> {
+  if (!userId) return 'free'
+
+  const { data, error } = await supabaseAdmin
+    .from('credits')
+    .select('plan')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !data) return 'free'
+
+  const plan = data.plan
+  if (plan === 'premium' || plan === 'pro') return plan
+  return 'free'
+}
+
+async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
   try {
-    // ── 1. Validăm input-ul ──────────────────────────────────────
-    const body = await request.json()
-    const { url } = body
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) return null
 
-    if (!url || typeof url !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'URL lipsă sau invalid' },
-        { status: 400 }
-      )
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    if (error || !user) return null
+    return user.id
+  } catch {
+    return null
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const contentType = req.headers.get('content-type') ?? ''
+    let content = ''
+
+    const userId = await getUserIdFromRequest(req)
+    const tier = await getTierForUser(userId)
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData()
+      const file = formData.get('file') as File | null
+      const url = formData.get('url') as string | null
+
+      if (file) {
+        const { extractTextFromPDF } = await import('@/lib/pdf')
+        const buffer = Buffer.from(await file.arrayBuffer())
+        content = await extractTextFromPDF(buffer)
+      } else if (url) {
+        const { scrapeUrl } = await import('@/lib/scraper')
+        content = await scrapeUrl(url)
+      } else {
+        return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 })
+      }
+    } else {
+      const body = await req.json()
+      const url: string | undefined = body?.url
+
+      if (!url) {
+        return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
+      }
+
+      const { scrapeUrl } = await import('@/lib/scraper')
+      content = await scrapeUrl(url)
     }
 
-    // Normalizăm URL-ul (adăugăm https:// dacă lipsește)
-    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`
-
-    console.log(`[roast] Starting roast for: ${normalizedUrl}`)
-
-    // ── 2. Scraping ──────────────────────────────────────────────
-    const scrapeResult = await scrapePage(normalizedUrl)
-
-    if (!scrapeResult.success || !scrapeResult.content) {
-      return NextResponse.json(
-        { success: false, error: scrapeResult.error || 'Nu am putut accesa pagina' },
-        { status: 422 }
-      )
+    if (!content || content.trim().length < 50) {
+      return NextResponse.json({ error: 'Could not extract enough content to analyze' }, { status: 422 })
     }
 
-    console.log(`[roast] Scraped ${scrapeResult.content.length} chars`)
+    const result = await getRoast(content)
+    const gated = gateResult(result, tier)
 
-    // ── 3. Claude API call ───────────────────────────────────────
-    const result = await getRoast(normalizedUrl, scrapeResult.content)
-
-    console.log(`[roast] Score: ${result.total_score}/100 (${result.vibe_check})`)
-
-    // ── 4. (Viitor) Salvare în Supabase ─────────────────────────
-    // TODO: salvează în DB, scade credit utilizator, returnează ID
-    const roast_id = `demo_${Date.now()}` // placeholder până adăugăm Supabase
-
-    return NextResponse.json({
-      success: true,
-      roast_id,
-      result,
-    })
-
+    return NextResponse.json(gated)
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Eroare server'
-    console.error('[roast] Error:', message)
-
-    return NextResponse.json(
-      { success: false, error: 'Ceva a mers prost. Încearcă din nou.' },
-      { status: 500 }
-    )
+    console.error('[roast] Error:', err)
+    return NextResponse.json({ error: 'Analysis failed. Please try again.' }, { status: 500 })
   }
 }
