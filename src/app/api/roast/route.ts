@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') ?? ''
     let content = ''
+    let source: string | undefined
 
     const userId = await getUserIdFromRequest(req)
     const tier = await getTierForUser(userId)
@@ -53,9 +54,11 @@ export async function POST(req: NextRequest) {
         const { extractTextFromPDF } = await import('@/lib/pdf')
         const buffer = Buffer.from(await file.arrayBuffer())
         content = await extractTextFromPDF(buffer)
+        source = file.name
       } else if (url) {
         const { scrapeUrl } = await import('@/lib/scraper')
         content = await scrapeUrl(url)
+        source = url
       } else {
         return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 })
       }
@@ -69,6 +72,7 @@ export async function POST(req: NextRequest) {
 
       const { scrapeUrl } = await import('@/lib/scraper')
       content = await scrapeUrl(url)
+      source = url
     }
 
     if (!content || content.trim().length < 50) {
@@ -77,6 +81,29 @@ export async function POST(req: NextRequest) {
 
     const result = await getRoast(content)
     const gated = gateResult(result, tier)
+
+    // Save to Supabase if user is logged in
+    if (userId) {
+      const { error: insertError } = await supabaseAdmin
+        .from('roasts')
+        .insert({
+          id: result.roast_id,
+          user_id: userId,
+          source: source ?? null,
+          total_score: result.total_score,
+          scores: result.scores,
+          pull_quote: result.pull_quote,
+          roast_lines: result.roast_lines,
+          tips: result.tips,
+          one_priority: result.one_priority,
+          vibe_check: result.vibe_check,
+        })
+
+      if (insertError) {
+        console.error('[roast] Failed to save to Supabase:', insertError)
+        // Don't fail the request — just log the error
+      }
+    }
 
     return NextResponse.json(gated)
   } catch (err) {

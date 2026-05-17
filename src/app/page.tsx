@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
+import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { UpgradeModal } from '@/components/UpgradeModal'
@@ -205,6 +206,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
   const meta = TIER_META[tier] ?? TIER_META.free
   const initials = (user.email ?? 'U').slice(0, 2).toUpperCase()
 
@@ -270,6 +272,13 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
                 <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
               My account
+            </button>
+            <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+              </svg>
+              History
             </button>
             <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={ddItem}>
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
