@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
       const url = formData.get('url') as string | null
 
       if (file) {
-        const { extractTextFromPDF } = await import('@/lib/pdf')
+        const { extractPdfText } = await import('@/lib/pdf')
         const buffer = Buffer.from(await file.arrayBuffer())
-        content = await extractTextFromPDF(buffer)
+        content = await extractPdfText(buffer)
         source = file.name
       } else if (url) {
         const { scrapeUrl } = await import('@/lib/scraper')
