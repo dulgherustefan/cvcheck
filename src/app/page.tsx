@@ -795,7 +795,7 @@ export default function Home() {
               )}
 
               <button className={styles.submitBtn} onClick={submit}
-                disabled={mode === 'url' ? !url.trim() : !file}>
+                disabled={mode === 'url' ? !url.trim() : !file}
                 Roast it
                 <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
@@ -869,7 +869,7 @@ export default function Home() {
               <div className={styles.categoryBars}>
                 {SCORE_DIMENSIONS.map(({ key, label, max, desc }) => (
                   <DimensionBar key={key} label={label}
-                    score={(result.scores as Record<string, number>)[key] ?? 0}
+                    score={(result.scores as unknown as Record<string, number>)[key] ?? 0}
                     max={max} desc={desc}
                     locked={result.scores_locked}
                     onUnlock={() => setShowUpgradeModal(true)}/>
