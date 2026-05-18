@@ -13,7 +13,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "@vercel/analytics": "^2.0.1",
-    "next": "15.4.0",
+    "next": "15.3.8",
     "pdf-parse": "^1.1.4",
     "playwright": "^1.44.0",
     "react": "^18.3.0",
