@@ -5,12 +5,13 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
-  title: 'Roastd',
-  description: 'Get an honest, AI-powered score and roast of your portfolio, CV, or landing page. No sugarcoating.',
+  title: 'CVCheck — AI feedback on your CV & portfolio',
+  description: 'Upload your CV or paste a link. Get a detailed score, honest critique, and actionable tips in seconds. No sugarcoating.',
   openGraph: {
-    title: 'Roastd — Get roasted',
-    description: 'AI-powered brutal feedback for portfolios, CVs, and landing pages.',
+    title: 'CVCheck — AI feedback on your CV & portfolio',
+    description: 'Get an honest AI-powered score and critique of your CV, portfolio, or landing page.',
     type: 'website',
+    url: 'https://cvcheck.app',
   },
 }
 

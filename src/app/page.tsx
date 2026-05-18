@@ -540,7 +540,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ padding: 20, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--score-high)', background: 'rgba(34,197,94,0.04)' }}>
                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>
-                      🎉 You have access to all Roastd features. Thanks for being Premium!
+                      🎉 You have access to all CVCheck features. Thanks for being Premium!
                     </p>
                     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
                       {PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Chk />{f}</li>)}
@@ -645,7 +645,7 @@ export default function Home() {
   const copyShare = async () => {
     if (!result) return
     await navigator.clipboard.writeText(
-      `Got roasted 🔥 Score: ${result.total_score}/100\n"${result.pull_quote}"\n\nroastd.app`
+      `My CV score: ${result.total_score}/100\n"${result.pull_quote}"\n\ncvcheck.app`
     )
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
@@ -658,7 +658,7 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.logo}>
-            <span className={styles.logoText}>Roastd</span>
+            <span className={styles.logoText}>CVCheck</span>
             <span className={styles.logoBadge}>beta</span>
           </div>
           <div className={styles.headerRight}>
@@ -716,9 +716,9 @@ export default function Home() {
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
             <div className={styles.heroContent}>
-              <p className={styles.heroEyebrow}>Brutal honesty. Free.</p>
-              <h1 className={styles.heroTitle}>Get your portfolio<br /><span className={styles.heroTitleAccent}>roasted.</span></h1>
-              <p className={styles.heroSubtitle}>AI-powered feedback that doesn't sugarcoat. Score, critique, and a clear path forward.</p>
+              <p className={styles.heroEyebrow}>Honest feedback. Instant.</p>
+              <h1 className={styles.heroTitle}>AI feedback on your<br /><span className={styles.heroTitleAccent}>CV & portfolio.</span></h1>
+              <p className={styles.heroSubtitle}>Upload your CV or paste a link. Get a detailed score, honest critique, and actionable tips in seconds.</p>
             </div>
 
             <div className={styles.inputCard}>
@@ -778,7 +778,7 @@ export default function Home() {
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                       </svg>
-                      <span className={styles.dropzoneText}>Drop your CV here</span>
+                      <span className={styles.dropzoneText}>Drop your CV or portfolio here</span>
                       <span className={styles.dropzoneHint}>or click to browse · PDF · max 10MB</span>
                     </div>
                   )}
@@ -796,7 +796,7 @@ export default function Home() {
 
               <button className={styles.submitBtn} onClick={submit}
                 disabled={mode === 'url' ? !url.trim() : !file}>
-                Roast it
+                Analyze
                 <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                 </svg>
@@ -820,7 +820,7 @@ export default function Home() {
             <div className={styles.loadingPulse}>
               {[0, 150, 300].map(d => <div key={d} className={styles.loadingDot} style={{ animationDelay: `${d}ms` }}/>)}
             </div>
-            <p className={styles.loadingText}>Reading between the lines…</p>
+            <p className={styles.loadingText}>Analyzing your CV…</p>
             <p className={styles.loadingSubtext}>This takes about 15–20 seconds</p>
           </div>
         )}
@@ -831,7 +831,7 @@ export default function Home() {
             <div className={styles.resultsHeader}>
               <button className={styles.backBtn} onClick={reset}>
                 <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-                New roast
+                New analysis
               </button>
               <button className={styles.shareBtn} onClick={copyShare}>
                 {copied
@@ -879,7 +879,7 @@ export default function Home() {
 
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
-                <h2 className={styles.sectionTitle}>The Roast</h2>
+                <h2 className={styles.sectionTitle}>Feedback</h2>
                 {!isPro && result.roast_lines.length > result.roast_lines_locked_from && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
                     <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -952,7 +952,7 @@ export default function Home() {
       </main>
 
       <footer className={styles.footer}>
-        <span>© 2026 Dulgheru Stefan. All rights reserved.</span>
+        <span>© 2026 CVCheck. All rights reserved.</span>
       </footer>
     </div>
   )
