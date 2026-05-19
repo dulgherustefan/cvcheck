@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import type { Tier } from '@/lib/types'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 async function getTierForUser(userId: string | null): Promise<Tier> {
   if (!userId) return 'free'
