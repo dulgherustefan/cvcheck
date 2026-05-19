@@ -1,89 +1,76 @@
-// scraper.ts — folosește fetch + node-html-parser în loc de Playwright
-// Funcționează local, pe Vercel, oriunde. Rulează: npm install node-html-parser
+import * as cheerio from 'cheerio'
 
-import { parse } from 'node-html-parser'
+// Tags whose content we skip entirely — navigation, scripts, ads, etc.
+const SKIP_TAGS = new Set([
+  'script', 'style', 'noscript', 'iframe', 'svg', 'img',
+  'nav', 'footer', 'header', 'aside', 'form', 'button',
+])
 
+/**
+ * Fetches a URL and extracts meaningful text content.
+ * Works in Vercel serverless (no browser required).
+ */
 export async function scrapeUrl(url: string): Promise<string> {
-  let html: string
+  const normalised = url.startsWith('http') ? url : `https://${url}`
 
+  let html: string
   try {
-    const res = await fetch(url, {
+    const res = await fetch(normalised, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
+          'Mozilla/5.0 (compatible; CVCheck/1.0; +https://cvcheck.app)',
+        'Accept': 'text/html,application/xhtml+xml,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      throw new Error(`HTTP ${res.status} for ${normalised}`)
     }
 
     html = await res.text()
   } catch (err) {
-    throw new Error(`Failed to fetch URL: ${err instanceof Error ? err.message : String(err)}`)
+    throw new Error(`Failed to fetch URL: ${(err as Error).message}`)
   }
 
-  const root = parse(html)
+  const $ = cheerio.load(html)
 
-  // Scoate elementele de zgomot
-  for (const tag of ['script', 'style', 'noscript', 'svg', 'canvas', 'iframe', 'nav', 'footer']) {
-    root.querySelectorAll(tag).forEach(el => el.remove())
+  // Remove noise elements
+  SKIP_TAGS.forEach(tag => $(tag).remove())
+  $('[aria-hidden="true"]').remove()
+  $('[role="banner"], [role="navigation"], [role="contentinfo"]').remove()
+
+  // Extract title + meta description first (high signal, low token cost)
+  const title = $('title').text().trim()
+  const metaDesc =
+    $('meta[name="description"]').attr('content')?.trim() ??
+    $('meta[property="og:description"]').attr('content')?.trim() ??
+    ''
+
+  // Walk the body and collect text, preserving some structure
+  const lines: string[] = []
+
+  if (title) lines.push(`[Title] ${title}`)
+  if (metaDesc) lines.push(`[Description] ${metaDesc}`)
+
+  // Headings first — they carry the most signal
+  $('h1, h2, h3').each((_, el) => {
+    const text = $(el).text().replace(/\s+/g, ' ').trim()
+    if (text.length > 2) lines.push(`[${el.tagName.toUpperCase()}] ${text}`)
+  })
+
+  // Body text — paragraphs, list items, divs with direct text
+  $('p, li, td, th, blockquote, [class*="summary"], [class*="about"], [class*="bio"], [class*="experience"], [class*="skill"]').each((_, el) => {
+    const text = $(el).text().replace(/\s+/g, ' ').trim()
+    if (text.length > 20) lines.push(text)
+  })
+
+  const extracted = [...new Set(lines)].join('\n') // dedupe identical lines
+
+  if (extracted.trim().length < 50) {
+    throw new Error('Could not extract enough content from this URL')
   }
 
-  const parts: string[] = []
-
-  // Title
-  const title = root.querySelector('title')?.text?.trim()
-  if (title) parts.push(`PAGE TITLE: ${title}`)
-
-  // Meta description
-  const metaDesc = root.querySelector('meta[name="description"]')?.getAttribute('content')?.trim()
-  if (metaDesc) parts.push(`META DESCRIPTION: ${metaDesc}`)
-
-  // OG title / description ca fallback
-  const ogTitle = root.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim()
-  if (ogTitle && ogTitle !== title) parts.push(`OG TITLE: ${ogTitle}`)
-
-  const ogDesc = root.querySelector('meta[property="og:description"]')?.getAttribute('content')?.trim()
-  if (ogDesc && ogDesc !== metaDesc) parts.push(`OG DESCRIPTION: ${ogDesc}`)
-
-  // H1
-  root.querySelectorAll('h1').forEach(h => {
-    const t = h.text?.trim()
-    if (t) parts.push(`H1: ${t}`)
-  })
-
-  // H2
-  root.querySelectorAll('h2').forEach(h => {
-    const t = h.text?.trim()
-    if (t) parts.push(`H2: ${t}`)
-  })
-
-  // H3 (primele 8)
-  let h3Count = 0
-  root.querySelectorAll('h3').forEach(h => {
-    if (h3Count >= 8) return
-    const t = h.text?.trim()
-    if (t) { parts.push(`H3: ${t}`); h3Count++ }
-  })
-
-  // Body text — încearcă main/article întâi, fallback la body
-  const mainEl = root.querySelector('main') ?? root.querySelector('article') ?? root.querySelector('body')
-  const bodyText = mainEl?.text ?? ''
-
-  const cleaned = bodyText
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 20)
-    .slice(0, 120)
-    .join('\n')
-
-  if (cleaned) parts.push(`\nCONTENT:\n${cleaned}`)
-
-  const result = parts.join('\n').trim()
-  if (!result) return 'No content could be extracted from this page.'
-  return result
+  return extracted
 }
