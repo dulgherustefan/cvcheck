@@ -88,16 +88,16 @@ export async function POST(req: NextRequest) {
       const { error: insertError } = await supabaseAdmin
         .from('roasts')
         .insert({
-          id: result.roast_id,
+          id: result.analysis_id,
           user_id: userId,
           source: source ?? null,
           total_score: result.total_score,
+          rating: result.rating,
+          summary: result.summary,
           scores: result.scores,
-          pull_quote: result.pull_quote,
-          roast_lines: result.roast_lines,
-          tips: result.tips,
-          one_priority: result.one_priority,
-          vibe_check: result.vibe_check,
+          observations: result.observations,
+          improvements: result.improvements,
+          top_priority: result.top_priority,
         })
 
       if (insertError) {

@@ -2,53 +2,59 @@
 export type Tier = 'free' | 'pro' | 'premium'
 
 // ── Scores ───────────────────────────────────────────────────────────────────
-export interface RoastScores {
-  first_impression: number      // 0-10
-  positioning: number           // 0-10
-  experience_proof: number      // 0-20
-  skills_relevance: number      // 0-10
-  credibility_signals: number   // 0-15
-  structure_readability: number // 0-15
-  language_quality: number      // 0-10
-  cta_clarity: number           // 0-10
+export interface CVScores {
+  first_impression: number   // 0-10
+  positioning: number        // 0-10
+  experience_proof: number   // 0-20
+  skills_relevance: number   // 0-10
+  credibility: number        // 0-15
+  structure: number          // 0-15
+  language: number           // 0-10
+  contact_cta: number        // 0-10
+}
+
+export interface Observation {
+  type: 'strength' | 'weakness'
+  title: string
+  detail: string
 }
 
 export interface ImprovementTip {
   area: string
-  issue: string
+  problem: string
   fix: string
   impact: 'high' | 'medium' | 'low'
 }
 
-export type VibeCheck = 'nightmare' | 'rough' | 'meh' | 'decent' | 'solid' | 'impressive'
+export type Rating = 'needs_work' | 'below_average' | 'average' | 'good' | 'strong' | 'excellent'
 
 // ── Full result (what AI returns + what we store) ─────────────────────────────
-export interface RoastResult {
-  roast_id: string
+export interface AnalysisResult {
+  analysis_id: string
   source?: string
   total_score: number
-  scores: RoastScores
-  pull_quote: string
-  roast_lines: string[]   // AI always returns 6
-  tips: ImprovementTip[]  // AI always returns 5
-  one_priority: string
-  vibe_check: VibeCheck
-  tier: Tier              // what tier was used to generate this
+  rating: Rating
+  summary: string
+  scores: CVScores
+  observations: Observation[]  // 4-5 items
+  improvements: ImprovementTip[] // 3-5 items
+  top_priority: string
+  tier: Tier
 }
 
 // ── What the client actually sees (gated by tier) ────────────────────────────
-export interface GatedRoastResult extends RoastResult {
-  // These are always present regardless of tier:
-  // total_score, vibe_check, pull_quote, source, roast_id
-
-  // Free:   roast_lines[0..1], tips[0..0], scores locked
-  // Pro:    roast_lines[0..4], tips[0..4], scores visible
-  // Premium: everything
+export interface GatedAnalysisResult extends AnalysisResult {
   scores_locked: boolean
-  roast_lines_locked_from: number  // index where locking starts
-  tips_locked_from: number         // index where locking starts
+  observations_locked_from: number
+  improvements_locked_from: number
 }
 
-export interface RoastError {
+export interface AnalysisError {
   error: string
 }
+
+// ── Legacy aliases (for backwards compat if needed) ───────────────────────────
+/** @deprecated use AnalysisResult */
+export type RoastResult = AnalysisResult
+/** @deprecated use GatedAnalysisResult */
+export type GatedRoastResult = GatedAnalysisResult

@@ -8,7 +8,7 @@ import { UpgradeModal } from '@/components/UpgradeModal'
 import { AccountModal } from '@/components/AccountModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useTier } from '@/hooks/useTier'
-import type { GatedRoastResult, VibeCheck, ImprovementTip } from '@/lib/types'
+import type { GatedAnalysisResult, ImprovementTip, Observation, Rating } from '@/lib/types'
 import { SCORE_DIMENSIONS } from '@/lib/constants'
 import { createSupabaseBrowser } from '@/lib/supabase'
 import styles from './page.module.css'
@@ -16,13 +16,13 @@ import styles from './page.module.css'
 type InputMode = 'url' | 'pdf'
 type AppState = 'idle' | 'loading' | 'result' | 'error'
 
-const VIBE_LABELS: Record<VibeCheck, string> = {
-  nightmare: 'Nightmare', rough: 'Rough', meh: 'Meh',
-  decent: 'Decent', solid: 'Solid', impressive: 'Impressive',
+const RATING_LABELS: Record<Rating, string> = {
+  needs_work: 'Needs Work', below_average: 'Below Average', average: 'Average',
+  good: 'Good', strong: 'Strong', excellent: 'Excellent',
 }
-const VIBE_COLORS: Record<VibeCheck, string> = {
-  nightmare: '#DC2626', rough: '#EA580C', meh: '#CA8A04',
-  decent: '#65A30D', solid: '#16A34A', impressive: '#0891B2',
+const RATING_COLORS: Record<Rating, string> = {
+  needs_work: '#DC2626', below_average: '#EA580C', average: '#CA8A04',
+  good: '#65A30D', strong: '#16A34A', excellent: '#0891B2',
 }
 const IMPACT_COLORS: Record<ImprovementTip['impact'], string> = {
   high: '#DC2626', medium: '#CA8A04', low: '#6B7280',
@@ -96,14 +96,23 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
   )
 }
 
-function RoastLine({ text, index, locked, onUnlock }: {
-  text: string; index: number; locked: boolean; onUnlock: () => void
+function ObservationCard({ obs, index, locked, onUnlock }: {
+  obs: Observation; index: number; locked: boolean; onUnlock: () => void
 }) {
+  const isStrength = obs.type === 'strength'
+  const color = isStrength ? 'var(--score-high)' : 'var(--score-low)'
+  const bg = isStrength ? 'rgba(34,197,94,0.06)' : 'rgba(220,38,38,0.06)'
+  const border = isStrength ? 'rgba(34,197,94,0.2)' : 'rgba(220,38,38,0.2)'
+
   if (locked) {
     return (
-      <div className={`${styles.roastLine} ${styles.roastLineLocked}`} onClick={onUnlock}>
-        <span className={styles.roastLineNumber}>{String(index + 1).padStart(2, '0')}</span>
-        <p className={styles.roastLineText} style={{ filter: 'blur(4px)', userSelect: 'none' }}>{text}</p>
+      <div className={`${styles.roastLine} ${styles.roastLineLocked}`} onClick={onUnlock} style={{ cursor: 'pointer' }}>
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', padding: '2px 7px', borderRadius: 4, background: 'var(--bg-muted)', color: 'var(--text-secondary)', flexShrink: 0 }}>
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <p className={styles.roastLineText} style={{ filter: 'blur(4px)', userSelect: 'none', flex: 1 }}>
+          {obs.detail}
+        </p>
         <div className={styles.roastLineLock}>
           <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
@@ -112,10 +121,16 @@ function RoastLine({ text, index, locked, onUnlock }: {
       </div>
     )
   }
+
   return (
-    <div className={styles.roastLine}>
-      <span className={styles.roastLineNumber}>{String(index + 1).padStart(2, '0')}</span>
-      <p className={styles.roastLineText}>{text}</p>
+    <div style={{ padding: '14px 16px', borderRadius: 'var(--radius-md)', background: bg, border: `1px solid ${border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,38,0.12)' }}>
+          {isStrength ? '✓ Strength' : '✗ Weakness'}
+        </span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{obs.title}</span>
+      </div>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{obs.detail}</p>
     </div>
   )
 }
@@ -146,7 +161,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
         </div>
         <div className={styles.tipBody} style={{ paddingTop: 0 }}>
           <p style={{ filter: 'blur(5px)', userSelect: 'none', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {tip.issue}
+            {tip.problem}
           </p>
         </div>
       </div>
@@ -171,7 +186,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
       </button>
       {open && (
         <div className={styles.tipBody}>
-          <p className={styles.tipIssue}>{tip.issue}</p>
+          <p className={styles.tipIssue}>{tip.problem}</p>
           <div className={styles.tipFix}>
             <span className={styles.tipFixLabel}>How to fix it</span>
             <p className={styles.tipFixText}>{tip.fix}</p>
@@ -579,7 +594,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [appState, setAppState] = useState<AppState>('idle')
-  const [result, setResult] = useState<GatedRoastResult | null>(null)
+  const [result, setResult] = useState<GatedAnalysisResult | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
   // Track how many analyses done this session (for free limit)
@@ -645,7 +660,7 @@ export default function Home() {
   const copyShare = async () => {
     if (!result) return
     await navigator.clipboard.writeText(
-      `My CV score: ${result.total_score}/100\n"${result.pull_quote}"\n\ncvcheck.app`
+      `My CV score: ${result.total_score}/100 (${RATING_LABELS[result.rating]})\n${result.summary}\n\ncvcheck.app`
     )
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
@@ -687,7 +702,7 @@ export default function Home() {
       {showUpgradeModal && (
         <UpgradeModal
           onClose={() => setShowUpgradeModal(false)}
-          roastId={result?.roast_id}
+          roastId={result?.analysis_id}
           userId={user?.id}
           userEmail={user?.email}
         />
@@ -845,11 +860,11 @@ export default function Home() {
               <ScoreRing score={result.total_score}/>
               <div className={styles.scoreHeroMeta}>
                 <span className={styles.vibeCheck} style={{
-                  color: VIBE_COLORS[result.vibe_check],
-                  borderColor: `${VIBE_COLORS[result.vibe_check]}30`,
-                  background: `${VIBE_COLORS[result.vibe_check]}12`,
-                }}>{VIBE_LABELS[result.vibe_check]}</span>
-                <blockquote className={styles.pullQuote}>&ldquo;{result.pull_quote}&rdquo;</blockquote>
+                  color: RATING_COLORS[result.rating],
+                  borderColor: `${RATING_COLORS[result.rating]}30`,
+                  background: `${RATING_COLORS[result.rating]}12`,
+                }}>{RATING_LABELS[result.rating]}</span>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{result.summary}</p>
                 {result.source && <p className={styles.sourceLabel}>{result.source}</p>}
               </div>
             </div>
@@ -879,20 +894,20 @@ export default function Home() {
 
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
-                <h2 className={styles.sectionTitle}>Feedback</h2>
-                {!isPro && result.roast_lines.length > result.roast_lines_locked_from && (
+                <h2 className={styles.sectionTitle}>Observations</h2>
+                {!isPro && result.observations.length > result.observations_locked_from && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
                     <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
                     </svg>
-                    See all {result.roast_lines.length}
+                    See all {result.observations.length}
                   </button>
                 )}
               </div>
-              <div className={styles.roastLines}>
-                {result.roast_lines.map((line, i) => (
-                  <RoastLine key={i} text={line} index={i}
-                    locked={i >= result.roast_lines_locked_from}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {result.observations.map((obs, i) => (
+                  <ObservationCard key={i} obs={obs} index={i}
+                    locked={i >= result.observations_locked_from}
                     onUnlock={() => setShowUpgradeModal(true)}/>
                 ))}
               </div>
@@ -901,19 +916,19 @@ export default function Home() {
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
                 <h2 className={styles.sectionTitle}>How to improve</h2>
-                {!isPro && result.tips.length > result.tips_locked_from && (
+                {!isPro && result.improvements.length > result.improvements_locked_from && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
                     <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
                     </svg>
-                    Unlock {result.tips.length - result.tips_locked_from} more
+                    Unlock {result.improvements.length - result.improvements_locked_from} more
                   </button>
                 )}
               </div>
               <div className={styles.tips}>
-                {result.tips.map((tip, i) => (
+                {result.improvements.map((tip, i) => (
                   <TipCard key={i} tip={tip} index={i}
-                    locked={i >= result.tips_locked_from}
+                    locked={i >= result.improvements_locked_from}
                     onUnlock={() => setShowUpgradeModal(true)}/>
                 ))}
               </div>
@@ -926,7 +941,7 @@ export default function Home() {
                 </svg>
                 Do this first
               </div>
-              <p className={styles.priorityText}>{result.one_priority}</p>
+              <p className={styles.priorityText}>{result.top_priority}</p>
             </div>
 
             {!isPro && (
@@ -934,7 +949,7 @@ export default function Home() {
                 <div className={styles.upgradeBannerContent}>
                   <p className={styles.upgradeBannerTitle}>See the full picture</p>
                   <p className={styles.upgradeBannerSub}>
-                    Unlock 8 detailed scores, {result.roast_lines.length} observations, and {result.tips.length} actionable tips with rewrites.
+                    Unlock 8 detailed scores, {result.observations.length} observations, and {result.improvements.length} actionable improvements with rewrites.
                   </p>
                 </div>
                 <div className={styles.upgradeBannerActions}>
