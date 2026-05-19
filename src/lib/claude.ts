@@ -7,6 +7,10 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
+// ~4000 tokens input budget for content (haiku: 0.25$/M input)
+// leaves plenty of room under context limit while keeping cost low
+const MAX_CONTENT_CHARS = 8000
+
 const RATING_THRESHOLDS: [number, Rating][] = [
   [20,  'needs_work'],
   [40,  'below_average'],
@@ -36,15 +40,34 @@ function clampScores(s: CVScores): CVScores {
   }
 }
 
+/**
+ * Compresses content before sending to Claude:
+ * - Collapses repeated blank lines into one
+ * - Trims lines
+ * - Removes zero-width / non-printable chars
+ * - Truncates to MAX_CONTENT_CHARS
+ */
+function prepareContent(raw: string): string {
+  return raw
+    .replace(/[^\S\n]+/g, ' ')          // collapse horizontal whitespace
+    .replace(/\n{3,}/g, '\n\n')          // max 2 consecutive newlines
+    .split('\n').map(l => l.trim()).join('\n')  // trim each line
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // strip zero-width chars
+    .trim()
+    .slice(0, MAX_CONTENT_CHARS)
+}
+
 export async function getRoast(content: string): Promise<AnalysisResult> {
+  const prepared = prepareContent(content)
+
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1024,
+    max_tokens: 800,   // 4 observations + 3 improvements + scores fits well under 800
     system: SYSTEM_PROMPT,
     messages: [
       {
         role: 'user',
-        content: `Analyze this content:\n\n${content.slice(0, 12000)}`,
+        content: `Analyze this CV/portfolio content:\n\n${prepared}`,
       },
     ],
   })
@@ -67,7 +90,6 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     throw new Error(`Failed to parse AI response: ${cleaned.slice(0, 200)}`)
   }
 
-  // Validate required fields
   if (
     typeof parsed.total_score !== 'number' ||
     !parsed.scores ||
@@ -87,10 +109,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     s.skills_relevance + s.credibility + s.structure +
     s.language + s.contact_cta
 
-  // Always derive rating server-side
   parsed.rating = toRating(parsed.total_score)
-
-  // Assign a fresh ID
   parsed.analysis_id = randomUUID()
 
   return parsed
