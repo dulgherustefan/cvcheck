@@ -7,8 +7,6 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-// ~4000 tokens input budget for content (haiku: 0.25$/M input)
-// leaves plenty of room under context limit while keeping cost low
 const MAX_CONTENT_CHARS = 8000
 
 const RATING_THRESHOLDS: [number, Rating][] = [
@@ -40,19 +38,12 @@ function clampScores(s: CVScores): CVScores {
   }
 }
 
-/**
- * Compresses content before sending to Claude:
- * - Collapses repeated blank lines into one
- * - Trims lines
- * - Removes zero-width / non-printable chars
- * - Truncates to MAX_CONTENT_CHARS
- */
 function prepareContent(raw: string): string {
   return raw
-    .replace(/[^\S\n]+/g, ' ')          // collapse horizontal whitespace
-    .replace(/\n{3,}/g, '\n\n')          // max 2 consecutive newlines
-    .split('\n').map(l => l.trim()).join('\n')  // trim each line
-    .replace(/[\u200B-\u200D\uFEFF]/g, '') // strip zero-width chars
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n').map(l => l.trim()).join('\n')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
     .trim()
     .slice(0, MAX_CONTENT_CHARS)
 }
@@ -62,7 +53,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 800,   // 4 observations + 3 improvements + scores fits well under 800
+    max_tokens: 800,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -101,7 +92,6 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     throw new Error('AI response missing required fields')
   }
 
-  // Clamp + recalculate to prevent drift
   parsed.scores = clampScores(parsed.scores)
   const s = parsed.scores
   parsed.total_score =
