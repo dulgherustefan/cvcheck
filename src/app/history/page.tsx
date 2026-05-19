@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createSupabaseBrowser } from '@/lib/supabase'
-import type { VibeCheck, RoastScores, ImprovementTip } from '@/lib/types'
+import type { Rating, CVScores, ImprovementTip, Observation } from '@/lib/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -15,32 +15,32 @@ interface HistoryEntry {
   created_at: string
   source: string | null
   total_score: number
-  scores: RoastScores
-  pull_quote: string
-  roast_lines: string[]
-  tips: ImprovementTip[]
-  one_priority: string
-  vibe_check: VibeCheck
+  rating: Rating
+  summary: string
+  scores: CVScores
+  observations: Observation[]
+  improvements: ImprovementTip[]
+  top_priority: string
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const VIBE_LABELS: Record<VibeCheck, string> = {
-  nightmare: 'Nightmare',
-  rough: 'Rough',
-  meh: 'Meh',
-  decent: 'Decent',
-  solid: 'Solid',
-  impressive: 'Impressive',
+const RATING_LABELS: Record<Rating, string> = {
+  needs_work: 'Needs Work',
+  below_average: 'Below Average',
+  average: 'Average',
+  good: 'Good',
+  strong: 'Strong',
+  excellent: 'Excellent',
 }
 
-const VIBE_COLORS: Record<VibeCheck, string> = {
-  nightmare: '#DC2626',
-  rough: '#EA580C',
-  meh: '#CA8A04',
-  decent: '#65A30D',
-  solid: '#16A34A',
-  impressive: '#0891B2',
+const RATING_COLORS: Record<Rating, string> = {
+  needs_work: '#DC2626',
+  below_average: '#EA580C',
+  average: '#CA8A04',
+  good: '#65A30D',
+  strong: '#16A34A',
+  excellent: '#0891B2',
 }
 
 function scoreColor(score: number): string {
@@ -99,7 +99,7 @@ function MiniRing({ score }: { score: number }) {
 // ── History Card ──────────────────────────────────────────────────────────────
 
 function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => void }) {
-  const vColor = VIBE_COLORS[entry.vibe_check]
+  const vColor = RATING_COLORS[entry.rating]
 
   return (
     <button
@@ -133,7 +133,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
             border: `1px solid ${vColor}30`,
             padding: '2px 8px', borderRadius: 20,
           }}>
-            {VIBE_LABELS[entry.vibe_check]}
+            {RATING_LABELS[entry.rating]}
           </span>
           <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
             {formatSource(entry.source)}
@@ -144,7 +144,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
           margin: 0, overflow: 'hidden', textOverflow: 'ellipsis',
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         }}>
-          &ldquo;{entry.pull_quote}&rdquo;
+          {entry.summary}
         </p>
       </div>
 
@@ -163,7 +163,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
 // ── Detail Drawer ─────────────────────────────────────────────────────────────
 
 function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => void }) {
-  const vColor = VIBE_COLORS[entry.vibe_check]
+  const vColor = RATING_COLORS[entry.rating]
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -261,43 +261,48 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 border: `1px solid ${vColor}30`,
                 padding: '3px 10px', borderRadius: 20, marginBottom: 8,
               }}>
-                {VIBE_LABELS[entry.vibe_check]}
+                {RATING_LABELS[entry.rating]}
               </span>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
-                &ldquo;{entry.pull_quote}&rdquo;
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                {entry.summary}
               </p>
             </div>
           </div>
 
-          {/* Roast lines */}
+          {/* Observations */}
           <div>
             <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-              The Roast
+              Observations
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {entry.roast_lines.map((line, i) => (
-                <div key={i} style={{
-                  display: 'flex', gap: 12, padding: '12px 14px',
-                  background: 'var(--bg)', borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border)',
-                }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums', flexShrink: 0, paddingTop: 1 }}>
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{line}</p>
-                </div>
-              ))}
+              {entry.observations.map((obs, i) => {
+                const isStrength = obs.type === 'strength'
+                const color = isStrength ? '#16A34A' : '#DC2626'
+                const bg = isStrength ? 'rgba(34,197,94,0.06)' : 'rgba(220,38,38,0.06)'
+                const border = isStrength ? 'rgba(34,197,94,0.2)' : 'rgba(220,38,38,0.2)'
+                return (
+                  <div key={i} style={{ padding: '12px 14px', background: bg, borderRadius: 'var(--radius-md)', border: `1px solid ${border}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,38,0.12)' }}>
+                        {isStrength ? '✓ Strength' : '✗ Weakness'}
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{obs.title}</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{obs.detail}</p>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
-          {/* Tips */}
-          {entry.tips.length > 0 && (
+          {/* Improvements */}
+          {entry.improvements.length > 0 && (
             <div>
               <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
                 How to improve
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {entry.tips.map((tip, i) => {
+                {entry.improvements.map((tip, i) => {
                   const impColors: Record<string, string> = { high: '#DC2626', medium: '#CA8A04', low: '#6B7280' }
                   const ic = impColors[tip.impact] ?? '#6B7280'
                   return (
@@ -313,7 +318,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                         }}>{tip.impact}</span>
                         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{tip.area}</span>
                       </div>
-                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 10px' }}>{tip.issue}</p>
+                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 10px' }}>{tip.problem}</p>
                       <div style={{ padding: '10px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--accent)' }}>
                         <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How to fix it</p>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{tip.fix}</p>
@@ -338,7 +343,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
               </svg>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Do this first</span>
             </div>
-            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, margin: 0 }}>{entry.one_priority}</p>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, margin: 0 }}>{entry.top_priority}</p>
           </div>
 
         </div>
@@ -365,7 +370,7 @@ function EmptyState() {
       </div>
       <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>No analyses yet</p>
       <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px' }}>
-        Run your first roast and it will appear here.
+        Run your first analysis and it will appear here.
       </p>
       <Link href="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -374,7 +379,7 @@ function EmptyState() {
         borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600,
         textDecoration: 'none',
       }}>
-        Roast something
+        Analyze something
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
         </svg>
@@ -440,7 +445,7 @@ export default function HistoryPage() {
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-              Roastd
+              CVCheck
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
