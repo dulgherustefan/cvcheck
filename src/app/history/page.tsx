@@ -21,6 +21,7 @@ interface HistoryEntry {
   observations: Observation[]
   improvements: ImprovementTip[]
   top_priority: string
+  tier?: 'free' | 'pro' | 'premium'  // ← adaugă asta
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -163,7 +164,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
 // ── Detail Drawer ─────────────────────────────────────────────────────────────
 
 function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => void }) {
-  const vColor = RATING_COLORS[entry.rating]
+  const isPro = entry.tier === 'pro' || entry.tier === 'premium'
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -270,11 +271,11 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
           </div>
 
           {/* Observations */}
-          <div>
+          <div style={{ position: 'relative' }}>
             <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
               Observations
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
               {entry.observations.map((obs, i) => {
                 const isStrength = obs.type === 'strength'
                 const color = isStrength ? '#16A34A' : '#DC2626'
@@ -283,7 +284,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 return (
                   <div key={i} style={{ padding: '12px 14px', background: bg, borderRadius: 'var(--radius-md)', border: `1px solid ${border}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,38,0.12)' }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,68,0.12)' }}>
                         {isStrength ? '✓ Strength' : '✗ Weakness'}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{obs.title}</span>
@@ -293,15 +294,22 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 )
               })}
             </div>
+            {!isPro && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <a href="/" style={{ padding: '10px 20px', background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+                  Unlock full analysis — €2
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Improvements */}
           {entry.improvements.length > 0 && (
-            <div>
+            <div style={{ position: 'relative' }}>
               <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
                 How to improve
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
                 {entry.improvements.map((tip, i) => {
                   const impColors: Record<string, string> = { high: '#DC2626', medium: '#CA8A04', low: '#6B7280' }
                   const ic = impColors[tip.impact] ?? '#6B7280'
