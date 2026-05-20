@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="102" fill="#1a1a2e"/>
+  <!-- Document -->
+  <rect x="134" y="96" width="244" height="316" rx="20" fill="#ffffff"/>
+  <!-- Document lines -->
+  <rect x="170" y="160" width="172" height="14" rx="7" fill="#e2e8f0"/>
+  <rect x="170" y="196" width="140" height="14" rx="7" fill="#e2e8f0"/>
+  <rect x="170" y="232" width="158" height="14" rx="7" fill="#e2e8f0"/>
+  <rect x="170" y="268" width="120" height="14" rx="7" fill="#e2e8f0"/>
+  <!-- Green check circle -->
+  <circle cx="358" cy="352" r="76" fill="#22c55e"/>
+  <polyline points="330,352 348,372 390,322" fill="none" stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
