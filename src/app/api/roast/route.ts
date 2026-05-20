@@ -19,10 +19,8 @@ async function getTierForUser(userId: string | null): Promise<Tier> {
     .single()
 
   if (error || !data) return 'free'
-
-  // Premium = abonament activ → acces nelimitat la analize noi
-  // Pro = one-time per roast → analizele noi sunt tot free
   if (data.plan === 'premium') return 'premium'
+  if (data.plan === 'pro') return 'pro'
   return 'free'
 }
 
@@ -46,7 +44,7 @@ function getIdentifier(req: NextRequest, userId: string | null): string {
   return `ip:${ip}`
 }
 
-async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed: boolean; count: number }> {
+async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed: boolean }> {
   const { data: existing } = await supabaseAdmin
     .from('free_scans')
     .select('scan_count')
@@ -56,14 +54,11 @@ async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed
   const currentCount = existing?.scan_count ?? 0
 
   if (currentCount >= FREE_SCAN_LIMIT) {
-    return { allowed: false, count: currentCount }
+    return { allowed: false }
   }
 
   if (!existing) {
-    await supabaseAdmin.from('free_scans').insert({
-      identifier,
-      scan_count: 1,
-    })
+    await supabaseAdmin.from('free_scans').insert({ identifier, scan_count: 1 })
   } else {
     await supabaseAdmin.from('free_scans').update({
       scan_count: currentCount + 1,
@@ -71,7 +66,7 @@ async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed
     }).eq('identifier', identifier)
   }
 
-  return { allowed: true, count: currentCount + 1 }
+  return { allowed: true }
 }
 
 export async function POST(req: NextRequest) {
@@ -83,16 +78,12 @@ export async function POST(req: NextRequest) {
     const userId = await getUserIdFromRequest(req)
     const tier = await getTierForUser(userId)
 
-    // Verifică limita pentru free tier (inclusiv useri cu plan pro — pro e per-roast)
+    // Free tier — verifică limita
     if (tier === 'free') {
       const identifier = getIdentifier(req, userId)
       const { allowed } = await checkAndIncrementFreeLimit(identifier)
-
       if (!allowed) {
-        return NextResponse.json(
-          { error: 'free_limit_reached' },
-          { status: 403 }
-        )
+        return NextResponse.json({ error: 'free_limit_reached' }, { status: 403 })
       }
     }
 
@@ -132,6 +123,7 @@ export async function POST(req: NextRequest) {
     const gated = gateResult(result, tier)
 
     if (userId) {
+      // Salvează roast-ul
       const { error: insertError } = await supabaseAdmin
         .from('roasts')
         .insert({
@@ -145,10 +137,18 @@ export async function POST(req: NextRequest) {
           observations: result.observations,
           improvements: result.improvements,
           top_priority: result.top_priority,
+          tier,
         })
+      if (insertError) console.error('[roast] Failed to save to Supabase:', insertError)
 
-      if (insertError) {
-        console.error('[roast] Failed to save to Supabase:', insertError)
+      // Daca a folosit creditul pro, reseteaza la free
+      if (tier === 'pro') {
+        const { error: resetError } = await supabaseAdmin
+          .from('credits')
+          .update({ plan: 'free', updated_at: new Date().toISOString() })
+          .eq('user_id', userId)
+        if (resetError) console.error('[roast] Failed to reset pro credit:', resetError)
+        else console.log(`[roast] Pro credit used and reset to free for user ${userId}`)
       }
     }
 

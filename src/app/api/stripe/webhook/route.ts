@@ -27,38 +27,30 @@ export async function POST(req: NextRequest) {
     case 'checkout.session.completed': {
       const session = event.data.object as {
         metadata?: { plan?: string; roast_id?: string; user_id?: string }
-        mode?: string
         customer?: string
         subscription?: string
       }
-      const { plan, roast_id, user_id } = session.metadata ?? {}
+      const { plan, user_id } = session.metadata ?? {}
 
-      if (plan === 'pro') {
-        // Pro = one-time, deblocheaza doar roast-ul specific
-        // NU schimbam planul userului in credits — ramane free
-        if (roast_id) {
-          const { error } = await supabaseAdmin
-            .from('roasts')
-            .update({ tier: 'pro' })
-            .eq('id', roast_id)
-          if (error) console.error('[webhook] Failed to update roast tier:', error)
-          else console.log(`[webhook] Roast ${roast_id} upgraded to pro`)
-        }
-
-        // Resetam limita free_scans ca userul sa poata face o noua analiza gratuita
-        // (a platit pentru deblocarea unui roast vechi, nu pentru analize noi)
-        if (user_id) {
-          const { error } = await supabaseAdmin
-            .from('free_scans')
-            .delete()
-            .eq('identifier', `user:${user_id}`)
-          if (error) console.error('[webhook] Failed to reset free_scans:', error)
-          else console.log(`[webhook] Free scan reset for user ${user_id} after pro purchase`)
-        }
+      if (plan === 'pro' && user_id) {
+        // Seteaza plan: pro → userul are 1 analiza pro disponibila
+        // route.ts o va folosi si reseta la free dupa analiza
+        const { error } = await supabaseAdmin
+          .from('credits')
+          .upsert(
+            {
+              user_id,
+              plan: 'pro',
+              stripe_customer_id: session.customer ?? null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id' }
+          )
+        if (error) console.error('[webhook] Failed to set pro credit:', error)
+        else console.log(`[webhook] Pro credit set for user ${user_id}`)
       }
 
       if (plan === 'premium' && user_id) {
-        // Premium = abonament lunar, acces nelimitat
         const { error } = await supabaseAdmin
           .from('credits')
           .upsert(
@@ -78,27 +70,20 @@ export async function POST(req: NextRequest) {
     }
 
     case 'customer.subscription.updated': {
-      const sub = event.data.object as {
-        status: string
-        customer: string
-        id: string
-      }
+      const sub = event.data.object as { status: string; customer: string }
       if (sub.status === 'active') {
         const { error } = await supabaseAdmin
           .from('credits')
-          .update({
-            plan: 'premium',
-            updated_at: new Date().toISOString(),
-          })
+          .update({ plan: 'premium', updated_at: new Date().toISOString() })
           .eq('stripe_customer_id', sub.customer)
-        if (error) console.error('[webhook] Failed to update subscription:', error)
+        if (error) console.error('[webhook] Failed to renew premium:', error)
         else console.log(`[webhook] Premium renewed for customer ${sub.customer}`)
       }
       break
     }
 
     case 'customer.subscription.deleted': {
-      // Abonamentul a expirat sau a fost anulat → revine la free
+      // Abonamentul a expirat → revine la free
       const sub = event.data.object as { customer: string }
       const { error } = await supabaseAdmin
         .from('credits')
@@ -108,7 +93,7 @@ export async function POST(req: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq('stripe_customer_id', sub.customer)
-      if (error) console.error('[webhook] Failed to downgrade subscription:', error)
+      if (error) console.error('[webhook] Failed to downgrade to free:', error)
       else console.log(`[webhook] Downgraded to free for customer ${sub.customer}`)
       break
     }
