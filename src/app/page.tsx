@@ -37,10 +37,10 @@ function ScoreRing({ score }: { score: number }) {
   return (
     <div className={styles.scoreRing}>
       <svg width="136" height="136" viewBox="0 0 136 136">
-        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="8"/>
-        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="8"
+        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="7"/>
+        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="7"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)"
-          style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.4,0,0.2,1)' }}/>
+          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}/>
       </svg>
       <div className={styles.scoreRingInner}>
         <span className={styles.scoreNumber} style={{ color }}>{score}</span>
@@ -59,11 +59,11 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
 
   if (locked) {
     return (
-      <div className={`${styles.dimBar} ${styles.dimBarLocked}`} onClick={onUnlock} style={{ cursor: 'pointer' }}>
+      <div className={`${styles.dimBar} ${styles.dimBarLocked}`} onClick={onUnlock}>
         <div className={styles.dimBarHeader}>
           <div>
-            <span className={styles.dimLabel} style={{ filter: 'blur(3px)' }}>{label}</span>
-            <span className={styles.dimDesc} style={{ filter: 'blur(3px)' }}>{desc}</span>
+            <span className={styles.dimLabel} style={{ filter: 'blur(4px)', userSelect: 'none' }}>{label}</span>
+            <span className={styles.dimDesc} style={{ filter: 'blur(3px)', userSelect: 'none' }}>{desc}</span>
           </div>
           <span className={styles.lockIcon}>
             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -90,7 +90,10 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
         </span>
       </div>
       <div className={styles.barTrack}>
-        <div className={styles.barFill} style={{ width: `${pct}%`, background: color, transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)' }}/>
+        <div className={styles.barFill} style={{
+          width: `${pct}%`, background: color,
+          transition: 'width 1s cubic-bezier(0.4,0,0.2,1)'
+        }}/>
       </div>
     </div>
   )
@@ -101,20 +104,34 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
 }) {
   const isStrength = obs.type === 'strength'
   const color = isStrength ? 'var(--score-high)' : 'var(--score-low)'
-  const bg = isStrength ? 'rgba(34,197,94,0.06)' : 'rgba(220,38,38,0.06)'
-  const border = isStrength ? 'rgba(34,197,94,0.2)' : 'rgba(220,38,38,0.2)'
+  const bg = isStrength ? 'rgba(22,163,74,0.06)' : 'rgba(220,38,38,0.06)'
+  const border = isStrength ? 'rgba(22,163,74,0.18)' : 'rgba(220,38,38,0.18)'
 
   if (locked) {
     return (
-      <div className={`${styles.roastLine} ${styles.roastLineLocked}`} onClick={onUnlock} style={{ cursor: 'pointer' }}>
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', padding: '2px 7px', borderRadius: 4, background: 'var(--bg-muted)', color: 'var(--text-secondary)', flexShrink: 0 }}>
+      <div
+        onClick={onUnlock}
+        style={{
+          padding: '14px 18px', borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          cursor: 'pointer', transition: 'background 0.1s',
+        }}
+        onMouseOver={e => (e.currentTarget.style.background = 'var(--accent-subtle)')}
+        onMouseOut={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+      >
+        <span style={{
+          fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const,
+          letterSpacing: '0.05em', padding: '2px 8px', borderRadius: 4,
+          background: 'var(--bg-muted)', color: 'var(--text-tertiary)', flexShrink: 0,
+        }}>
           {String(index + 1).padStart(2, '0')}
         </span>
-        <p className={styles.roastLineText} style={{ filter: 'blur(4px)', userSelect: 'none', flex: 1 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', filter: 'blur(5px)', userSelect: 'none', flex: 1, margin: 0, lineHeight: 1.6 }}>
           {obs.detail}
         </p>
-        <div className={styles.roastLineLock}>
-          <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <div style={{ color: 'var(--text-tertiary)', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
         </div>
@@ -123,14 +140,21 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
   }
 
   return (
-    <div style={{ padding: '14px 16px', borderRadius: 'var(--radius-md)', background: bg, border: `1px solid ${border}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,38,0.12)' }}>
+    <div style={{
+      padding: '16px 18px', borderRadius: 'var(--radius-md)',
+      background: bg, border: `1px solid ${border}`,
+      display: 'flex', flexDirection: 'column', gap: 8,
+    }}>
+      <div className={styles.obsCardHeader}>
+        <span className={styles.obsTypeBadge} style={{
+          color,
+          background: isStrength ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+        }}>
           {isStrength ? '✓ Strength' : '✗ Weakness'}
         </span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{obs.title}</span>
+        <span className={styles.obsTitle}>{obs.title}</span>
       </div>
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{obs.detail}</p>
+      <p className={styles.obsDetail}>{obs.detail}</p>
     </div>
   )
 }
@@ -143,24 +167,24 @@ function TipCard({ tip, index, locked, onUnlock }: {
   if (locked) {
     return (
       <div className={`${styles.tipCard} ${styles.tipCardLocked}`} onClick={onUnlock}>
-        <div className={styles.tipHeader}>
+        <div className={styles.tipHeader} style={{ cursor: 'pointer' }}>
           <div className={styles.tipHeaderLeft}>
             <span className={styles.tipImpact} style={{
               color: IMPACT_COLORS[tip.impact],
               background: `${IMPACT_COLORS[tip.impact]}14`,
-              borderColor: `${IMPACT_COLORS[tip.impact]}30`,
+              borderColor: `${IMPACT_COLORS[tip.impact]}28`,
             }}>{tip.impact}</span>
             <span className={styles.tipArea} style={{ filter: 'blur(4px)', userSelect: 'none' }}>{tip.area}</span>
           </div>
           <div className={styles.lockBadge}>
-            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
             Unlock
           </div>
         </div>
         <div className={styles.tipBody} style={{ paddingTop: 0 }}>
-          <p style={{ filter: 'blur(5px)', userSelect: 'none', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <p style={{ filter: 'blur(5px)', userSelect: 'none', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
             {tip.problem}
           </p>
         </div>
@@ -175,7 +199,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
           <span className={styles.tipImpact} style={{
             color: IMPACT_COLORS[tip.impact],
             background: `${IMPACT_COLORS[tip.impact]}14`,
-            borderColor: `${IMPACT_COLORS[tip.impact]}30`,
+            borderColor: `${IMPACT_COLORS[tip.impact]}28`,
           }}>{tip.impact}</span>
           <span className={styles.tipArea}>{tip.area}</span>
         </div>
@@ -200,8 +224,8 @@ function TipCard({ tip, index, locked, onUnlock }: {
 // ── AccountDropdown ──────────────────────────────────────────────────────────
 
 const TIER_META: Record<string, { label: string; color: string }> = {
-  free:    { label: 'Free',    color: '#6b7280' },
-  pro:     { label: 'Pro',     color: 'var(--accent)' },
+  free:    { label: 'Free',    color: 'var(--text-tertiary)' },
+  pro:     { label: 'Pro',     color: 'var(--accent-text)' },
   premium: { label: 'Premium', color: 'var(--score-high)' },
 }
 
@@ -210,6 +234,8 @@ const ddItem: React.CSSProperties = {
   padding: '9px 16px', background: 'transparent', border: 'none',
   color: 'var(--text-secondary)', fontSize: 13,
   cursor: 'pointer', textAlign: 'left' as const,
+  fontFamily: 'var(--font-sans)',
+  transition: 'background 0.1s, color 0.1s',
 }
 
 function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: {
@@ -237,7 +263,6 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
     <div ref={ref} style={{ position: 'relative' }}>
       <style>{`
         @keyframes dropIn { from { opacity:0;transform:translateY(-6px) } to { opacity:1;transform:translateY(0) } }
-        @keyframes spin { to { transform:rotate(360deg) } }
         .dd-row:hover { background: var(--bg-subtle) !important; color: var(--text-primary) !important; }
         .dd-danger:hover { background: rgba(239,68,68,0.07) !important; color: #ef4444 !important; }
       `}</style>
@@ -248,10 +273,11 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
         background: open ? 'var(--bg-subtle)' : 'var(--bg-elevated)',
         border: '1px solid var(--border)', borderRadius: 40,
         cursor: 'pointer', transition: 'all 0.15s',
+        fontFamily: 'var(--font-sans)',
       }}>
         <span style={{
           width: 26, height: 26, borderRadius: '50%',
-          background: 'var(--accent-subtle)', color: 'var(--accent)',
+          background: 'var(--accent-subtle)', color: 'var(--accent-text)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 700, flexShrink: 0,
         }}>{initials}</span>
@@ -260,7 +286,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
           whiteSpace: 'nowrap', fontSize: 13, fontWeight: 500,
           color: 'var(--text-secondary)',
         }}>{user.email?.split('@')[0]}</span>
-        <svg width="11" height="11" fill="none" stroke="var(--text-secondary)" strokeWidth="2.5" viewBox="0 0 24 24"
+        <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24"
           style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
           <polyline points="6 9 12 15 18 9"/>
         </svg>
@@ -268,17 +294,17 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
       {open && (
         <div style={{
-          position: 'absolute', top: 'calc(100% + 6px)', right: 0, width: 220,
+          position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 220,
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)', overflow: 'hidden',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.28)', zIndex: 1000,
-          animation: 'dropIn 0.15s ease',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08)',
+          zIndex: 1000, animation: 'dropIn 0.15s ease',
         }}>
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user.email}
             </div>
-            <div style={{ fontSize: 11, color: meta.color, fontWeight: 600, marginTop: 2 }}>{meta.label} plan</div>
+            <div style={{ fontSize: 11, color: meta.color, fontWeight: 600, marginTop: 3 }}>{meta.label} plan</div>
           </div>
 
           <div style={{ padding: '4px 0' }}>
@@ -305,7 +331,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
           <div style={{ borderTop: '1px solid var(--border)', padding: '4px 0' }}>
             <button className="dd-danger" onClick={() => { onSignOut(); setOpen(false) }}
-              style={{ ...ddItem, color: '#ef4444' }}>
+              style={{ ...ddItem, color: '#ef4444', fontFamily: 'var(--font-sans)' }}>
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -323,16 +349,16 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
 const PLAN_DEFS = {
   free: {
-    label: 'Free', color: '#6b7280', price: '€0', period: '',
-    features: ['Overall score /100', 'Vibe check', '2 roast lines', '1 tip'],
+    label: 'Free', color: 'var(--text-tertiary)', price: '€0', period: '',
+    features: ['Overall score /100', 'Rating & summary', '2 observations', '1 improvement tip'],
   },
   pro: {
-    label: 'Pro', color: 'var(--accent)', price: '€2', period: 'one-time',
-    features: ['Overall score + 8 dimensions', '5 detailed roast lines', '5 tips with fixes', 'Single scan'],
+    label: 'Pro', color: 'var(--accent-text)', price: '€2', period: 'one-time',
+    features: ['Overall score + 8 detailed dimensions', '4 observations with context', '3 improvement tips with rewrites', 'One-time purchase, no subscription'],
   },
   premium: {
     label: 'Premium', color: 'var(--score-high)', price: '€7.99', period: '/month',
-    features: ['Everything in Pro', 'Unlimited analyses', 'Priority support', 'Early access to new features'],
+    features: ['Everything in Pro', 'Unlimited analyses', 'Track improvements over time', 'Priority support'],
   },
 }
 
@@ -344,7 +370,6 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   const isFree = tier === 'free'
   const isPremium = tier === 'premium'
 
-  // Login gate state
   const [showLoginGate, setShowLoginGate] = useState(false)
   const [pendingPlan, setPendingPlan] = useState<'pro'|'premium'|null>(null)
   const [email, setEmail] = useState('')
@@ -393,29 +418,43 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   )
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: 24 }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: showLoginGate ? 420 : (isFree ? 680 : 440), background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', boxShadow: '0 40px 100px rgba(0,0,0,0.45)', overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+      backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', zIndex: 2000, padding: 24
+    }} onClick={onClose}>
+      <div style={{
+        width: '100%', maxWidth: showLoginGate ? 420 : (isFree ? 700 : 440),
+        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-xl)', boxShadow: '0 40px 100px rgba(0,0,0,0.35)',
+        overflow: 'hidden', maxHeight: '92vh', overflowY: 'auto'
+      }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '22px 24px', borderBottom: '1px solid var(--border)' }}>
           <div>
             {!showLoginGate ? (
               <>
-                <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Plans</h2>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0' }}>
-                  Active plan: <span style={{ fontWeight: 700, color: currentPlan.color }}>{currentPlan.label}</span>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Plans</h2>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+                  Active: <span style={{ fontWeight: 700, color: currentPlan.color }}>{currentPlan.label}</span>
                 </p>
               </>
             ) : (
               <>
-                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: 'var(--accent)', margin: '0 0 4px' }}>
-                  {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €7.99/lună'}
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: 'var(--accent-text)', margin: '0 0 4px' }}>
+                  {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €7.99/month'}
                 </p>
-                <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Sign in first</h2>
+                <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Sign in to continue</h2>
               </>
             )}
           </div>
-          <button onClick={showLoginGate ? () => setShowLoginGate(false) : onClose} style={{ background: 'none', border: '1px solid var(--border)', width: 30, height: 30, borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={showLoginGate ? () => setShowLoginGate(false) : onClose} style={{
+            background: 'none', border: '1px solid var(--border)', width: 32, height: 32,
+            borderRadius: 'var(--radius-md)', cursor: 'pointer', color: 'var(--text-tertiary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s', fontFamily: 'var(--font-sans)',
+          }}>
             {showLoginGate ? (
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
             ) : (
@@ -430,11 +469,11 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
           {showLoginGate && (
             <>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                You need an account to purchase and access your analysis anytime.
+                Create a free account to purchase and access your full analysis anytime.
               </p>
 
               <button onClick={handleGoogle} disabled={googleLoading || authLoading}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '11px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--font-sans)' }}>
                 <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
                   <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.251 17.64 11.945 17.64 9.2z" fill="#4285F4"/>
                   <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
@@ -446,7 +485,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
-                <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>sau</span>
+                <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>or</span>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
               </div>
 
@@ -458,10 +497,10 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                     border: authMode === m ? '1px solid var(--border)' : 'none',
                     borderRadius: 'calc(var(--radius-md) - 2px)',
                     color: authMode === m ? 'var(--text-primary)' : 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    boxShadow: authMode === m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                    cursor: 'pointer', boxShadow: authMode === m ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                    fontFamily: 'var(--font-sans)',
                   }}>
-                    {m === 'login' ? 'I have an account' : 'New account'}
+                    {m === 'login' ? 'Sign in' : 'Create account'}
                   </button>
                 ))}
               </div>
@@ -469,21 +508,23 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
               <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { label: 'Email', type: 'email', placeholder: 'you@example.com', value: email, onChange: setEmail, ac: 'email' },
-                  { label: 'Parolă', type: 'password', placeholder: authMode === 'register' ? 'Min. 8 characters' : 'Your password', value: password, onChange: setPassword, ac: authMode === 'register' ? 'new-password' : 'current-password' },
+                  { label: 'Password', type: 'password', placeholder: authMode === 'register' ? 'Min. 8 characters' : 'Your password', value: password, onChange: setPassword, ac: authMode === 'register' ? 'new-password' : 'current-password' },
                 ].map(f => (
                   <div key={f.label} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>{f.label}</label>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{f.label}</label>
                     <input type={f.type} placeholder={f.placeholder} value={f.value}
                       onChange={e => f.onChange(e.target.value)} autoComplete={f.ac} required
-                      style={{ padding: '10px 13px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: 14, outline: 'none' }}
-                      onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-                      onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                      style={{ padding: '11px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', fontFamily: 'var(--font-sans)' }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent)' }}
+                      onBlur={e => { e.target.style.borderColor = 'var(--border)'; e.target.style.boxShadow = 'none' }}
                     />
                   </div>
                 ))}
-                {authError && <p style={{ fontSize: 13, color: '#ef4444', margin: 0, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-sm)' }}>{authError}</p>}
+                {authError && (
+                  <p style={{ fontSize: 13, color: '#ef4444', margin: 0, padding: '10px 12px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: 'var(--radius-sm)' }}>{authError}</p>
+                )}
                 <button type="submit" disabled={authLoading || googleLoading}
-                  style={{ padding: '11px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: authLoading ? 'not-allowed' : 'pointer', opacity: authLoading ? 0.6 : 1, marginTop: 2 }}>
+                  style={{ padding: '12px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: authLoading ? 'not-allowed' : 'pointer', opacity: authLoading ? 0.6 : 1, marginTop: 2, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
                   {authLoading ? 'Processing…' : authMode === 'login' ? 'Sign in & continue' : 'Create account & continue'}
                 </button>
               </form>
@@ -493,34 +534,53 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
           {/* ── PLANS GRID ── */}
           {!showLoginGate && (
             <>
-              {/* Free user: all 3 plans side by side */}
               {isFree && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
                   {(['free', 'pro', 'premium'] as const).map(pk => {
                     const p = PLAN_DEFS[pk]
                     const isCurrentPlan = pk === 'free'
                     return (
-                      <div key={pk} style={{ padding: 18, borderRadius: 'var(--radius-lg)', border: `1.5px solid ${pk === 'pro' ? 'var(--accent)' : 'var(--border)'}`, background: pk === 'pro' ? 'color-mix(in srgb, var(--accent) 4%, var(--bg-elevated))' : 'var(--bg)', display: 'flex', flexDirection: 'column', gap: 12, position: 'relative' }}>
-                        {pk === 'pro' && <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent)', color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' as const }}>Best value</div>}
+                      <div key={pk} style={{
+                        padding: 20, borderRadius: 'var(--radius-lg)',
+                        border: `${pk === 'pro' ? '1.5px' : '1px'} solid ${pk === 'pro' ? 'var(--accent)' : 'var(--border)'}`,
+                        background: pk === 'pro' ? 'color-mix(in srgb, var(--accent) 4%, var(--bg-elevated))' : 'var(--bg-elevated)',
+                        display: 'flex', flexDirection: 'column', gap: 14, position: 'relative',
+                      }}>
+                        {pk === 'pro' && (
+                          <div style={{
+                            position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
+                            background: 'var(--accent)', color: '#fff', fontSize: 9, fontWeight: 800,
+                            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                            padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' as const,
+                          }}>Best value</div>
+                        )}
                         <div>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: p.color }}>{p.label}</span>
-                          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginTop: 4 }}>
-                            {p.price}{p.period && <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)' }}> {p.period}</span>}
+                          <span style={{ fontSize: 11, fontWeight: 800, color: p.color, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{p.label}</span>
+                          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', marginTop: 6 }}>
+                            {p.price}
+                            {p.period && <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)', letterSpacing: 0 }}> {p.period}</span>}
                           </div>
                         </div>
-                        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
                           {p.features.map(f => (
-                            <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                            <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                               <Chk />{f}
                             </li>
                           ))}
                         </ul>
                         {isCurrentPlan ? (
-                          <div style={{ padding: '8px', textAlign: 'center' as const, fontSize: 12, color: 'var(--text-tertiary)' }}>Your current plan</div>
+                          <div style={{ padding: '9px', textAlign: 'center' as const, fontSize: 12, color: 'var(--text-tertiary)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>Current plan</div>
                         ) : (
                           <button onClick={() => handleBuy(pk as 'pro'|'premium')}
-                            style={{ padding: '10px', border: 'none', borderRadius: 'var(--radius-md)', background: pk === 'premium' ? 'var(--text-primary)' : 'var(--accent)', color: pk === 'premium' ? 'var(--bg)' : '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                            {buying === pk ? '…' : `Buy ${p.label}`}
+                            style={{
+                              padding: '11px', border: 'none', borderRadius: 'var(--radius-md)',
+                              background: pk === 'premium' ? 'var(--text-primary)' : 'var(--accent)',
+                              color: pk === 'premium' ? 'var(--bg)' : '#fff',
+                              fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                              fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em',
+                              transition: 'opacity 0.15s',
+                            }}>
+                            {buying === pk ? '…' : `Get ${p.label}`}
                           </button>
                         )}
                       </div>
@@ -529,46 +589,42 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                 </div>
               )}
 
-              {/* Pro user: just show premium upgrade + cancel option */}
               {tier === 'pro' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ padding: 20, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--accent)', background: 'var(--bg)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--accent)', background: 'color-mix(in srgb, var(--accent) 3%, var(--bg-elevated))', display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--score-high)' }}>Premium</span>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginTop: 4 }}>€7.99 <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)' }}>/lună</span></div>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--score-high)', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Premium</span>
+                      <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', marginTop: 6 }}>€7.99 <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-tertiary)' }}>/month</span></div>
                     </div>
-                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Chk />{f}</li>)}
                     </ul>
-                    <button onClick={() => handleBuy('premium')} style={{ padding: '11px', border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--text-primary)', color: 'var(--bg)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                    <button onClick={() => handleBuy('premium')} style={{ padding: '12px', border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--text-primary)', color: 'var(--bg)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                       Upgrade to Premium
                     </button>
                   </div>
-                  <button style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'transparent', color: '#ef4444', fontSize: 13, cursor: 'pointer' }}>
-                    Cancel Pro plan
-                  </button>
                 </div>
               )}
 
-              {/* Premium user */}
               {isPremium && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ padding: 20, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--score-high)', background: 'rgba(34,197,94,0.04)' }}>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.6 }}>
-                      🎉 You have access to all CVCheck features. Thanks for being Premium!
+                  <div style={{ padding: 22, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--score-high)', background: 'rgba(22,163,74,0.04)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.65 }}>
+                      You have access to all CVCheck features. Thanks for being Premium!
                     </p>
-                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Chk />{f}</li>)}
                     </ul>
                   </div>
-                  <button style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'transparent', color: '#ef4444', fontSize: 13, cursor: 'pointer' }}>
+                  <button style={{ padding: '10px', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'transparent', color: '#ef4444', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
                     Cancel subscription
                   </button>
                 </div>
               )}
 
-              <p style={{ textAlign: 'center' as const, fontSize: 11, color: 'var(--text-tertiary)', margin: 0 }}>
-                🔒 Stripe · Instant access · Cancel anytime (Premium)
+              <p style={{ textAlign: 'center' as const, fontSize: 12, color: 'var(--text-tertiary)', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                Stripe · Instant access · Cancel anytime
               </p>
             </>
           )}
@@ -579,6 +635,13 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+
+const LOADING_STEPS = [
+  'Reading your content…',
+  'Evaluating structure & clarity…',
+  'Scoring 8 dimensions…',
+  'Generating recommendations…',
+]
 
 export default function Home() {
   const { user, session, loading: authLoading, signOut } = useAuth()
@@ -597,10 +660,19 @@ export default function Home() {
   const [result, setResult] = useState<GatedAnalysisResult | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
-  // Track how many analyses done this session (for free limit)
   const [analysisCount, setAnalysisCount] = useState(0)
+  const [loadingStep, setLoadingStep] = useState(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Animate loading steps
+  useEffect(() => {
+    if (appState !== 'loading') { setLoadingStep(0); return }
+    const timers = LOADING_STEPS.map((_, i) =>
+      setTimeout(() => setLoadingStep(i), i * 3500)
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [appState])
 
   const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault(); setIsDragging(false)
@@ -612,7 +684,6 @@ export default function Home() {
     if (mode === 'url' && !url.trim()) return
     if (mode === 'pdf' && !file) return
 
-    // Free limit: after 1 analysis, show upgrade popup
     if (tier === 'free' && analysisCount >= 1) {
       setShowUpgradeModal(true)
       return
@@ -680,6 +751,11 @@ export default function Home() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.logo}>
+            <div className={styles.logoMark}>
+              <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+            </div>
             <span className={styles.logoText}>CVCheck</span>
           </div>
           <div className={styles.headerRight}>
@@ -737,9 +813,31 @@ export default function Home() {
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
             <div className={styles.heroContent}>
-              <p className={styles.heroEyebrow}>Honest feedback. Instant.</p>
-              <h1 className={styles.heroTitle}>AI feedback on your<br /><span className={styles.heroTitleAccent}>CV & portfolio.</span></h1>
-              <p className={styles.heroSubtitle}>Upload your CV or paste a link. Get a detailed score, honest critique, and actionable tips in seconds.</p>
+              <div className={styles.heroEyebrow}>
+                <span className={styles.heroEyebrowDot}/>
+                AI-powered CV feedback
+              </div>
+              <h1 className={styles.heroTitle}>
+                Your CV gets one chance.<br />
+                Make it <span className={styles.heroTitleItalic}>count.</span>
+              </h1>
+              <p className={styles.heroSubtitle}>
+                Upload your CV or paste a portfolio link. Get an honest score, clear observations, and specific improvements — in under 30 seconds.
+              </p>
+              <div className={styles.heroTrust}>
+                <span className={styles.heroTrustItem}>
+                  <svg className={styles.heroTrustIcon} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  No account needed
+                </span>
+                <span className={styles.heroTrustItem}>
+                  <svg className={styles.heroTrustIcon} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  CV &amp; portfolio links
+                </span>
+                <span className={styles.heroTrustItem}>
+                  <svg className={styles.heroTrustIcon} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  Results in seconds
+                </span>
+              </div>
             </div>
 
             <div className={styles.inputCard}>
@@ -747,8 +845,8 @@ export default function Home() {
                 {(['url', 'pdf'] as const).map(m => (
                   <button key={m} className={`${styles.modeTab} ${mode === m ? styles.modeTabActive : ''}`} onClick={() => setMode(m)}>
                     {m === 'url'
-                      ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link</>
-                      : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF</>
+                      ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>
+                      : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>
                     }
                   </button>
                 ))}
@@ -760,7 +858,8 @@ export default function Home() {
                     <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                     <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
                   </svg>
-                  <input type="url" className={styles.urlField} placeholder="yourportfolio.com"
+                  <input type="url" className={styles.urlField}
+                    placeholder="yourportfolio.com or linkedin.com/in/yourname"
                     value={url} onChange={e => setUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submit()}
                     autoComplete="off" spellCheck={false}/>
@@ -785,7 +884,7 @@ export default function Home() {
                       </div>
                       <div className={styles.fileMeta}>
                         <span className={styles.fileName}>{file.name}</span>
-                        <span className={styles.fileSize}>{(file.size / 1024).toFixed(0)} KB</span>
+                        <span className={styles.fileSize}>{(file.size / 1024).toFixed(0)} KB · PDF ready</span>
                       </div>
                       <button className={styles.fileRemove} onClick={e => { e.stopPropagation(); setFile(null) }}>
                         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -795,12 +894,14 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className={styles.dropzonePrompt}>
-                      <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.2" viewBox="0 0 24 24" style={{ opacity: 0.35 }}>
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                      </svg>
-                      <span className={styles.dropzoneText}>Drop your CV or portfolio here</span>
-                      <span className={styles.dropzoneHint}>or click to browse · PDF · max 10MB</span>
+                      <div className={styles.dropzoneIcon}>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                      </div>
+                      <span className={styles.dropzoneText}>Drop your CV here</span>
+                      <span className={styles.dropzoneHint}>or click to browse · PDF · max 10 MB</span>
                     </div>
                   )}
                 </div>
@@ -808,7 +909,7 @@ export default function Home() {
 
               {appState === 'error' && (
                 <div className={styles.errorBanner}>
-                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
                   {error}
@@ -817,19 +918,77 @@ export default function Home() {
 
               <button className={styles.submitBtn} onClick={submit}
                 disabled={mode === 'url' ? !url.trim() : !file}>
-                Analyze
-                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                Analyze now
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                   <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
                 </svg>
               </button>
 
               <p className={styles.freeNote}>
-                {tier === 'free' && analysisCount >= 1
-                  ? 'Free analysis used · Upgrade for unlimited'
-                  : tier === 'premium'
-                  ? 'Unlimited analyses · Premium active'
-                  : '1 free scan · No account needed'
-                }
+                {tier === 'free' && analysisCount >= 1 ? (
+                  <>Free analysis used — <button onClick={() => setShowUpgradeModal(true)} style={{ color: 'var(--accent-text)', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', fontSize: 'inherit', fontFamily: 'inherit', padding: 0 }}>upgrade for unlimited</button></>
+                ) : tier === 'premium' ? (
+                  <>✓ Unlimited analyses · Premium</>
+                ) : (
+                  <>1 free scan · No account needed</>
+                )}
+              </p>
+            </div>
+
+            {/* Pricing section on homepage */}
+            <div className={styles.pricingSection}>
+              <div className={styles.pricingSectionHeader}>
+                <p className={styles.pricingSectionEyebrow}>Pricing</p>
+                <h2 className={styles.pricingSectionTitle}>Simple, honest pricing</h2>
+                <p className={styles.pricingSectionSub}>Start free. Upgrade once you see your results and want the full picture.</p>
+              </div>
+              <div className={styles.pricingCards}>
+                {(['free', 'pro', 'premium'] as const).map(pk => {
+                  const p = PLAN_DEFS[pk]
+                  const isFeatured = pk === 'pro'
+                  const isCurrentTier = tier === pk
+                  return (
+                    <div key={pk} className={`${styles.pricingCard} ${isFeatured ? styles.pricingCardFeatured : ''}`}>
+                      {isFeatured && <div className={styles.pricingFeaturedBadge}>Most popular</div>}
+                      <div className={styles.pricingCardTop}>
+                        <p className={styles.pricingCardName}>{p.label}</p>
+                        <div className={styles.pricingCardPriceWrap}>
+                          <span className={styles.pricingCardPrice}>{p.price}</span>
+                          {p.period && <span className={styles.pricingCardPeriod}>{p.period}</span>}
+                        </div>
+                      </div>
+                      <ul className={styles.pricingFeatureList}>
+                        {p.features.map(f => (
+                          <li key={f} className={styles.pricingFeatureItem}>
+                            <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {isCurrentTier ? (
+                        <div className={styles.pricingCtaGhost}>Current plan</div>
+                      ) : pk === 'free' ? (
+                        <button className={styles.pricingCtaGhost} style={{ cursor: 'pointer' }} onClick={() => { setMode('url'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+                          Start free
+                        </button>
+                      ) : pk === 'pro' ? (
+                        <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>
+                          Get Pro — €2
+                        </button>
+                      ) : (
+                        <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>
+                          Get Premium
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <p className={styles.pricingGuarantee}>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                Secure checkout via Stripe · No subscription on Pro
               </p>
             </div>
           </div>
@@ -838,11 +997,23 @@ export default function Home() {
         {/* ── LOADING ── */}
         {appState === 'loading' && (
           <div className={styles.loadingState}>
-            <div className={styles.loadingPulse}>
-              {[0, 150, 300].map(d => <div key={d} className={styles.loadingDot} style={{ animationDelay: `${d}ms` }}/>)}
-            </div>
+            <div className={styles.loadingSpinner}/>
             <p className={styles.loadingText}>Analyzing your CV…</p>
-            <p className={styles.loadingSubtext}>This takes about 15–20 seconds</p>
+            <div className={styles.loadingSteps}>
+              {LOADING_STEPS.map((step, i) => (
+                <div key={step} className={styles.loadingStep} style={{
+                  opacity: i <= loadingStep ? 1 : 0.3,
+                  animationDelay: `${i * 0.1}s`,
+                  color: i === loadingStep ? 'var(--text-secondary)' : 'var(--text-tertiary)',
+                }}>
+                  <div className={styles.loadingStepDot} style={{
+                    opacity: i === loadingStep ? 1 : 0.3,
+                    animationPlayState: i === loadingStep ? 'running' : 'paused',
+                  }}/>
+                  {step}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -857,24 +1028,26 @@ export default function Home() {
               <button className={styles.shareBtn} onClick={copyShare}>
                 {copied
                   ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied</>
-                  : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</>
+                  : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share score</>
                 }
               </button>
             </div>
 
+            {/* Score hero */}
             <div className={styles.scoreHero}>
               <ScoreRing score={result.total_score}/>
               <div className={styles.scoreHeroMeta}>
                 <span className={styles.vibeCheck} style={{
                   color: RATING_COLORS[result.rating],
-                  borderColor: `${RATING_COLORS[result.rating]}30`,
-                  background: `${RATING_COLORS[result.rating]}12`,
+                  borderColor: `${RATING_COLORS[result.rating]}28`,
+                  background: `${RATING_COLORS[result.rating]}10`,
                 }}>{RATING_LABELS[result.rating]}</span>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{result.summary}</p>
                 {result.source && <p className={styles.sourceLabel}>{result.source}</p>}
               </div>
             </div>
 
+            {/* Score Breakdown */}
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
                 <h2 className={styles.sectionTitle}>Score Breakdown</h2>
@@ -898,6 +1071,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Observations */}
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
                 <h2 className={styles.sectionTitle}>Observations</h2>
@@ -919,6 +1093,7 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Improvements */}
             <div className={styles.section}>
               <div className={styles.sectionTitleRow}>
                 <h2 className={styles.sectionTitle}>How to improve</h2>
@@ -940,9 +1115,10 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Top priority */}
             <div className={styles.priorityCard}>
               <div className={styles.priorityCardHeader}>
-                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                 </svg>
                 Do this first
@@ -950,17 +1126,18 @@ export default function Home() {
               <p className={styles.priorityText}>{result.top_priority}</p>
             </div>
 
+            {/* Upgrade banner for free users */}
             {!isPro && (
               <div className={styles.upgradeBanner}>
                 <div className={styles.upgradeBannerContent}>
                   <p className={styles.upgradeBannerTitle}>See the full picture</p>
                   <p className={styles.upgradeBannerSub}>
-                    Unlock 8 detailed scores, {result.observations.length} observations, and {result.improvements.length} actionable improvements with rewrites.
+                    Unlock 8 detailed dimension scores, all {result.observations.length} observations, and {result.improvements.length} improvement tips with specific rewrites.
                   </p>
                 </div>
                 <div className={styles.upgradeBannerActions}>
                   <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>
-                    Pro Analysis — €2
+                    Unlock — €2 one-time
                   </button>
                   <button className={styles.upgradeBannerPremium} onClick={() => setShowUpgradeModal(true)}>
                     Premium — €7.99/mo
@@ -973,7 +1150,12 @@ export default function Home() {
       </main>
 
       <footer className={styles.footer}>
-        <span>© 2026 CVCheck. All rights reserved.</span>
+        <span>© 2026 CVCheck</span>
+        <div className={styles.footerLinks}>
+          <span className={styles.footerLink}>Privacy</span>
+          <span className={styles.footerLink}>Terms</span>
+          <span className={styles.footerLink} onClick={() => setShowUpgradeModal(true)}>Pricing</span>
+        </div>
       </footer>
     </div>
   )
