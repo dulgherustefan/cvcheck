@@ -165,6 +165,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
 
 function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => void }) {
   const isPro = entry.tier === 'pro' || entry.tier === 'premium'
+  const vColor = RATING_COLORS[entry.rating]
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
