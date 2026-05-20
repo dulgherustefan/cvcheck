@@ -46,7 +46,7 @@ export const PLANS = {
   },
   premium: {
     name: 'Premium',
-    price: '€9.99',
+    price: '€7.99',
     period: 'month',
     description: 'Unlimited analyses',
     features: [
@@ -55,7 +55,7 @@ export const PLANS = {
       'Saved history',
       'Compare versions over time',
     ],
-    cta: 'Start Premium — €9.99/mo',
+    cta: 'Start Premium — €7.99/mo',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
   },
 } as const

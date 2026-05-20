@@ -331,7 +331,7 @@ const PLAN_DEFS = {
     features: ['Overall score + 8 dimensions', '5 detailed roast lines', '5 tips with fixes', 'Single scan'],
   },
   premium: {
-    label: 'Premium', color: 'var(--score-high)', price: '€9.99', period: '/month',
+    label: 'Premium', color: 'var(--score-high)', price: '€7.99', period: '/month',
     features: ['Everything in Pro', 'Unlimited analyses', 'Priority support', 'Early access to new features'],
   },
 }
@@ -409,7 +409,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
             ) : (
               <>
                 <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' as const, color: 'var(--accent)', margin: '0 0 4px' }}>
-                  {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €9.99/lună'}
+                  {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €7.99/lună'}
                 </p>
                 <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Sign in first</h2>
               </>
@@ -535,7 +535,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                   <div style={{ padding: 20, borderRadius: 'var(--radius-lg)', border: '1.5px solid var(--accent)', background: 'var(--bg)', display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--score-high)' }}>Premium</span>
-                      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginTop: 4 }}>€9.99 <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)' }}>/lună</span></div>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginTop: 4 }}>€7.99 <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-tertiary)' }}>/lună</span></div>
                     </div>
                     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
                       {PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}><Chk />{f}</li>)}
@@ -963,7 +963,7 @@ export default function Home() {
                     Pro Analysis — €2
                   </button>
                   <button className={styles.upgradeBannerPremium} onClick={() => setShowUpgradeModal(true)}>
-                    Premium — €9.99/mo
+                    Premium — €7.99/mo
                   </button>
                 </div>
               </div>
