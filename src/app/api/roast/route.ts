@@ -19,7 +19,10 @@ async function getTierForUser(userId: string | null): Promise<Tier> {
     .single()
 
   if (error || !data) return 'free'
-  if (data.plan === 'premium' || data.plan === 'pro') return data.plan
+
+  // Premium = abonament activ → acces nelimitat la analize noi
+  // Pro = one-time per roast → analizele noi sunt tot free
+  if (data.plan === 'premium') return 'premium'
   return 'free'
 }
 
@@ -44,7 +47,6 @@ function getIdentifier(req: NextRequest, userId: string | null): string {
 }
 
 async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed: boolean; count: number }> {
-  // Upsert: dacă nu există îl creează, dacă există incrementează
   const { data: existing } = await supabaseAdmin
     .from('free_scans')
     .select('scan_count')
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
     const userId = await getUserIdFromRequest(req)
     const tier = await getTierForUser(userId)
 
-    // Verifică limita pentru free tier
+    // Verifică limita pentru free tier (inclusiv useri cu plan pro — pro e per-roast)
     if (tier === 'free') {
       const identifier = getIdentifier(req, userId)
       const { allowed } = await checkAndIncrementFreeLimit(identifier)
