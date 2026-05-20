@@ -5,7 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
-  title: 'CVCheck — AI feedback for your CV',
+  title: 'CVCheck',
   description: 'Upload your CV, portfolio or landing page and get a score /100 with actionable improvements.',
   icons: {
     icon: [
