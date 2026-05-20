@@ -681,7 +681,6 @@ export default function Home() {
         <div className={styles.headerInner}>
           <div className={styles.logo}>
             <span className={styles.logoText}>CVCheck</span>
-            <span className={styles.logoBadge}>beta</span>
           </div>
           <div className={styles.headerRight}>
             {!authLoading && (user ? (
