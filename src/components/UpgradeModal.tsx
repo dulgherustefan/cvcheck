@@ -14,15 +14,15 @@ interface Props {
 type Step = 'plans' | 'login'
 
 export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
-  const [loading, setLoading] = useState<'pro' | 'premium' | null>(null)
-  const [step, setStep] = useState<Step>('plans')
+  const [loading, setLoading]       = useState<'pro' | 'premium' | null>(null)
+  const [step, setStep]             = useState<Step>('plans')
   const [pendingPlan, setPendingPlan] = useState<'pro' | 'premium' | null>(null)
 
   // Login state
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
-  const [authError, setAuthError] = useState('')
+  const [email, setEmail]         = useState('')
+  const [password, setPassword]   = useState('')
+  const [authMode, setAuthMode]   = useState<'login' | 'register'>('login')
+  const [authError, setAuthError]   = useState('')
   const [authLoading, setAuthLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -66,7 +66,10 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) { setAuthError(error.message); setAuthLoading(false); return }
     } else {
-      if (password.length < 8) { setAuthError('Password must be at least 8 characters.'); setAuthLoading(false); return }
+      if (password.length < 8) {
+        setAuthError('Password must be at least 8 characters.')
+        setAuthLoading(false); return
+      }
       const { error } = await supabase.auth.signUp({
         email, password,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
@@ -74,177 +77,391 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
       if (error) { setAuthError(error.message); setAuthLoading(false); return }
     }
     setAuthLoading(false)
-    // After auth, page will re-render with userId; user can click buy again
-    setStep('plans')
+    // After auth, re-attempt checkout
+    if (pendingPlan) checkout(pendingPlan)
+    else setStep('plans')
   }
 
   return (
-    <div style={s.overlay} onClick={onClose}>
-      <div style={s.modal} onClick={e => e.stopPropagation()}>
+    <>
+      <style>{`
+        @keyframes modalIn {
+          from { opacity:0; transform:translateY(16px) scale(0.98); }
+          to   { opacity:1; transform:translateY(0)    scale(1); }
+        }
+        @keyframes overlayIn {
+          from { opacity:0; }
+          to   { opacity:1; }
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .um-plan:hover { border-color: var(--border-strong) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; transform: translateY(-1px); }
+        .um-cta-pro:hover:not(:disabled) { background: var(--accent-hover) !important; box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 38%, transparent) !important; transform:translateY(-1px); }
+        .um-cta-dark:hover:not(:disabled) { opacity:0.82 !important; }
+        .um-google:hover:not(:disabled)   { border-color: var(--border-strong) !important; background: var(--bg-subtle) !important; }
+        .um-tab-active { background: var(--bg-elevated) !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important; border: 1px solid var(--border) !important; }
+        .um-field:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
+        .um-submit:hover:not(:disabled)   { background: var(--accent-hover) !important; }
+        .um-close:hover { background: var(--bg-muted) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; }
+        .um-back:hover  { color: var(--accent-text) !important; }
+      `}</style>
 
-        <button style={s.closeBtn} onClick={onClose} aria-label="Close">
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+      {/* Overlay */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 200, padding: '20px 16px',
+          animation: 'overlayIn 0.2s ease',
+        }}
+      >
+        {/* Modal */}
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            position: 'relative',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-xl)',
+            width: '100%',
+            maxWidth: step === 'login' ? 440 : 580,
+            maxHeight: '92vh',
+            overflowY: 'auto',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.2)',
+            animation: 'modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'max-width 0.3s ease',
+          }}
+        >
+          {/* Close button */}
+          <button
+            className="um-close"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              position: 'absolute', top: 14, right: 14,
+              width: 30, height: 30,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--bg)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-tertiary)', cursor: 'pointer',
+              transition: 'all 0.15s', zIndex: 1,
+              fontFamily: 'var(--font-sans)',
+            }}
+          >
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
 
-        {/* ── PLANS STEP ── */}
-        {step === 'plans' && (
-          <>
-            <div style={s.header}>
-              <p style={s.eyebrow}>Unlock full access</p>
-              <h2 style={s.title}>See the complete roast</h2>
-              <p style={s.subtitle}>
-                Your free preview shows the overall score and 2 issues.
-                Unlock every dimension, observation, and fix below.
-              </p>
-            </div>
+          {/* ── PLANS STEP ── */}
+          {step === 'plans' && (
+            <div style={{ padding: '36px 32px 32px' }}>
 
-            <div style={s.plans}>
-              {/* Pro */}
-              <div style={s.planCard}>
-                <div style={s.planHeader}>
-                  <div>
-                    <p style={s.planName}>{PLANS.pro.name}</p>
-                    <p style={s.planTagline}>One scan, full detail</p>
-                  </div>
-                  <div style={s.priceBlock}>
-                    <span style={s.price}>{PLANS.pro.price}</span>
-                    <span style={s.period}>one-time</span>
-                  </div>
-                </div>
-                <ul style={s.features}>
-                  {PLANS.pro.features.map(f => <FeatureItem key={f} text={f} />)}
-                </ul>
-                <button
-                  style={{ ...s.cta, background: 'var(--accent)' }}
-                  onClick={() => checkout('pro')}
-                  disabled={loading !== null}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
-                >
-                  {loading === 'pro' ? <Spinner /> : PLANS.pro.cta}
-                </button>
+              {/* Header */}
+              <div style={{ marginBottom: 28, paddingRight: 32 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-text)', margin: '0 0 8px' }}>
+                  Unlock full access
+                </p>
+                <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 10px', lineHeight: 1.2 }}>
+                  Your free preview is ready.<br/>
+                  <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 400 }}>See everything</span> for €2.
+                </h2>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, maxWidth: 440 }}>
+                  The free scan shows your overall score and a glimpse of what's holding you back.
+                  Pro unlocks all 8 dimension scores, every observation, and specific rewrite suggestions.
+                </p>
               </div>
 
-              {/* Premium */}
-              <div style={{ ...s.planCard, ...s.planCardFeatured }}>
-                <div style={s.badge}>Best value</div>
-                <div style={s.planHeader}>
-                  <div>
-                    <p style={s.planName}>{PLANS.premium.name}</p>
-                    <p style={s.planTagline}>Unlimited analyses</p>
-                  </div>
-                  <div style={s.priceBlock}>
-                    <span style={s.price}>{PLANS.premium.price}</span>
-                    <span style={s.period}>/ month</span>
-                  </div>
-                </div>
-                <ul style={s.features}>
-                  {PLANS.premium.features.map(f => <FeatureItem key={f} text={f} />)}
-                </ul>
-                <button
-                  style={{ ...s.cta, background: 'var(--text-primary)', color: 'var(--bg)' }}
-                  onClick={() => checkout('premium')}
-                  disabled={loading !== null}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              {/* What's locked callout */}
+              <div style={{
+                background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', padding: '14px 16px',
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                marginBottom: 20,
+              }}>
+                <svg width="16" height="16" fill="none" stroke="var(--score-mid)" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  You're seeing <strong style={{ color: 'var(--text-primary)' }}>2 of 4 observations</strong> and <strong style={{ color: 'var(--text-primary)' }}>1 of 3 improvement tips</strong>. The locked sections contain the most actionable feedback.
+                </p>
+              </div>
+
+              {/* Plans grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+
+                {/* Pro */}
+                <div
+                  className="um-plan"
+                  style={{
+                    background: 'color-mix(in srgb, var(--accent) 3%, var(--bg))',
+                    border: '1.5px solid var(--accent)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: 22, position: 'relative',
+                    display: 'flex', flexDirection: 'column', gap: 16,
+                    transition: 'all 0.2s',
+                    cursor: 'default',
+                  }}
                 >
-                  {loading === 'premium' ? <Spinner light /> : PLANS.premium.cta}
-                </button>
+                  <div style={{
+                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+                    background: 'var(--accent)', color: '#fff',
+                    fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap',
+                  }}>
+                    Most popular
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {PLANS.pro.name}
+                      </p>
+                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>This analysis, fully unlocked</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
+                        {PLANS.pro.price}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>one-time</span>
+                    </div>
+                  </div>
+
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    {PLANS.pro.features.map(f => <FeatureItem key={f} text={f}/>)}
+                  </ul>
+
+                  <button
+                    className="um-cta-pro"
+                    onClick={() => checkout('pro')}
+                    disabled={loading !== null}
+                    style={{
+                      width: '100%', padding: '13px 16px',
+                      fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
+                      color: '#fff', background: 'var(--accent)', border: 'none',
+                      borderRadius: 'var(--radius-md)', cursor: loading ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      transition: 'all 0.18s', fontFamily: 'var(--font-sans)',
+                      opacity: loading && loading !== 'pro' ? 0.5 : 1,
+                    }}
+                  >
+                    {loading === 'pro' ? <Spinner/> : (
+                      <>{PLANS.pro.cta}
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Premium */}
+                <div
+                  className="um-plan"
+                  style={{
+                    background: 'var(--bg)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: 22, position: 'relative',
+                    display: 'flex', flexDirection: 'column', gap: 16,
+                    transition: 'all 0.2s', cursor: 'default',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {PLANS.premium.name}
+                      </p>
+                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>Unlimited analyses</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
+                        {PLANS.premium.price}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>/month</span>
+                    </div>
+                  </div>
+
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                    {PLANS.premium.features.map(f => <FeatureItem key={f} text={f}/>)}
+                  </ul>
+
+                  <button
+                    className="um-cta-dark"
+                    onClick={() => checkout('premium')}
+                    disabled={loading !== null}
+                    style={{
+                      width: '100%', padding: '13px 16px',
+                      fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
+                      color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
+                      borderRadius: 'var(--radius-md)', cursor: loading ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
+                      opacity: loading && loading !== 'premium' ? 0.5 : 1,
+                    }}
+                  >
+                    {loading === 'premium' ? <Spinner light/> : PLANS.premium.cta}
+                  </button>
+                </div>
+              </div>
+
+              {/* Trust row */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 20, flexWrap: 'wrap',
+                paddingTop: 18, borderTop: '1px solid var(--border)',
+              }}>
+                {[
+                  { icon: lockIcon, text: 'Stripe · secure payment' },
+                  { icon: boltIcon, text: 'Instant access after payment' },
+                  { icon: refreshIcon, text: 'Cancel anytime (Premium)' },
+                ].map(({ icon, text }) => (
+                  <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-tertiary)' }}>
+                    {icon}
+                    {text}
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            <div style={s.trust}>
-              <TrustItem icon="🔒" text="Stripe — secure payment" />
-              <TrustItem icon="⚡" text="Instant access" />
-              <TrustItem icon="↩" text="Cancel anytime (Premium)" />
-            </div>
-          </>
-        )}
+          {/* ── LOGIN GATE STEP ── */}
+          {step === 'login' && (
+            <div style={{ padding: '36px 32px 32px' }}>
 
-        {/* ── LOGIN GATE STEP ── */}
-        {step === 'login' && (
-          <>
-            <div style={s.header}>
-              <p style={s.eyebrow}>
-                {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €9.99/lună'}
-              </p>
-              <h2 style={s.title}>Create an account first</h2>
-              <p style={s.subtitle}>
-                You need an account to purchase and access your analysis anytime.
-              </p>
-            </div>
-
-            {/* Google */}
-            <button
-              onClick={handleGoogle}
-              disabled={googleLoading || authLoading}
-              style={s.googleBtn}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-strong)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-            >
-              {googleLoading ? <Spinner /> : (
-                <>
-                  <GoogleIcon />
-                  Continue with Google
-                </>
-              )}
-            </button>
-
-            <div style={s.divider}>
-              <span style={s.dividerText}>or continue with email</span>
-            </div>
-
-            {/* Tabs */}
-            <div style={s.authTabs}>
-              {(['login', 'register'] as const).map(m => (
-                <button key={m} onClick={() => { setAuthMode(m); setAuthError('') }} style={{
-                  ...s.authTab,
-                  ...(authMode === m ? s.authTabActive : {}),
-                }}>
-                  {m === 'login' ? 'I have an account' : 'New account'}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <AuthField label="Email" type="email" placeholder="you@example.com"
-                value={email} onChange={setEmail} autoComplete="email" />
-              <AuthField label="Password" type="password"
-                placeholder={authMode === 'register' ? 'Min. 8 characters' : 'Your password'}
-                value={password} onChange={setPassword}
-                autoComplete={authMode === 'register' ? 'new-password' : 'current-password'} />
-
-              {authError && (
-                <p style={s.authError}>{authError}</p>
-              )}
-
-              <button type="submit" disabled={authLoading || googleLoading} style={{
-                ...s.cta, background: 'var(--accent)', marginTop: 2,
-              }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent-hover)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--accent)')}
+              {/* Back link */}
+              <button
+                className="um-back"
+                onClick={() => setStep('plans')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  fontSize: 13, color: 'var(--text-tertiary)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)', padding: 0,
+                  marginBottom: 22, transition: 'color 0.15s',
+                }}
               >
-                {authLoading ? <Spinner /> : authMode === 'login' ? 'Sign in & continue' : 'Create account & continue'}
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to plans
               </button>
-            </form>
 
-            <button onClick={() => setStep('plans')} style={s.backBtn}>
-              ← Back to plans
-            </button>
-          </>
-        )}
+              {/* Header */}
+              <div style={{ marginBottom: 24, paddingRight: 32 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-text)', margin: '0 0 8px' }}>
+                  {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €7.99/month'}
+                </p>
+                <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.25 }}>
+                  Sign in to continue
+                </h2>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                  You need a free account to purchase and access your analysis anytime, on any device.
+                </p>
+              </div>
 
+              {/* Google */}
+              <button
+                className="um-google"
+                onClick={handleGoogle}
+                disabled={googleLoading || authLoading}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                  width: '100%', padding: '12px 16px',
+                  background: 'var(--bg)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)', fontSize: 14, fontWeight: 500,
+                  cursor: googleLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s', fontFamily: 'var(--font-sans)',
+                  marginBottom: 14,
+                }}
+              >
+                {googleLoading ? <Spinner/> : <><GoogleIcon/>Continue with Google</>}
+              </button>
+
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+                <span style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '0 2px' }}>or</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }}/>
+              </div>
+
+              {/* Auth tabs */}
+              <div style={{ display: 'flex', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: 3, gap: 2, marginBottom: 14 }}>
+                {(['login', 'register'] as const).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => { setAuthMode(m); setAuthError('') }}
+                    className={authMode === m ? 'um-tab-active' : ''}
+                    style={{
+                      flex: 1, padding: '7px 12px', fontSize: 13, fontWeight: 500,
+                      background: 'transparent', border: 'none',
+                      borderRadius: 'calc(var(--radius-md) - 2px)',
+                      color: authMode === m ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    {m === 'login' ? 'I have an account' : 'New account'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <AuthField label="Email" type="email" placeholder="you@example.com" value={email} onChange={setEmail} autoComplete="email"/>
+                <AuthField
+                  label="Password" type="password"
+                  placeholder={authMode === 'register' ? 'Min. 8 characters' : 'Your password'}
+                  value={password} onChange={setPassword}
+                  autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                />
+
+                {authError && (
+                  <p style={{ fontSize: 13, color: '#ef4444', margin: 0, padding: '10px 12px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius-sm)', lineHeight: 1.5 }}>
+                    {authError}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  className="um-submit"
+                  disabled={authLoading || googleLoading}
+                  style={{
+                    marginTop: 4, padding: '13px',
+                    background: 'var(--accent)', border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#fff', fontSize: 14, fontWeight: 600,
+                    cursor: authLoading ? 'not-allowed' : 'pointer',
+                    opacity: authLoading ? 0.65 : 1,
+                    transition: 'all 0.15s', fontFamily: 'var(--font-sans)',
+                    letterSpacing: '-0.01em',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  {authLoading ? <Spinner/> : (authMode === 'login' ? 'Sign in & unlock' : 'Create account & unlock')}
+                </button>
+              </form>
+
+              {/* Trust note */}
+              <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-tertiary)', margin: '16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                {lockIcon} Your data is never sold or shared.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function FeatureItem({ text }: { text: string }) {
   return (
     <li style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-      <svg width="14" height="14" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+      <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 2 }}>
         <polyline points="20 6 9 17 4 12"/>
       </svg>
       {text}
@@ -252,23 +469,15 @@ function FeatureItem({ text }: { text: string }) {
   )
 }
 
-function TrustItem({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-tertiary)' }}>
-      <span>{icon}</span>
-      <span>{text}</span>
-    </div>
-  )
-}
-
 function Spinner({ light }: { light?: boolean }) {
   return (
     <span style={{
       display: 'inline-block', width: 14, height: 14,
-      border: `2px solid ${light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.3)'}`,
-      borderTopColor: light ? '#000' : '#fff',
-      borderRadius: '50%', animation: 'spin 0.7s linear infinite',
-    }} />
+      border: `2px solid ${light ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.3)'}`,
+      borderTopColor: light ? 'rgba(0,0,0,0.7)' : '#fff',
+      borderRadius: '50%',
+      animation: 'spin 0.7s linear infinite',
+    }}/>
   )
 }
 
@@ -289,172 +498,41 @@ function AuthField({ label, type, placeholder, value, onChange, autoComplete }: 
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
+      <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
         {label}
       </label>
       <input
         type={type} placeholder={placeholder} value={value}
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete} required
+        className="um-field"
         style={{
-          padding: '10px 13px',
+          padding: '11px 14px',
           background: 'var(--bg)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-md)',
           color: 'var(--text-primary)', fontSize: 14,
-          outline: 'none', transition: 'border-color 0.15s',
+          outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
+          fontFamily: 'var(--font-sans)', width: '100%',
         }}
-        onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
-        onBlur={e => (e.target.style.borderColor = 'var(--border)')}
       />
     </div>
   )
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
-const s: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed', inset: 0,
-    background: 'rgba(0,0,0,0.6)',
-    backdropFilter: 'blur(8px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 200, padding: 24,
-  },
-  modal: {
-    position: 'relative',
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-xl)',
-    padding: '40px 32px 32px',
-    width: '100%', maxWidth: 560,
-    display: 'flex', flexDirection: 'column', gap: 22,
-    boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
-    maxHeight: '92vh', overflowY: 'auto',
-  },
-  closeBtn: {
-    position: 'absolute', top: 14, right: 14,
-    width: 30, height: 30,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg)', border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-sm)',
-    color: 'var(--text-tertiary)', cursor: 'pointer',
-    transition: 'all 0.15s',
-  },
-  header: { display: 'flex', flexDirection: 'column', gap: 6 },
-  eyebrow: {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-    textTransform: 'uppercase', color: 'var(--accent)', margin: 0,
-  },
-  title: {
-    fontSize: 24, fontWeight: 700, letterSpacing: '-0.025em',
-    color: 'var(--text-primary)', margin: 0,
-  },
-  subtitle: {
-    fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0,
-  },
-  plans: {
-    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
-  },
-  planCard: {
-    background: 'var(--bg)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-lg)',
-    padding: 20,
-    display: 'flex', flexDirection: 'column', gap: 14,
-  },
-  planCardFeatured: {
-    border: '1.5px solid var(--accent)',
-    background: 'color-mix(in srgb, var(--accent) 4%, var(--bg))',
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
-    background: 'var(--accent)', color: '#fff',
-    fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
-    textTransform: 'uppercase', padding: '3px 12px', borderRadius: 20,
-    whiteSpace: 'nowrap',
-  },
-  planHeader: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8,
-  },
-  planName: {
-    fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0,
-  },
-  planTagline: {
-    fontSize: 12, color: 'var(--text-tertiary)', margin: '2px 0 0',
-  },
-  priceBlock: {
-    display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0,
-  },
-  price: {
-    fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)',
-  },
-  period: { fontSize: 11, color: 'var(--text-tertiary)' },
-  features: {
-    listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 7, flex: 1,
-    margin: 0, padding: 0,
-  },
-  cta: {
-    width: '100%', padding: '11px 16px',
-    fontSize: 14, fontWeight: 600,
-    color: '#fff', border: 'none',
-    borderRadius: 'var(--radius-md)',
-    cursor: 'pointer', transition: 'all 0.15s',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-  },
-  trust: {
-    display: 'flex', justifyContent: 'center',
-    gap: 20, flexWrap: 'wrap',
-    paddingTop: 2,
-    borderTop: '1px solid var(--border)',
-  },
-  // Login gate
-  googleBtn: {
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-    width: '100%', padding: '11px 16px',
-    background: 'var(--bg)', border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-md)',
-    color: 'var(--text-primary)', fontSize: 14, fontWeight: 500,
-    cursor: 'pointer', transition: 'border-color 0.15s',
-  },
-  divider: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    color: 'var(--text-tertiary)',
-  },
-  dividerText: {
-    fontSize: 12, color: 'var(--text-tertiary)', whiteSpace: 'nowrap',
-    padding: '0 2px',
-    position: 'relative',
-  },
-  authTabs: {
-    display: 'flex', background: 'var(--bg-subtle)',
-    borderRadius: 'var(--radius-md)', padding: 3, gap: 2,
-  },
-  authTab: {
-    flex: 1, padding: '7px 12px',
-    fontSize: 13, fontWeight: 500,
-    background: 'transparent', border: 'none',
-    borderRadius: 'calc(var(--radius-md) - 2px)',
-    color: 'var(--text-secondary)', cursor: 'pointer',
-    transition: 'all 0.15s',
-  },
-  authTabActive: {
-    background: 'var(--bg-elevated)',
-    color: 'var(--text-primary)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
-    border: '1px solid var(--border)',
-  },
-  authError: {
-    fontSize: 13, color: '#ef4444', margin: 0,
-    padding: '9px 12px',
-    background: 'rgba(239,68,68,0.08)',
-    border: '1px solid rgba(239,68,68,0.2)',
-    borderRadius: 'var(--radius-sm)',
-  },
-  backBtn: {
-    background: 'none', border: 'none',
-    color: 'var(--text-tertiary)', fontSize: 13,
-    cursor: 'pointer', padding: 0, textAlign: 'center' as const,
-  },
-}
+// ── Icon helpers ───────────────────────────────────────────────────────────────
+const lockIcon = (
+  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+  </svg>
+)
+const boltIcon = (
+  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+)
+const refreshIcon = (
+  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+  </svg>
+)
