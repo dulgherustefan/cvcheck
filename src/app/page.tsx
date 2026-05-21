@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { UpgradeModal } from '@/components/UpgradeModal'
@@ -402,15 +403,15 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
 // ─── Static landing sections ──────────────────────────────────────────────────
 const HOW_STEPS = [
-  { n:'01', title:'Paste a link or upload your PDF', desc:'Works with any portfolio URL, LinkedIn, personal website, or a PDF CV. No formatting required.' },
-  { n:'02', title:'AI reads it like a recruiter would', desc:'We score 8 dimensions: positioning, experience proof, skills, structure, language, and more.' },
-  { n:'03', title:'Get a score and honest feedback', desc:'See exactly what works, what doesn\'t, and specific changes to make — with rewrites included.' },
+  { n:'01', title:'Paste a link or drop your PDF', desc:'Works with portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
+  { n:'02', title:'We read it the way a recruiter would', desc:'CVCheck looks at 8 things recruiters actually care about — positioning, proof, structure, language, and more.' },
+  { n:'03', title:'You get a score and real feedback', desc:'Not "consider improving your experience section." Actual specific changes, with rewritten examples you can use right away.' },
 ]
 const FEATURES = [
-  { icon:'📊', title:'Score out of 100', desc:'A single number that tells you where you stand, calculated across 8 weighted dimensions.' },
-  { icon:'🔍', title:'8 detailed dimensions', desc:'First impression, positioning, experience proof, skills relevance, credibility, structure, language, and contact CTA.' },
-  { icon:'💬', title:'Honest observations', desc:'Strengths and weaknesses written clearly — no vague platitudes, just specific things to change.' },
-  { icon:'✏️', title:'Improvement tips with rewrites', desc:'Not just "improve your summary" — actual rewritten versions you can copy and use.' },
+  { icon:'📊', title:'A score that means something', desc:'A single number out of 100, broken down across 8 weighted dimensions. You\'ll know exactly where you stand and why.' },
+  { icon:'🔍', title:'8 dimensions, not just a vibe check', desc:'First impression, positioning, experience proof, skills relevance, credibility, structure, language, and contact clarity — each scored separately.' },
+  { icon:'💬', title:'Feedback that\'s actually direct', desc:'Strengths labeled as strengths, weaknesses labeled as weaknesses. No "this is a great start" when it isn\'t.' },
+  { icon:'✏️', title:'Tips you can act on today', desc:'Every improvement comes with a specific rewrite. Copy it, tweak it, paste it in. Done.' },
 ]
 const LOADING_STEPS = [
   'Reading your content…',
@@ -533,27 +534,26 @@ export default function Home() {
               {/* Eyebrow */}
               <div className={styles.heroEyebrow}>
                 <span className={styles.heroEyebrowDot}/>
-                AI-powered CV &amp; portfolio feedback
+                AI feedback on CVs &amp; portfolios
               </div>
 
               {/* Headline */}
               <h1 className={styles.heroTitle}>
-                Know exactly why<br/>
-                your CV <span className={styles.heroTitleItalic}>isn't landing</span><br/>
-                interviews.
+                Find out why your CV<br/>
+                <span className={styles.heroTitleItalic}>isn't getting replies.</span>
               </h1>
 
               {/* Sub */}
               <p className={styles.heroSubtitle}>
-                Upload your CV or paste any link. Get an honest score, clear observations, and specific improvements — in under 30 seconds.
+                Paste a link or upload your CV. You'll get a score, a breakdown of what's working and what isn't, and specific suggestions to fix it — in about 30 seconds.
               </p>
 
               {/* Trust bar */}
               <div className={styles.heroTrustBar}>
                 {[
-                  'No account needed',
-                  'CV, portfolio & LinkedIn',
-                  'Results in seconds',
+                  'No account required',
+                  'CV, portfolio or LinkedIn',
+                  'Takes 30 seconds',
                   'One free scan',
                 ].map((t,i,arr) => (
                   <span key={t} style={{ display:'contents' }}>
@@ -637,10 +637,10 @@ export default function Home() {
             {/* ── Social proof numbers ── */}
             <div className={styles.socialProofBar}>
               {[
-                { n:'8',      label:'Dimensions scored'   },
-                { n:'< 30s',  label:'Time to results'     },
-                { n:'€2',     label:'Full access, one-time' },
-                { n:'100%',   label:'Honest, no sugarcoating' },
+                { n:'8',      label:'Things scored in detail'   },
+                { n:'~30s',   label:'From link to results'      },
+                { n:'€2',     label:'For full access, one-time' },
+                { n:'0',      label:'Sugarcoating' },
               ].map(item => (
                 <div key={item.label} className={styles.socialProofItem}>
                   <span className={styles.socialProofNumber}>{item.n}</span>
@@ -653,7 +653,7 @@ export default function Home() {
             <section className={styles.howSection}>
               <div>
                 <p className={styles.sectionLabel}>How it works</p>
-                <h2 className={styles.sectionHeading}>From link to feedback in three steps</h2>
+                <h2 className={styles.sectionHeading}>Simple enough that you'll actually use it</h2>
               </div>
               <div className={styles.howSteps}>
                 {HOW_STEPS.map(s => (
@@ -670,7 +670,7 @@ export default function Home() {
             <section className={styles.featuresSection}>
               <div>
                 <p className={styles.sectionLabel}>What you get</p>
-                <h2 className={styles.sectionHeading}>Feedback that's actually useful</h2>
+                <h2 className={styles.sectionHeading}>Feedback you can do something with</h2>
               </div>
               <div className={styles.featuresGrid}>
                 {FEATURES.map(f => (
@@ -687,9 +687,9 @@ export default function Home() {
             <section className={styles.pricingSection}>
               <div>
                 <p className={styles.sectionLabel}>Pricing</p>
-                <h2 className={styles.sectionHeading}>Simple, honest pricing</h2>
+                <h2 className={styles.sectionHeading}>No tricks, no "contact us for pricing"</h2>
                 <p style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.6, marginTop:8, maxWidth:440 }}>
-                  Try free. Upgrade once you see your results and want the full picture.
+                  Try it free. If the score makes you want to see the rest, Pro is €2. That's it.
                 </p>
               </div>
               <div className={styles.pricingCards}>
@@ -854,9 +854,9 @@ export default function Home() {
             {!isPro && (
               <div className={styles.upgradeBanner}>
                 <div className={styles.upgradeBannerContent}>
-                  <p className={styles.upgradeBannerTitle}>See the full picture</p>
+                  <p className={styles.upgradeBannerTitle}>There's more here you haven't seen</p>
                   <p className={styles.upgradeBannerSub}>
-                    Unlock 8 detailed scores, all {result.observations.length} observations, and {result.improvements.length} improvement tips — with specific rewrites.
+                    The free version shows the headline. Pro unlocks all {result.observations.length} observations, {result.improvements.length} improvement tips with rewrites, and the full breakdown across 8 dimensions. €2, one-time.
                   </p>
                 </div>
                 <div className={styles.upgradeBannerActions}>
@@ -873,9 +873,9 @@ export default function Home() {
       <footer className={styles.footer}>
         <span>© 2026 CVCheck</span>
         <div className={styles.footerLinks}>
-          <span className={styles.footerLink}>Privacy</span>
-          <span className={styles.footerLink}>Terms</span>
-          <button className={styles.footerLink} style={{ background:'none', border:'none', fontFamily:'var(--font-sans)', fontSize:12, cursor:'pointer' }} onClick={() => setShowUpgradeModal(true)}>Pricing</button>
+          <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
+          <Link href="/terms" className={styles.footerLink}>Terms</Link>
+          <button className={styles.footerLink} style={{ background:'none', border:'none', fontFamily:'var(--font-sans)', fontSize:12, cursor:'pointer', padding:0 }} onClick={() => setShowUpgradeModal(true)}>Pricing</button>
         </div>
       </footer>
     </div>

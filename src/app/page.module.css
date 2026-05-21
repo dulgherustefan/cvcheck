@@ -578,7 +578,7 @@
   font-size: 12px; color: var(--text-tertiary);
 }
 .footerLinks { display: flex; align-items: center; gap: 16px; }
-.footerLink { font-size: 12px; color: var(--text-tertiary); cursor: pointer; transition: color 0.15s; }
+.footerLink { font-size: 12px; color: var(--text-tertiary); cursor: pointer; transition: color 0.15s; text-decoration: none; }
 .footerLink:hover { color: var(--text-secondary); }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
