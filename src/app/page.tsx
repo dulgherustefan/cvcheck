@@ -294,7 +294,7 @@ function PlansModal({ tier, userId, onClose, onBuy }: {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: tier === 'pro' ? '1fr' : 'repeat(3,1fr)', gap: 12 }}>
-              {(tier === 'pro' ? ['premium'] : ['free', 'pro', 'premium'] as const).map(pk => {
+              {(tier === 'pro' ? ['premium'] as const : ['free', 'pro', 'premium'] as const).map(pk => {
                 const p = PLAN_DEFS[pk]
                 const isCurrent = tier === pk
                 const isFeatured = pk === 'pro'
