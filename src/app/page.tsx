@@ -278,7 +278,7 @@ function PlansModal({ tier, onClose, onBuy }: { tier: string; onClose: () => voi
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: tier === 'pro' ? '1fr' : 'repeat(3,1fr)', gap: 12 }}>
-              {(tier === 'pro' ? ['premium'] : ['free', 'pro', 'premium'] as const).map(pk => {
+              {(tier === 'pro' ? ['premium'] as const : ['free', 'pro', 'premium'] as const).map(pk => {
                 const p = PLANS[pk]; const isCur = tier === pk; const isFeat = pk === 'pro'
                 return (
                   <div key={pk} style={{ padding: 20, borderRadius: 'var(--r-lg)', border: `${isFeat ? '1.5px' : '1px'} solid ${isFeat ? 'var(--accent)' : 'var(--border-2)'}`, background: isFeat ? 'color-mix(in srgb, var(--accent) 5%, var(--bg-1))' : 'var(--bg-1)', display: 'flex', flexDirection: 'column', gap: 14, position: 'relative' }}>
