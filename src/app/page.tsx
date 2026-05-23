@@ -498,7 +498,7 @@ export default function Home() {
         <div className={styles.headerInner}>
           <div className={styles.logo}>
             <div className={styles.logoMark}>
-              <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+              <svg width="14" height="14" fill="none" stroke="var(--bg)" strokeWidth="2.2" viewBox="0 0 24 24">
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
               </svg>
             </div>
@@ -530,43 +530,41 @@ export default function Home() {
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
             <div className={styles.heroTop}>
+              <div className={styles.heroLeft}>
 
-              {/* Eyebrow */}
-              <div className={styles.heroEyebrow}>
-                <span className={styles.heroEyebrowDot}/>
-                AI feedback on CVs &amp; portfolios
-              </div>
+                {/* Eyebrow */}
+                <div className={styles.heroEyebrow}>
+                  <span className={styles.heroEyebrowDot}/>
+                  AI feedback · CVs &amp; portfolios
+                </div>
 
-              {/* Headline */}
-              <h1 className={styles.heroTitle}>
-                Find out why your CV<br/>
-                <span className={styles.heroTitleItalic}>isn't getting replies.</span>
-              </h1>
+                {/* Headline */}
+                <h1 className={styles.heroTitle}>
+                  Find out why your CV{' '}
+                  <span className={styles.heroTitleItalic}>isn't getting replies.</span>
+                </h1>
 
-              {/* Sub */}
-              <p className={styles.heroSubtitle}>
-                Paste a link or upload your CV. You'll get a score, a breakdown of what's working and what isn't, and specific suggestions to fix it — in about 30 seconds.
-              </p>
+                {/* Sub */}
+                <p className={styles.heroSubtitle}>
+                  Paste a link or upload your CV. Score, breakdown, and specific fixes — in about 30 seconds.
+                </p>
 
-              {/* Trust bar */}
-              <div className={styles.heroTrustBar}>
-                {[
-                  'No account required',
-                  'CV, portfolio or LinkedIn',
-                  'Takes 30 seconds',
-                  'One free scan',
-                ].map((t,i,arr) => (
-                  <span key={t} style={{ display:'contents' }}>
-                    <span className={styles.heroTrustItem}>
-                      <svg className={styles.heroTrustCheck} width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.8" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                      {t}
+                {/* Trust bar */}
+                <div className={styles.heroTrustBar}>
+                  {[
+                    'No account required',
+                    'CV, portfolio or LinkedIn',
+                    'One free scan',
+                  ].map((t,i,arr) => (
+                    <span key={t} style={{ display:'contents' }}>
+                      <span className={styles.heroTrustItem}>{t}</span>
+                      {i < arr.length-1 && <span className={styles.heroTrustSep}/>}
                     </span>
-                    {i < arr.length-1 && <span className={styles.heroTrustSep}/>}
-                  </span>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              {/* Input card */}
+              {/* Input card — right column */}
               <div className={styles.inputCard}>
                 <div className={styles.modeTabs}>
                   {(['url','pdf'] as const).map(m => (
@@ -634,13 +632,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ── Social proof numbers ── */}
+            {/* ── Social proof bar ── */}
             <div className={styles.socialProofBar}>
               {[
-                { n:'8',      label:'Things scored in detail'   },
-                { n:'~30s',   label:'From link to results'      },
-                { n:'€2',     label:'For full access, one-time' },
-                { n:'0',      label:'Sugarcoating' },
+                { n:'8',    label:'dimensions scored' },
+                { n:'~30s', label:'from link to results' },
+                { n:'€2',   label:'full access, one-time' },
+                { n:'0',    label:'sugarcoating' },
               ].map(item => (
                 <div key={item.label} className={styles.socialProofItem}>
                   <span className={styles.socialProofNumber}>{item.n}</span>
@@ -675,7 +673,7 @@ export default function Home() {
               <div className={styles.featuresGrid}>
                 {FEATURES.map(f => (
                   <div key={f.title} className={styles.featureCard}>
-                    <div className={styles.featureIcon}><span style={{ fontSize:20 }}>{f.icon}</span></div>
+                    <div className={styles.featureIcon}>{f.icon}</div>
                     <p className={styles.featureTitle}>{f.title}</p>
                     <p className={styles.featureDesc}>{f.desc}</p>
                   </div>
