@@ -94,15 +94,15 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
           to   { opacity:1; }
         }
         @keyframes spin { to { transform:rotate(360deg); } }
-        .um-plan:hover { border-color: var(--border-strong) !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; transform: translateY(-1px); }
-        .um-cta-pro:hover:not(:disabled) { background: var(--accent-hover) !important; box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 38%, transparent) !important; transform:translateY(-1px); }
+        .um-plan:hover { border-color: var(--border-strong) !important; }
+        .um-cta-pro:hover:not(:disabled) { opacity: 0.8 !important; }
         .um-cta-dark:hover:not(:disabled) { opacity:0.82 !important; }
         .um-google:hover:not(:disabled)   { border-color: var(--border-strong) !important; background: var(--bg-subtle) !important; }
         .um-tab-active { background: var(--bg-elevated) !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important; border: 1px solid var(--border) !important; }
         .um-field:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
-        .um-submit:hover:not(:disabled)   { background: var(--accent-hover) !important; }
+        .um-submit:hover:not(:disabled)   { opacity: 0.8 !important; }
         .um-close:hover { background: var(--bg-muted) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; }
-        .um-back:hover  { color: var(--accent-text) !important; }
+        .um-back:hover  { color: var(--text-primary) !important; }
       `}</style>
 
       {/* Overlay */}
@@ -197,8 +197,8 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 <div
                   className="um-plan"
                   style={{
-                    background: 'color-mix(in srgb, var(--accent) 3%, var(--bg))',
-                    border: '1.5px solid var(--accent)',
+                    background: 'var(--bg-elevated)',
+                    border: '1.5px solid var(--border-strong)',
                     borderRadius: 'var(--radius-lg)',
                     padding: 22, position: 'relative',
                     display: 'flex', flexDirection: 'column', gap: 16,
@@ -208,7 +208,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 >
                   <div style={{
                     position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                    background: 'var(--accent)', color: '#fff',
+                    background: 'var(--text-primary)', color: 'var(--bg)',
                     fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
                     padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap',
                   }}>
@@ -241,10 +241,10 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     style={{
                       width: '100%', padding: '13px 16px',
                       fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
-                      color: '#fff', background: 'var(--accent)', border: 'none',
-                      borderRadius: 'var(--radius-md)', cursor: loading ? 'not-allowed' : 'pointer',
+                      color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
+                      borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      transition: 'all 0.18s', fontFamily: 'var(--font-sans)',
+                      transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
                       opacity: loading && loading !== 'pro' ? 0.5 : 1,
                     }}
                   >
@@ -297,7 +297,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       width: '100%', padding: '13px 16px',
                       fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
                       color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
-                      borderRadius: 'var(--radius-md)', cursor: loading ? 'not-allowed' : 'pointer',
+                      borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
                       opacity: loading && loading !== 'premium' ? 0.5 : 1,
@@ -430,9 +430,9 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   disabled={authLoading || googleLoading}
                   style={{
                     marginTop: 4, padding: '13px',
-                    background: 'var(--accent)', border: 'none',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#fff', fontSize: 14, fontWeight: 600,
+                    background: 'var(--text-primary)', border: 'none',
+                    borderRadius: 'var(--radius-sm)',
+                    color: 'var(--bg)', fontSize: 14, fontWeight: 600,
                     cursor: authLoading ? 'not-allowed' : 'pointer',
                     opacity: authLoading ? 0.65 : 1,
                     transition: 'all 0.15s', fontFamily: 'var(--font-sans)',

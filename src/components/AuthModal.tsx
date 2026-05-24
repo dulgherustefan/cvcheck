@@ -99,12 +99,12 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
         @keyframes _fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes _spin   { to { transform: rotate(360deg); } }
         ._auth-input:focus {
-          border-color: var(--accent) !important;
-          box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent) !important;
+          border-color: var(--border-strong) !important;
+          box-shadow: 0 0 0 3px rgba(17,17,16,0.08) !important;
           outline: none !important;
         }
         ._auth-google:hover:not(:disabled) { border-color: var(--border-strong) !important; background: var(--bg-subtle) !important; }
-        ._auth-submit:hover:not(:disabled) { opacity: 0.85 !important; }
+        ._auth-submit:hover:not(:disabled) { opacity: 0.8 !important; }
         ._auth-link:hover { color: var(--text-primary) !important; }
         ._auth-close:hover { background: var(--bg-subtle) !important; }
       `}</style>
@@ -127,7 +127,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
             width: '100%', maxWidth: 376,
             background: 'var(--bg-elevated)',
             border: '1px solid var(--border)',
-            borderRadius: 14,
+            borderRadius: 'var(--radius-lg)',
             padding: '28px 26px 22px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
             position: 'relative',
@@ -180,7 +180,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
                   padding: '9px 14px',
                   background: 'var(--bg)',
                   border: '1px solid var(--border)',
-                  borderRadius: 9, marginBottom: 14,
+                  borderRadius: 'var(--radius-sm)', marginBottom: 14,
                   color: 'var(--text-primary)', fontSize: 13, fontWeight: 500,
                   cursor: isLoading ? 'default' : 'pointer',
                   opacity: isLoading ? 0.55 : 1,
@@ -278,9 +278,9 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
               style={{
                 marginTop: 3,
                 padding: '10px 16px',
-                background: 'var(--accent)',
-                border: 'none', borderRadius: 9,
-                color: '#fff', fontSize: 14, fontWeight: 600,
+                background: 'var(--text-primary)',
+                border: 'none', borderRadius: 'var(--radius-sm)',
+                color: 'var(--bg)', fontSize: 14, fontWeight: 600,
                 cursor: isLoading ? 'default' : 'pointer',
                 opacity: isLoading ? 0.6 : 1,
                 transition: 'opacity 0.15s',
@@ -346,7 +346,7 @@ const Field = forwardRef<HTMLInputElement, {
         padding: '9px 11px',
         background: 'var(--bg)',
         border: '1px solid var(--border)',
-        borderRadius: 8,
+        borderRadius: 'var(--radius-sm)',
         color: 'var(--text-primary)',
         fontSize: 14,
         outline: 'none',

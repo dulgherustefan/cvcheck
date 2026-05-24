@@ -14,7 +14,7 @@ interface AccountModalProps {
 
 const TIER_META: Record<string, { label: string; color: string; bg: string }> = {
   free:    { label: 'Free',    color: '#6b7280', bg: 'rgba(107,114,128,0.1)' },
-  pro:     { label: 'Pro',     color: 'var(--accent)', bg: 'var(--accent-subtle)' },
+  pro:     { label: 'Pro',     color: 'var(--text-primary)', bg: 'var(--bg-muted)' },
   premium: { label: 'Premium', color: 'var(--score-high)', bg: 'rgba(34,197,94,0.1)' },
 }
 
@@ -156,7 +156,7 @@ function PwField({ label, placeholder, value, onChange, autoComplete }: {
           color: 'var(--text-primary)', fontSize: 14,
           outline: 'none',
         }}
-        onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+        onFocus={e => (e.target.style.borderColor = 'var(--border-strong)')}
         onBlur={e => (e.target.style.borderColor = 'var(--border)')}
       />
     </div>
@@ -194,11 +194,11 @@ const s: Record<string, React.CSSProperties> = {
   },
   avatar: {
     width: 48, height: 48, borderRadius: '50%',
-    background: 'var(--accent-subtle)',
-    color: 'var(--accent)',
+    background: 'var(--bg-muted)',
+    color: 'var(--text-secondary)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: 16, fontWeight: 700, flexShrink: 0,
-    border: '1.5px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+    border: '1px solid var(--border)',
   },
   emailText: {
     fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
@@ -211,8 +211,9 @@ const s: Record<string, React.CSSProperties> = {
     display: 'inline-block',
   },
   upgradeLink: {
-    fontSize: 12, fontWeight: 600, color: 'var(--accent)',
+    fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
     background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+    textDecoration: 'underline', textUnderlineOffset: '2px',
   },
   divider: {
     height: 1, background: 'var(--border)', margin: '0 -4px',
@@ -233,8 +234,8 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: 12, color: 'var(--text-tertiary)', margin: 0, lineHeight: 1.5,
   },
   pwSubmit: {
-    padding: '10px', background: 'var(--accent)', border: 'none',
-    borderRadius: 'var(--radius-md)', color: '#fff',
+    padding: '10px', background: 'var(--text-primary)', border: 'none',
+    borderRadius: 'var(--radius-sm)', color: 'var(--bg)',
     fontSize: 14, fontWeight: 600,
   },
   errorMsg: {
