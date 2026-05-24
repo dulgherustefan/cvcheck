@@ -115,8 +115,8 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
         transition: 'border-color 0.15s, box-shadow 0.15s',
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'
-        ;(e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.12)'
+        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
+        ;(e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-md)'
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
@@ -297,7 +297,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
             </div>
             {!isPro && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <a href="/" style={{ padding: '10px 20px', background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+                <a href="/" style={{ padding: '10px 20px', background: 'var(--text-primary)', color: 'var(--bg)', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
                   Unlock full analysis — €2
                 </a>
               </div>
@@ -328,8 +328,8 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{tip.area}</span>
                       </div>
                       <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 10px' }}>{tip.problem}</p>
-                      <div style={{ padding: '10px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--accent)' }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How to fix it</p>
+                      <div style={{ padding: '10px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--text-primary)' }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How to fix it</p>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{tip.fix}</p>
                       </div>
                     </div>
@@ -342,15 +342,16 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
           {/* Priority */}
           <div style={{
             padding: '16px 18px',
-            background: 'color-mix(in srgb, var(--accent) 6%, var(--bg))',
-            border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
-            borderRadius: 'var(--radius-lg)',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--text-primary)',
+            borderRadius: 'var(--radius-md)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24">
+              <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Do this first</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Do this first</span>
             </div>
             <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, margin: 0 }}>{entry.top_priority}</p>
           </div>
@@ -384,8 +385,8 @@ function EmptyState() {
       <Link href="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: 6,
         padding: '10px 20px',
-        background: 'var(--accent)', color: '#fff',
-        borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 600,
+        background: 'var(--text-primary)', color: 'var(--bg)',
+        borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
         textDecoration: 'none',
       }}>
         Analyze something
@@ -429,12 +430,14 @@ export default function HistoryPage() {
       {/* Header */}
       <header style={{
         borderBottom: '1px solid var(--border)',
-        background: 'var(--bg-elevated)',
+        background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         position: 'sticky', top: 0, zIndex: 100,
       }}>
         <div style={{
-          maxWidth: 720, margin: '0 auto',
-          padding: '0 24px',
+          maxWidth: 860, margin: '0 auto',
+          padding: '0 32px',
           height: 56,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
@@ -469,10 +472,10 @@ export default function HistoryPage() {
       </header>
 
       {/* Main content */}
-      <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '40px 24px' }}>
+      <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '40px 32px' }}>
 
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px', letterSpacing: '-0.03em' }}>
             Analysis history
           </h1>
           {!loading && entries.length > 0 && (
@@ -511,7 +514,7 @@ export default function HistoryPage() {
 
       </main>
 
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', textAlign: 'center' }}>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 860, width: '100%', margin: '0 auto' }}>
         <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
           © 2026 Dulgheru Stefan. All rights reserved.
         </span>
