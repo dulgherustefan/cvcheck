@@ -68,11 +68,22 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     .map(b => (b as { type: 'text'; text: string }).text)
     .join('')
 
-  const cleaned = raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/```\s*$/i, '')
-    .trim()
+  // Extract JSON — Claude sometimes adds text before/after the JSON block
+  const cleaned = (() => {
+    // Strip markdown fences
+    let s = raw
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
+    // Find first { and last } in case there's leading/trailing text
+    const start = s.indexOf('{')
+    const end   = s.lastIndexOf('}')
+    if (start !== -1 && end !== -1 && end > start) {
+      s = s.slice(start, end + 1)
+    }
+    return s
+  })()
 
   let parsed: AnalysisResult
   try {
