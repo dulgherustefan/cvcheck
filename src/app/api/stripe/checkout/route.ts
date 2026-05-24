@@ -10,6 +10,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
+    // 🔴 Fix: user_id obligatoriu — fără cont nu putem acorda creditul după plată
+    if (!user_id || typeof user_id !== 'string' || user_id.trim() === '') {
+      return NextResponse.json(
+        { error: 'You must be signed in to purchase a plan.' },
+        { status: 401 }
+      )
+    }
+
     const Stripe = (await import('stripe')).default
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -25,18 +33,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Derive origin from the request itself — never undefined
     const origin = req.headers.get('origin') ?? 'http://localhost:3000'
 
     const session = await stripe.checkout.sessions.create({
       mode: plan === 'pro' ? 'payment' : 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/?success=1&plan=${plan}`,
+      success_url: `${origin}/?success=1&plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?cancelled=1`,
       metadata: {
         plan,
         roast_id: roast_id ?? '',
-        user_id: user_id ?? '',
+        user_id,
       },
     })
 

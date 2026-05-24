@@ -32,9 +32,13 @@ export async function POST(req: NextRequest) {
       }
       const { plan, user_id } = session.metadata ?? {}
 
-      if (plan === 'pro' && user_id) {
-        // Seteaza plan: pro → userul are 1 analiza pro disponibila
-        // route.ts o va folosi si reseta la free dupa analiza
+      // 🔴 Fix: validăm user_id explicit
+      if (!user_id || user_id.trim() === '') {
+        console.error('[webhook] checkout.session.completed fără user_id valid în metadata — plată orfană!')
+        break
+      }
+
+      if (plan === 'pro') {
         const { error } = await supabaseAdmin
           .from('credits')
           .upsert(
@@ -50,7 +54,7 @@ export async function POST(req: NextRequest) {
         else console.log(`[webhook] Pro credit set for user ${user_id}`)
       }
 
-      if (plan === 'premium' && user_id) {
+      if (plan === 'premium') {
         const { error } = await supabaseAdmin
           .from('credits')
           .upsert(
@@ -69,12 +73,38 @@ export async function POST(req: NextRequest) {
       break
     }
 
-    case 'customer.subscription.updated': {
-      const sub = event.data.object as { status: string; customer: string }
+    // 🔴 Fix: adăugat — fallback dacă checkout.session.completed a picat
+    case 'customer.subscription.created': {
+      const sub = event.data.object as {
+        status: string
+        customer: string
+        id: string
+      }
       if (sub.status === 'active') {
         const { error } = await supabaseAdmin
           .from('credits')
-          .update({ plan: 'premium', updated_at: new Date().toISOString() })
+          .update({
+            plan: 'premium',
+            stripe_subscription_id: sub.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_customer_id', sub.customer)
+        if (error) console.error('[webhook] Failed to activate premium (subscription.created):', error)
+        else console.log(`[webhook] Premium activated via subscription.created for customer ${sub.customer}`)
+      }
+      break
+    }
+
+    case 'customer.subscription.updated': {
+      const sub = event.data.object as { status: string; customer: string; id: string }
+      if (sub.status === 'active') {
+        const { error } = await supabaseAdmin
+          .from('credits')
+          .update({
+            plan: 'premium',
+            stripe_subscription_id: sub.id,
+            updated_at: new Date().toISOString(),
+          })
           .eq('stripe_customer_id', sub.customer)
         if (error) console.error('[webhook] Failed to renew premium:', error)
         else console.log(`[webhook] Premium renewed for customer ${sub.customer}`)
@@ -83,7 +113,6 @@ export async function POST(req: NextRequest) {
     }
 
     case 'customer.subscription.deleted': {
-      // Abonamentul a expirat → revine la free
       const sub = event.data.object as { customer: string }
       const { error } = await supabaseAdmin
         .from('credits')
