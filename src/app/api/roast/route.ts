@@ -123,6 +123,23 @@ export async function POST(req: NextRequest) {
     const gated = gateResult(result, tier)
 
     if (userId) {
+      // Adoptă analizele anonime făcute de același IP înainte de login
+      const ip = (() => {
+        const fwd = req.headers.get('x-forwarded-for')
+        return fwd ? fwd.split(',')[0].trim() : null
+      })()
+      if (ip) {
+        // Găsim roast-uri anonime recente (ultimele 24h) de la același IP via free_scans
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const { error: claimError } = await supabaseAdmin
+          .from('roasts')
+          .update({ user_id: userId })
+          .is('user_id', null)
+          .gte('created_at', since)
+        if (claimError) console.error('[roast] Failed to claim anonymous roasts:', claimError)
+        else console.log(`[roast] Claimed anonymous roasts for user ${userId}`)
+      }
+
       // Salvează roast-ul
       const { error: insertError } = await supabaseAdmin
         .from('roasts')
