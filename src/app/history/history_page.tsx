@@ -413,14 +413,12 @@ export default function HistoryPage() {
 
     const supabase = createSupabaseBrowser()
 
-    console.log('[history] querying for user:', user.id, user.email)
     supabase
       .from('roasts')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        console.log('[history] result:', { data, error, count: data?.length })
         if (!error && data) setEntries(data as HistoryEntry[])
         setLoading(false)
       })
