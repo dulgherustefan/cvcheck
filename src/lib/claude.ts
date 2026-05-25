@@ -7,7 +7,7 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
-const MAX_CONTENT_CHARS = 8000
+const MAX_CONTENT_CHARS = 6000
 
 const RATING_THRESHOLDS: [number, Rating][] = [
   [20,  'needs_work'],
@@ -53,7 +53,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1200,
+    max_tokens: 1400,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -68,11 +68,18 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     .map(b => (b as { type: 'text'; text: string }).text)
     .join('')
 
-  const cleaned = raw
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/```\s*$/i, '')
-    .trim()
+  // Extract JSON robustly — find first { and last } in case Claude adds text
+  const cleaned = (() => {
+    let s = raw
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim()
+    const start = s.indexOf('{')
+    const end   = s.lastIndexOf('}')
+    if (start !== -1 && end !== -1 && end > start) s = s.slice(start, end + 1)
+    return s
+  })()
 
   let parsed: AnalysisResult
   try {
