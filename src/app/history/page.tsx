@@ -422,7 +422,7 @@ export default function HistoryPage() {
         if (!error && data) setEntries(data as HistoryEntry[])
         setLoading(false)
       })
-  }, [user, authLoading, router])
+  }, [user, authLoading])
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
