@@ -108,7 +108,7 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
       background:'var(--bg-elevated)', border:'1px solid var(--border)',
       display:'flex', alignItems:'flex-start', gap:12, cursor:'pointer',
     }}
-    onMouseOver={e => (e.currentTarget.style.background='var(--accent-subtle)')}
+    onMouseOver={e => (e.currentTarget.style.background='var(--bg-subtle)')}
     onMouseOut={e  => (e.currentTarget.style.background='var(--bg-elevated)')}>
       <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.05em', padding:'2px 8px', borderRadius:4, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
         {String(index+1).padStart(2,'0')}
@@ -212,7 +212,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
     <div ref={ref} style={{ position:'relative' }}>
       <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-row:hover{background:var(--bg-subtle)!important;color:var(--text-primary)!important}.dd-danger:hover{background:rgba(239,68,68,0.07)!important;color:#ef4444!important}`}</style>
       <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 4px', background:open?'var(--bg-subtle)':'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.15s', fontFamily:'var(--font-sans)' }}>
-        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--accent-subtle)', color:'var(--accent-text)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, flexShrink:0 }}>{initials}</span>
+        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--bg-muted)', color:'var(--text-secondary)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, flexShrink:0 }}>{initials}</span>
         <span style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:13, fontWeight:500, color:'var(--text-secondary)' }}>{user.email?.split('@')[0]}</span>
         <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -251,7 +251,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 // ─── PlansModal ────────────────────────────────────────────────────────────────
 const PLAN_DEFS = {
   free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'', features:['Overall score /100','Rating & summary','2 observations','1 improvement tip'] },
-  pro:     { label:'Pro',     color:'var(--accent-text)',   price:'€2',    period:'one-time', features:['Overall score + 8 detailed dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
+  pro:     { label:'Pro',     color:'var(--text-primary)',   price:'€2',    period:'one-time', features:['Overall score + 8 detailed dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
   premium: { label:'Premium', color:'var(--score-high)',    price:'€7.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Track progress over time','Priority support'] },
 }
 
@@ -334,14 +334,14 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
               <form onSubmit={handleAuth} style={{ display:'flex', flexDirection:'column', gap:10 }}>
                 <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
                   <label style={{ fontSize:11, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Email</label>
-                  <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--accent)';e.target.style.boxShadow='0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent)'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}}/>
+                  <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--border-strong)';e.target.style.boxShadow='none'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}}/>
                 </div>
                 <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
                   <label style={{ fontSize:11, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Password</label>
-                  <input type="password" placeholder={authMode==='register'?'Min. 8 characters':'Your password'} value={password} onChange={e => setPassword(e.target.value)} autoComplete={authMode==='register'?'new-password':'current-password'} required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--accent)'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}}/>
+                  <input type="password" placeholder={authMode==='register'?'Min. 8 characters':'Your password'} value={password} onChange={e => setPassword(e.target.value)} autoComplete={authMode==='register'?'new-password':'current-password'} required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--border-strong)'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}}/>
                 </div>
                 {authError && <p style={{ fontSize:13, color:'#ef4444', margin:0, padding:'10px 12px', background:'rgba(239,68,68,0.07)', border:'1px solid rgba(239,68,68,0.18)', borderRadius:'var(--radius-sm)' }}>{authError}</p>}
-                <button type="submit" disabled={authLoading||googleLoading} style={{ padding:'12px', background:'var(--accent)', border:'none', borderRadius:'var(--radius-md)', color:'#fff', fontSize:14, fontWeight:600, cursor:authLoading?'not-allowed':'pointer', opacity:authLoading?0.6:1, fontFamily:'var(--font-sans)' }}>
+                <button type="submit" disabled={authLoading||googleLoading} style={{ padding:'12px', background:'var(--text-primary)', border:'none', borderRadius:'var(--radius-sm)', color:'var(--bg)', fontSize:14, fontWeight:600, cursor:authLoading?'not-allowed':'pointer', opacity:authLoading?0.6:1, fontFamily:'var(--font-sans)' }}>
                   {authLoading ? 'Processing…' : authMode==='login' ? 'Sign in & continue' : 'Create account & continue'}
                 </button>
               </form>
@@ -355,8 +355,8 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                   {(['free','pro','premium'] as const).map(pk => {
                     const p = PLAN_DEFS[pk]
                     return (
-                      <div key={pk} style={{ padding:20, borderRadius:'var(--radius-lg)', border:`${pk==='pro'?'1.5px':'1px'} solid ${pk==='pro'?'var(--accent)':'var(--border)'}`, background:pk==='pro'?'color-mix(in srgb, var(--accent) 4%, var(--bg-elevated))':'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14, position:'relative' }}>
-                        {pk==='pro' && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'var(--accent)', color:'#fff', fontSize:9, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, padding:'3px 10px', borderRadius:20, whiteSpace:'nowrap' as const }}>Best value</div>}
+                      <div key={pk} style={{ padding:20, borderRadius:'var(--radius-lg)', border:`${pk==='pro'?'1.5px':'1px'} solid ${pk==='pro'?'var(--border-strong)':'var(--border)'}`, background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14, position:'relative' }}>
+                        {pk==='pro' && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'var(--text-primary)', color:'var(--bg)', fontSize:9, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, padding:'3px 10px', borderRadius:20, whiteSpace:'nowrap' as const }}>Best value</div>}
                         <div>
                           <span style={{ fontSize:11, fontWeight:800, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{p.label}</span>
                           <div style={{ fontSize:24, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>{p.price}{p.period&&<span style={{ fontSize:12, fontWeight:400, color:'var(--text-tertiary)' }}> {p.period}</span>}</div>
@@ -367,7 +367,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                         {pk==='free' ? (
                           <div style={{ padding:'9px', textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)' }}>Current plan</div>
                         ) : (
-                          <button onClick={() => handleBuy(pk as 'pro'|'premium')} style={{ padding:'11px', border:'none', borderRadius:'var(--radius-md)', background:pk==='premium'?'var(--text-primary)':'var(--accent)', color:pk==='premium'?'var(--bg)':'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+                          <button onClick={() => handleBuy(pk as 'pro'|'premium')} style={{ padding:'11px', border:'none', borderRadius:'var(--radius-md)', background:'var(--text-primary)', color:'var(--bg)', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
                             {buying===pk ? '…' : `Get ${p.label}`}
                           </button>
                         )}
@@ -377,7 +377,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                 </div>
               )}
               {tier==='pro' && (
-                <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--accent)', background:'color-mix(in srgb, var(--accent) 3%, var(--bg-elevated))', display:'flex', flexDirection:'column', gap:14 }}>
+                <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--border-strong)', background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14 }}>
                   <div><span style={{ fontSize:11, fontWeight:800, color:'var(--score-high)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Premium</span><div style={{ fontSize:26, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>€7.99 <span style={{ fontSize:13, fontWeight:400, color:'var(--text-tertiary)' }}>/month</span></div></div>
                   <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:8 }}>{PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}</ul>
                   <button onClick={() => handleBuy('premium')} style={{ padding:'12px', border:'none', borderRadius:'var(--radius-md)', background:'var(--text-primary)', color:'var(--bg)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Upgrade to Premium</button>
@@ -440,6 +440,8 @@ export default function Home() {
   const [copied,     setCopied]     = useState(false)
   const [analysisCount, setAnalysisCount] = useState(0)
   const [loadingStep,   setLoadingStep]   = useState(0)
+  const [pendingSave,   setPendingSave]   = useState<GatedAnalysisResult | null>(null)
+  const [savedToHistory, setSavedToHistory] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -448,6 +450,28 @@ export default function Home() {
     const timers = LOADING_STEPS.map((_,i) => setTimeout(() => setLoadingStep(i), i * 4000))
     return () => timers.forEach(clearTimeout)
   }, [appState])
+
+  // Save pending analysis to history after login
+  useEffect(() => {
+    if (!user || !session || !pendingSave || savedToHistory) return
+    const supabase = createSupabaseBrowser()
+    supabase.from('roasts').insert({
+      id: pendingSave.analysis_id,
+      user_id: user.id,
+      source: pendingSave.source ?? null,
+      total_score: pendingSave.total_score,
+      rating: pendingSave.rating,
+      summary: pendingSave.summary,
+      scores: pendingSave.scores,
+      observations: pendingSave.observations,
+      improvements: pendingSave.improvements,
+      top_priority: pendingSave.top_priority,
+      tier: pendingSave.tier,
+    }).then(({ error }) => {
+      if (!error) { setSavedToHistory(true); setPendingSave(null) }
+      else console.error('[history] Failed to save pending analysis:', error)
+    })
+  }, [user, session, pendingSave, savedToHistory])
 
   const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault(); setIsDragging(false)
@@ -472,16 +496,23 @@ export default function Home() {
       const data = await res.json()
       if (!res.ok) {
         if (res.status === 403 && data.error === 'free_limit_reached') { setShowUpgradeModal(true); setAppState('idle'); return }
+        if (res.status === 429) {
+          const mins = data.retryAfter ? Math.ceil(data.retryAfter / 60) : 60
+          setError(`Too many analyses. Try again in ${mins} minute${mins !== 1 ? 's' : ''}.`)
+          setAppState('error'); return
+        }
         throw new Error(data.error || 'Analysis failed')
       }
       setResult(data); setAppState('result'); setAnalysisCount(c => c+1)
+      if (!user) setPendingSave(data)  // will save when user logs in
+      else setSavedToHistory(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setAppState('error')
     }
   }
 
-  const reset     = () => { setAppState('idle'); setResult(null); setError(''); setUrl(''); setFile(null) }
+  const reset     = () => { setAppState('idle'); setResult(null); setError(''); setUrl(''); setFile(null); setPendingSave(null); setSavedToHistory(false) }
   const copyShare = async () => {
     if (!result) return
     await navigator.clipboard.writeText(`My CV score: ${result.total_score}/100 (${RATING_LABELS[result.rating]})\n${result.summary}\n\ncvcheck.app`)
@@ -758,6 +789,18 @@ export default function Home() {
                 <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                 New analysis
               </button>
+              {!user && (
+                <button className={styles.signInBtn} onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'5px 12px', cursor:'pointer' }}>
+                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                  Sign in to save
+                </button>
+              )}
+              {user && savedToHistory && (
+                <span style={{ fontSize:12, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}>
+                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  Saved to history
+                </span>
+              )}
               <button className={styles.shareBtn} onClick={copyShare}>
                 {copied
                   ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!</>
