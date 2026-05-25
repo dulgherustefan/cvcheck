@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CVCheck — Honest AI Feedback on Your CV',
     description: 'Score your CV out of 100 in seconds. See exactly what to fix.',
-    images: ['/og-image.png'],
+    images: ['/api/og?score=72&rating=good'],
   },
 }
 

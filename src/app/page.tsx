@@ -515,7 +515,10 @@ export default function Home() {
   const reset     = () => { setAppState('idle'); setResult(null); setError(''); setUrl(''); setFile(null); setPendingSave(null); setSavedToHistory(false) }
   const copyShare = async () => {
     if (!result) return
-    await navigator.clipboard.writeText(`My CV score: ${result.total_score}/100 (${RATING_LABELS[result.rating]})\n${result.summary}\n\ncvcheck.app`)
+    const ogParams = new URLSearchParams({ score: String(result.total_score), rating: result.rating, ...(result.source ? { source: result.source } : {}) })
+    const shareUrl = `https://cvcheck.app/?ref=share`
+    const shareText = `My CV scored ${result.total_score}/100 (${RATING_LABELS[result.rating]}) on CVCheck — check yours: ${shareUrl}`
+    await navigator.clipboard.writeText(shareText)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
   const isPro = result?.tier === 'pro' || result?.tier === 'premium'
