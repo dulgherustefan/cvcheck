@@ -409,18 +409,16 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (authLoading) return
-    if (!user) { router.replace('/'); return }
+    if (!user) { setLoading(false); router.replace('/'); return }
 
     const supabase = createSupabaseBrowser()
 
-    console.log('[history] querying for user:', user.id, user.email)
     supabase
       .from('roasts')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
-        console.log('[history] result:', { data, error, count: data?.length })
         if (!error && data) setEntries(data as HistoryEntry[])
         setLoading(false)
       })
@@ -488,7 +486,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Loading skeleton */}
-        {(loading || authLoading) && (
+        {(loading && !authLoading) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[1, 2, 3].map(i => (
               <div key={i} style={{
