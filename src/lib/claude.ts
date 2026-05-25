@@ -53,7 +53,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1200,
+    max_tokens: 900,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -68,22 +68,11 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     .map(b => (b as { type: 'text'; text: string }).text)
     .join('')
 
-  // Extract JSON — Claude sometimes adds text before/after the JSON block
-  const cleaned = (() => {
-    // Strip markdown fences
-    let s = raw
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim()
-    // Find first { and last } in case there's leading/trailing text
-    const start = s.indexOf('{')
-    const end   = s.lastIndexOf('}')
-    if (start !== -1 && end !== -1 && end > start) {
-      s = s.slice(start, end + 1)
-    }
-    return s
-  })()
+  const cleaned = raw
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/```\s*$/i, '')
+    .trim()
 
   let parsed: AnalysisResult
   try {
