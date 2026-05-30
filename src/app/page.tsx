@@ -182,7 +182,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
 // ─── AccountDropdown ──────────────────────────────────────────────────────────
 const TIER_META: Record<string,{label:string;color:string}> = {
   free:    { label:'Free',    color:'var(--text-tertiary)' },
-  pro:     { label:'Pro',     color:'var(--accent-text)'   },
+  pro:     { label:'Pro',     color:'var(--accent-text, var(--accent))'   },
   premium: { label:'Premium', color:'var(--score-high)'    },
 }
 const ddItem: React.CSSProperties = {
@@ -212,7 +212,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
     <div ref={ref} style={{ position:'relative' }}>
       <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-row:hover{background:var(--bg-subtle)!important;color:var(--text-primary)!important}.dd-danger:hover{background:rgba(239,68,68,0.07)!important;color:#ef4444!important}`}</style>
       <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 4px', background:open?'var(--bg-subtle)':'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.15s', fontFamily:'var(--font-sans)' }}>
-        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--bg-muted)', color:'var(--text-secondary)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, flexShrink:0 }}>{initials}</span>
+        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, flexShrink:0 }}>{initials}</span>
         <span style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:13, fontWeight:500, color:'var(--text-secondary)' }}>{user.email?.split('@')[0]}</span>
         <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -255,164 +255,153 @@ const PLAN_DEFS = {
   premium: { label:'Premium', color:'var(--score-high)',    price:'€7.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Track progress over time','Priority support'] },
 }
 
+function Chk() {
+  return <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
+}
+
 function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
-  tier:string; userId?:string; userEmail?:string; onClose:()=>void; onBuy:()=>void
+  tier: string; userId?: string; userEmail?: string
+  onClose: () => void; onBuy: () => void
 }) {
-  const currentPlan = PLAN_DEFS[tier as keyof typeof PLAN_DEFS] ?? PLAN_DEFS.free
-  const isFree    = tier === 'free'
+  const [buying, setBuying] = useState<string|null>(null)
+  const [showLoginGate, setShowLoginGate] = useState(false)
+  const [authMode, setAuthMode] = useState<'login'|'signup'>('login')
+  const [email, setEmail] = useState(userEmail ?? '')
+  const [password, setPassword] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
+  const isFree = tier === 'free'
   const isPremium = tier === 'premium'
 
-  const [showLoginGate, setShowLoginGate] = useState(false)
-  const [pendingPlan, setPendingPlan]   = useState<'pro'|'premium'|null>(null)
-  const [email, setEmail]   = useState('')
-  const [password, setPassword] = useState('')
-  const [authMode, setAuthMode] = useState<'login'|'register'>('login')
-  const [authError, setAuthError]   = useState('')
-  const [authLoading, setAuthLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [buying, setBuying] = useState<'pro'|'premium'|null>(null)
-  const supabase = createSupabaseBrowser()
-
-  const handleBuy = (plan:'pro'|'premium') => {
-    if (!userId) { setPendingPlan(plan); setShowLoginGate(true); return }
-    setBuying(plan); onBuy()
+  const handleBuy = async (plan: 'pro'|'premium') => {
+    if (!userId) { setShowLoginGate(true); return }
+    setBuying(plan)
+    try {
+      const res = await fetch('/api/stripe/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan, userId, email:userEmail }) })
+      const { url } = await res.json()
+      if (url) window.location.href = url
+    } catch { setBuying(null) }
   }
-  const handleGoogle = async () => {
-    setGoogleLoading(true); setAuthError('')
-    const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo:`${window.location.origin}/auth/callback` } })
-    if (error) { setAuthError(error.message); setGoogleLoading(false) }
-  }
-  const handleAuth = async (e:React.FormEvent) => {
-    e.preventDefault(); setAuthError(''); setAuthLoading(true)
-    if (authMode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setAuthError(error.message); setAuthLoading(false); return }
-    } else {
-      if (password.length < 8) { setAuthError('Password must be at least 8 characters.'); setAuthLoading(false); return }
-      const { error } = await supabase.auth.signUp({ email, password, options:{ emailRedirectTo:`${window.location.origin}/auth/callback` } })
-      if (error) { setAuthError(error.message); setAuthLoading(false); return }
-    }
-    setAuthLoading(false); setShowLoginGate(false); onBuy()
-  }
-
-  const Chk = () => <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
-
-  const inputStyle:React.CSSProperties = { padding:'11px 14px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', color:'var(--text-primary)', fontSize:14, outline:'none', fontFamily:'var(--font-sans)', width:'100%' }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2000, padding:24 }} onClick={onClose}>
-      <div style={{ width:'100%', maxWidth: showLoginGate ? 420 : (isFree ? 700 : 440), background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-xl)', boxShadow:'0 40px 100px rgba(0,0,0,0.35)', overflow:'hidden', maxHeight:'92vh', overflowY:'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'22px 24px', borderBottom:'1px solid var(--border)' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
+      <div style={{ background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:28, display:'flex', flexDirection:'column', gap:24, boxShadow:'0 24px 80px rgba(0,0,0,0.25)' }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
           <div>
-            {!showLoginGate ? (
-              <><h2 style={{ fontSize:18, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.02em' }}>Plans</h2><p style={{ fontSize:13, color:'var(--text-secondary)', margin:'4px 0 0' }}>Active: <span style={{ fontWeight:700, color:currentPlan.color }}>{currentPlan.label}</span></p></>
-            ) : (
-              <><p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase' as const, color:'var(--accent-text)', margin:'0 0 4px' }}>{pendingPlan==='pro'?'Pro — €2 one-time':'Premium — €7.99/month'}</p><h2 style={{ fontSize:18, fontWeight:700, color:'var(--text-primary)', margin:0 }}>Sign in to continue</h2></>
-            )}
+            <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', margin:0 }}>Plans</p>
+            <h2 style={{ fontSize:20, fontWeight:700, letterSpacing:'-0.03em', color:'var(--text-primary)', margin:'6px 0 0' }}>Unlock the full picture</h2>
           </div>
-          <button onClick={showLoginGate ? () => setShowLoginGate(false) : onClose} style={{ background:'none', border:'1px solid var(--border)', width:32, height:32, borderRadius:'var(--radius-md)', cursor:'pointer', color:'var(--text-tertiary)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-sans)' }}>
-            {showLoginGate ? <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> : <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+          <button onClick={onClose} style={{ width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-subtle)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', cursor:'pointer', color:'var(--text-tertiary)', flexShrink:0 }}>
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
-        <div style={{ padding:24, display:'flex', flexDirection:'column', gap:16 }}>
-          {showLoginGate && (
-            <>
-              <p style={{ fontSize:14, color:'var(--text-secondary)', lineHeight:1.6, margin:0 }}>Create a free account to purchase and access your analysis anytime.</p>
-              <button onClick={handleGoogle} disabled={googleLoading||authLoading} style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, width:'100%', padding:'12px 16px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', color:'var(--text-primary)', fontSize:14, fontWeight:500, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.251 17.64 11.945 17.64 9.2z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-                {googleLoading ? 'Connecting…' : 'Continue with Google'}
-              </button>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}><div style={{ flex:1, height:1, background:'var(--border)' }}/><span style={{ fontSize:12, color:'var(--text-tertiary)' }}>or</span><div style={{ flex:1, height:1, background:'var(--border)' }}/></div>
-              <div style={{ display:'flex', background:'var(--bg-subtle)', borderRadius:'var(--radius-md)', padding:3, gap:2 }}>
-                {(['login','register'] as const).map(m => (
-                  <button key={m} onClick={() => { setAuthMode(m); setAuthError('') }} style={{ flex:1, padding:'7px 12px', fontSize:13, fontWeight:500, background:authMode===m?'var(--bg-elevated)':'transparent', border:authMode===m?'1px solid var(--border)':'none', borderRadius:'calc(var(--radius-md) - 2px)', color:authMode===m?'var(--text-primary)':'var(--text-secondary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-                    {m==='login' ? 'Sign in' : 'Create account'}
-                  </button>
-                ))}
-              </div>
-              <form onSubmit={handleAuth} style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
-                  <label style={{ fontSize:11, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Email</label>
-                  <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--border-strong)';e.target.style.boxShadow='none'}} onBlur={e=>{e.target.style.borderColor='var(--border)';e.target.style.boxShadow='none'}}/>
-                </div>
-                <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
-                  <label style={{ fontSize:11, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Password</label>
-                  <input type="password" placeholder={authMode==='register'?'Min. 8 characters':'Your password'} value={password} onChange={e => setPassword(e.target.value)} autoComplete={authMode==='register'?'new-password':'current-password'} required style={inputStyle} onFocus={e=>{e.target.style.borderColor='var(--border-strong)'}} onBlur={e=>{e.target.style.borderColor='var(--border)'}}/>
-                </div>
-                {authError && <p style={{ fontSize:13, color:'#ef4444', margin:0, padding:'10px 12px', background:'rgba(239,68,68,0.07)', border:'1px solid rgba(239,68,68,0.18)', borderRadius:'var(--radius-sm)' }}>{authError}</p>}
-                <button type="submit" disabled={authLoading||googleLoading} style={{ padding:'12px', background:'var(--text-primary)', border:'none', borderRadius:'var(--radius-sm)', color:'var(--bg)', fontSize:14, fontWeight:600, cursor:authLoading?'not-allowed':'pointer', opacity:authLoading?0.6:1, fontFamily:'var(--font-sans)' }}>
-                  {authLoading ? 'Processing…' : authMode==='login' ? 'Sign in & continue' : 'Create account & continue'}
+        {showLoginGate && (
+          <>
+            <div style={{ display:'flex', gap:4, background:'var(--bg-subtle)', borderRadius:'var(--radius-sm)', padding:3 }}>
+              {(['login','signup'] as const).map(m => (
+                <button key={m} onClick={() => setAuthMode(m)} style={{ flex:1, padding:'8px', borderRadius:6, border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontSize:13, fontWeight:500, background:authMode===m?'var(--bg-elevated)':'transparent', color:authMode===m?'var(--text-primary)':'var(--text-tertiary)', transition:'all 0.15s' }}>
+                  {m==='login'?'Sign in':'Create account'}
                 </button>
-              </form>
-            </>
-          )}
+              ))}
+            </div>
+            <form onSubmit={e => { e.preventDefault() }} style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'11px 14px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', color:'var(--text-primary)', fontSize:13, fontFamily:'var(--font-sans)', outline:'none' }}/>
+              <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} style={{ padding:'11px 14px', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', color:'var(--text-primary)', fontSize:13, fontFamily:'var(--font-sans)', outline:'none' }}/>
+              <button type="submit" style={{ padding:'12px', border:'none', borderRadius:'var(--radius-md)', background:'var(--accent)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+                {authLoading ? 'Processing…' : authMode==='login' ? 'Sign in & continue' : 'Create account & continue'}
+              </button>
+            </form>
+          </>
+        )}
 
-          {!showLoginGate && (
-            <>
-              {isFree && (
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
-                  {(['free','pro','premium'] as const).map(pk => {
-                    const p = PLAN_DEFS[pk]
-                    return (
-                      <div key={pk} style={{ padding:20, borderRadius:'var(--radius-lg)', border:`${pk==='pro'?'1.5px':'1px'} solid ${pk==='pro'?'var(--border-strong)':'var(--border)'}`, background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14, position:'relative' }}>
-                        {pk==='pro' && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'var(--text-primary)', color:'var(--bg)', fontSize:9, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, padding:'3px 10px', borderRadius:20, whiteSpace:'nowrap' as const }}>Best value</div>}
-                        <div>
-                          <span style={{ fontSize:11, fontWeight:800, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{p.label}</span>
-                          <div style={{ fontSize:24, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>{p.price}{p.period&&<span style={{ fontSize:12, fontWeight:400, color:'var(--text-tertiary)' }}> {p.period}</span>}</div>
-                        </div>
-                        <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:7, flex:1 }}>
-                          {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}><Chk/>{f}</li>)}
-                        </ul>
-                        {pk==='free' ? (
-                          <div style={{ padding:'9px', textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)' }}>Current plan</div>
-                        ) : (
-                          <button onClick={() => handleBuy(pk as 'pro'|'premium')} style={{ padding:'11px', border:'none', borderRadius:'var(--radius-md)', background:'var(--text-primary)', color:'var(--bg)', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-                            {buying===pk ? '…' : `Get ${p.label}`}
-                          </button>
-                        )}
+        {!showLoginGate && (
+          <>
+            {isFree && (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+                {(['free','pro','premium'] as const).map(pk => {
+                  const p = PLAN_DEFS[pk]
+                  return (
+                    <div key={pk} style={{ padding:20, borderRadius:'var(--radius-lg)', border:`${pk==='pro'?'1.5px solid var(--accent)':'1px solid var(--border)'}`, background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14, position:'relative' }}>
+                      {pk==='pro' && <div style={{ position:'absolute', top:-11, left:'50%', transform:'translateX(-50%)', background:'var(--accent)', color:'#fff', fontSize:9, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, padding:'3px 10px', borderRadius:20, whiteSpace:'nowrap' as const }}>Best value</div>}
+                      <div>
+                        <span style={{ fontSize:11, fontWeight:800, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{p.label}</span>
+                        <div style={{ fontSize:24, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>{p.price}{p.period&&<span style={{ fontSize:12, fontWeight:400, color:'var(--text-tertiary)' }}> {p.period}</span>}</div>
                       </div>
-                    )
-                  })}
-                </div>
-              )}
-              {tier==='pro' && (
-                <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--border-strong)', background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14 }}>
-                  <div><span style={{ fontSize:11, fontWeight:800, color:'var(--score-high)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Premium</span><div style={{ fontSize:26, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>€7.99 <span style={{ fontSize:13, fontWeight:400, color:'var(--text-tertiary)' }}>/month</span></div></div>
-                  <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:8 }}>{PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}</ul>
-                  <button onClick={() => handleBuy('premium')} style={{ padding:'12px', border:'none', borderRadius:'var(--radius-md)', background:'var(--text-primary)', color:'var(--bg)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Upgrade to Premium</button>
-                </div>
-              )}
-              {isPremium && (
-                <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--score-high)', background:'rgba(22,163,74,0.04)', display:'flex', flexDirection:'column', gap:12 }}>
-                  <p style={{ fontSize:14, color:'var(--text-secondary)', margin:0, lineHeight:1.65 }}>You have full access to all CVCheck features. Thank you for being Premium!</p>
-                  <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:8 }}>{PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}</ul>
-                </div>
-              )}
-              <p style={{ textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)', margin:0, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                Secure checkout via Stripe · Cancel anytime
-              </p>
-            </>
-          )}
-        </div>
+                      <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:7, flex:1 }}>
+                        {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}><Chk/>{f}</li>)}
+                      </ul>
+                      {pk==='free' ? (
+                        <div style={{ padding:'9px', textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)' }}>Current plan</div>
+                      ) : (
+                        <button onClick={() => handleBuy(pk as 'pro'|'premium')} style={{ padding:'11px', border:'none', borderRadius:'var(--radius-md)', background:'var(--accent)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+                          {buying===pk ? '…' : `Get ${p.label}`}
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {tier==='pro' && (
+              <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--accent)', background:'var(--bg-elevated)', display:'flex', flexDirection:'column', gap:14 }}>
+                <div><span style={{ fontSize:11, fontWeight:800, color:'var(--score-high)', textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>Premium</span><div style={{ fontSize:26, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginTop:6 }}>€7.99 <span style={{ fontSize:13, fontWeight:400, color:'var(--text-tertiary)' }}>/month</span></div></div>
+                <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:8 }}>{PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}</ul>
+                <button onClick={() => handleBuy('premium')} style={{ padding:'12px', border:'none', borderRadius:'var(--radius-md)', background:'var(--accent)', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Upgrade to Premium</button>
+              </div>
+            )}
+            {isPremium && (
+              <div style={{ padding:22, borderRadius:'var(--radius-lg)', border:'1.5px solid var(--score-high)', background:'rgba(22,163,74,0.04)', display:'flex', flexDirection:'column', gap:12 }}>
+                <p style={{ fontSize:14, color:'var(--text-secondary)', margin:0, lineHeight:1.65 }}>You have full access to all CVCheck features. Thank you for being Premium!</p>
+                <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column', gap:8 }}>{PLAN_DEFS.premium.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}</ul>
+              </div>
+            )}
+            <p style={{ textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)', margin:0, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Secure checkout via Stripe · Cancel anytime
+            </p>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
-// ─── Static landing sections ──────────────────────────────────────────────────
+// ─── Static landing data ──────────────────────────────────────────────────────
 const HOW_STEPS = [
   { n:'01', title:'Paste a link or drop your PDF', desc:'Works with portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
   { n:'02', title:'We read it the way a recruiter would', desc:'CVCheck looks at 8 things recruiters actually care about — positioning, proof, structure, language, and more.' },
   { n:'03', title:'You get a score and real feedback', desc:'Not "consider improving your experience section." Actual specific changes, with rewritten examples you can use right away.' },
 ]
-const FEATURES = [
-  { icon:'📊', title:'A score that means something', desc:'A single number out of 100, broken down across 8 weighted dimensions. You\'ll know exactly where you stand and why.' },
-  { icon:'🔍', title:'8 dimensions, not just a vibe check', desc:'First impression, positioning, experience proof, skills relevance, credibility, structure, language, and contact clarity — each scored separately.' },
-  { icon:'💬', title:'Feedback that\'s actually direct', desc:'Strengths labeled as strengths, weaknesses labeled as weaknesses. No "this is a great start" when it isn\'t.' },
-  { icon:'✏️', title:'Tips you can act on today', desc:'Every improvement comes with a specific rewrite. Copy it, tweak it, paste it in. Done.' },
+
+const SAMPLE_DIMS = [
+  { label:'First impression', pct:90 },
+  { label:'Positioning',       pct:75 },
+  { label:'Experience proof',  pct:60 },
+  { label:'Skills relevance',  pct:80 },
+  { label:'Credibility',       pct:55 },
+  { label:'Structure',         pct:85 },
+  { label:'Language',          pct:70 },
+  { label:'Contact clarity',   pct:95 },
 ]
+
+const SAMPLE_OBS = [
+  { type:'strength', text:'Strong action verbs throughout — "Led", "Increased", "Delivered" signal ownership immediately.' },
+  { type:'strength', text:'LinkedIn and portfolio clearly linked in the header.' },
+  { type:'weakness', text:'Experience section lists responsibilities, not outcomes — no numbers anywhere in 5 years of work.' },
+  { type:'weakness', text:'"Team player with great communication" appears twice. Filler phrases hurt credibility.' },
+]
+
+const DIMS_LIST = [
+  { icon:'⚡', name:'First impression',   desc:'What a recruiter sees in the first 6 seconds of scanning' },
+  { icon:'🎯', name:'Positioning',        desc:'Does it immediately communicate who you are and why you matter?' },
+  { icon:'📈', name:'Experience proof',   desc:'Results and impact, not just a list of responsibilities' },
+  { icon:'🔧', name:'Skills relevance',   desc:'Are the right skills prominent for the roles you\'re targeting?' },
+  { icon:'🏅', name:'Credibility signals',desc:'Education, recognitions, publications, social proof' },
+  { icon:'📐', name:'Structure',          desc:'Scannable layout, visual hierarchy, section ordering' },
+  { icon:'🗣️', name:'Language',           desc:'Clarity, action verbs, appropriate tone, no filler phrases' },
+  { icon:'📬', name:'Contact clarity',    desc:'Can a recruiter reach you without hunting for contact info?' },
+]
+
 const LOADING_STEPS = [
   'Reading your content…',
   'Evaluating structure & clarity…',
@@ -451,7 +440,6 @@ export default function Home() {
     return () => timers.forEach(clearTimeout)
   }, [appState])
 
-  // Save pending analysis to history after login
   useEffect(() => {
     if (!user || !session || !pendingSave || savedToHistory) return
     const supabase = createSupabaseBrowser()
@@ -504,7 +492,7 @@ export default function Home() {
         throw new Error(data.error || 'Analysis failed')
       }
       setResult(data); setAppState('result'); setAnalysisCount(c => c+1)
-      if (!user) setPendingSave(data)  // will save when user logs in
+      if (!user) setPendingSave(data)
       else setSavedToHistory(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -515,14 +503,12 @@ export default function Home() {
   const reset     = () => { setAppState('idle'); setResult(null); setError(''); setUrl(''); setFile(null); setPendingSave(null); setSavedToHistory(false) }
   const copyShare = async () => {
     if (!result) return
-    const ogParams = new URLSearchParams({ score: String(result.total_score), rating: result.rating, ...(result.source ? { source: result.source } : {}) })
     const shareUrl = `https://cvcheck.app/?ref=share`
     const shareText = `My CV scored ${result.total_score}/100 (${RATING_LABELS[result.rating]}) on CVCheck — check yours: ${shareUrl}`
     await navigator.clipboard.writeText(shareText)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
   const isPro = result?.tier === 'pro' || result?.tier === 'premium'
-
   const scrollToTop = () => window.scrollTo({ top:0, behavior:'smooth' })
 
   return (
@@ -530,21 +516,31 @@ export default function Home() {
       {/* ── Header ── */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
+          {/* Logo */}
           <div className={styles.logo}>
             <div className={styles.logoMark}>
-              <svg width="14" height="14" fill="none" stroke="var(--bg)" strokeWidth="2.2" viewBox="0 0 24 24">
+              <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24">
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
               </svg>
             </div>
             <span className={styles.logoText}>CVCheck</span>
           </div>
+
+          {/* Nav links */}
+          <nav className={styles.navCenter}>
+            <button className={styles.navLink} onClick={() => document.getElementById('how')?.scrollIntoView({behavior:'smooth'})}>How it works</button>
+            <button className={styles.navLink} onClick={() => document.getElementById('dims')?.scrollIntoView({behavior:'smooth'})}>What we score</button>
+            <button className={styles.navLink} onClick={() => document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}>Pricing</button>
+          </nav>
+
+          {/* Right */}
           <div className={styles.headerRight}>
             {!authLoading && (user ? (
               <AccountDropdown user={user} tier={tier} onOpenAccount={() => setShowAccountModal(true)} onOpenPlans={() => setShowPlansModal(true)} onSignOut={() => signOut()}/>
             ) : (
               <div className={styles.headerAuthBtns}>
                 <button className={styles.signInBtn} onClick={() => setShowAuthModal(true)}>Sign in</button>
-                <button className={styles.upgradeHeaderBtn} onClick={() => setShowUpgradeModal(true)}>Get Pro — €2</button>
+                <button className={styles.upgradeHeaderBtn} onClick={() => setShowUpgradeModal(true)}>Try free</button>
               </div>
             ))}
             <ThemeToggle/>
@@ -560,46 +556,28 @@ export default function Home() {
 
       <main className={styles.main}>
 
-        {/* ── IDLE / ERROR ── */}
+        {/* ══════════════════════ IDLE / ERROR ══════════════════════ */}
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
-            <div className={styles.heroTop}>
-              <div className={styles.heroLeft}>
 
-                {/* Eyebrow */}
-                <div className={styles.heroEyebrow}>
-                  <span className={styles.heroEyebrowDot}/>
-                  AI feedback · CVs &amp; portfolios
-                </div>
-
-                {/* Headline */}
-                <h1 className={styles.heroTitle}>
-                  Find out why your CV{' '}
-                  <span className={styles.heroTitleItalic}>isn't getting replies.</span>
-                </h1>
-
-                {/* Sub */}
-                <p className={styles.heroSubtitle}>
-                  Paste a link or upload your CV. Score, breakdown, and specific fixes — in about 30 seconds.
-                </p>
-
-                {/* Trust bar */}
-                <div className={styles.heroTrustBar}>
-                  {[
-                    'No account required',
-                    'CV, portfolio or LinkedIn',
-                    'One free scan',
-                  ].map((t,i,arr) => (
-                    <span key={t} style={{ display:'contents' }}>
-                      <span className={styles.heroTrustItem}>{t}</span>
-                      {i < arr.length-1 && <span className={styles.heroTrustSep}/>}
-                    </span>
-                  ))}
-                </div>
+            {/* ── Hero centred ── */}
+            <div className={styles.heroInner}>
+              <div className={styles.heroBadge}>
+                <span className={styles.heroBadgeDot}/>
+                AI feedback · CVs &amp; portfolios
               </div>
 
-              {/* Input card — right column */}
-              <div className={styles.inputCard}>
+              <h1 className={styles.heroTitle}>
+                Find out why your CV{' '}
+                <em className={styles.heroTitleItalic}>isn't getting replies.</em>
+              </h1>
+
+              <p className={styles.heroSubtitle}>
+                Paste a link or upload your CV. Score, breakdown, and specific fixes — in about 30 seconds.
+              </p>
+
+              {/* Upload box */}
+              <div className={styles.uploadBox}>
                 <div className={styles.modeTabs}>
                   {(['url','pdf'] as const).map(m => (
                     <button key={m} className={`${styles.modeTab} ${mode===m?styles.modeTabActive:''}`} onClick={() => setMode(m)}>
@@ -612,37 +590,46 @@ export default function Home() {
                 </div>
 
                 {mode === 'url' && (
-                  <div className={styles.urlInputWrapper}>
-                    <svg className={styles.urlIcon} width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                  <div className={styles.urlRow}>
                     <input type="url" className={styles.urlField}
                       placeholder="yourportfolio.com · linkedin.com/in/yourname"
                       value={url} onChange={e => setUrl(e.target.value)}
                       onKeyDown={e => e.key==='Enter' && submit()}
                       autoComplete="off" spellCheck={false}/>
+                    <button className={styles.submitBtn} onClick={submit} disabled={!url.trim()} style={{ width:'auto', whiteSpace:'nowrap', flexShrink:0 }}>
+                      Analyze
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
                   </div>
                 )}
 
                 {mode === 'pdf' && (
-                  <div className={`${styles.dropzone} ${isDragging?styles.dropzoneActive:''} ${file?styles.dropzoneHasFile:''}`}
-                    onDrop={handleDrop}
-                    onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onClick={() => !file && fileInputRef.current?.click()}>
-                    <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e => { const f=e.target.files?.[0]; if (f?.type==='application/pdf') setFile(f) }} style={{ display:'none' }}/>
-                    {file ? (
-                      <div className={styles.filePreview}>
-                        <div className={styles.fileIcon}><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                        <div className={styles.fileMeta}><span className={styles.fileName}>{file.name}</span><span className={styles.fileSize}>{(file.size/1024).toFixed(0)} KB · PDF ready</span></div>
-                        <button className={styles.fileRemove} onClick={e => { e.stopPropagation(); setFile(null) }}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-                      </div>
-                    ) : (
-                      <div className={styles.dropzonePrompt}>
-                        <div className={styles.dropzoneIconWrap}><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-                        <span className={styles.dropzoneText}>Drop your CV here</span>
-                        <span className={styles.dropzoneHint}>or click to browse · PDF · max 10 MB</span>
-                      </div>
-                    )}
-                  </div>
+                  <>
+                    <div className={`${styles.dropzone} ${isDragging?styles.dropzoneActive:''} ${file?styles.dropzoneHasFile:''}`}
+                      onDrop={handleDrop}
+                      onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onClick={() => !file && fileInputRef.current?.click()}>
+                      <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e => { const f=e.target.files?.[0]; if (f?.type==='application/pdf') setFile(f) }} style={{ display:'none' }}/>
+                      {file ? (
+                        <div className={styles.filePreview}>
+                          <div className={styles.fileIcon}><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                          <div className={styles.fileMeta}><span className={styles.fileName}>{file.name}</span><span className={styles.fileSize}>{(file.size/1024).toFixed(0)} KB · PDF ready</span></div>
+                          <button className={styles.fileRemove} onClick={e => { e.stopPropagation(); setFile(null) }}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        </div>
+                      ) : (
+                        <div className={styles.dropzonePrompt}>
+                          <div className={styles.dropzoneIconWrap}><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                          <span className={styles.dropzoneText}>Drop your CV here</span>
+                          <span className={styles.dropzoneHint}>or click to browse · PDF · max 10 MB</span>
+                        </div>
+                      )}
+                    </div>
+                    <button className={styles.submitBtn} onClick={submit} disabled={!file}>
+                      Analyze my CV
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                  </>
                 )}
 
                 {appState === 'error' && (
@@ -651,11 +638,6 @@ export default function Home() {
                     {error}
                   </div>
                 )}
-
-                <button className={styles.submitBtn} onClick={submit} disabled={mode==='url' ? !url.trim() : !file}>
-                  Analyze my CV
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
 
                 <p className={styles.freeNote}>
                   {tier==='free' && analysisCount>=1
@@ -666,116 +648,181 @@ export default function Home() {
               </div>
             </div>
 
-            {/* ── Social proof bar ── */}
-            <div className={styles.socialProofBar}>
+            {/* ── Stats strip ── */}
+            <div className={styles.statsStrip}>
               {[
                 { n:'8',    label:'dimensions scored' },
                 { n:'~30s', label:'from link to results' },
                 { n:'€2',   label:'full access, one-time' },
                 { n:'0',    label:'sugarcoating' },
               ].map(item => (
-                <div key={item.label} className={styles.socialProofItem}>
-                  <span className={styles.socialProofNumber}>{item.n}</span>
-                  <span className={styles.socialProofLabel}>{item.label}</span>
+                <div key={item.label} className={styles.statItem}>
+                  <span className={styles.statNumber}>{item.n}</span>
+                  <span className={styles.statLabel}>{item.label}</span>
                 </div>
               ))}
             </div>
 
             {/* ── How it works ── */}
-            <section className={styles.howSection}>
-              <div>
-                <p className={styles.sectionLabel}>How it works</p>
-                <h2 className={styles.sectionHeading}>Simple enough that you'll actually use it</h2>
-              </div>
-              <div className={styles.howSteps}>
-                {HOW_STEPS.map(s => (
-                  <div key={s.n} className={styles.howStep}>
-                    <div className={styles.howStepNum}>{s.n}</div>
-                    <p className={styles.howStepTitle}>{s.title}</p>
-                    <p className={styles.howStepDesc}>{s.desc}</p>
-                  </div>
-                ))}
+            <section id="how" className={styles.howSection}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.sHead}>
+                  <p className={styles.sEyebrow}>How it works</p>
+                  <h2 className={styles.sTitle}>Simple enough that you'll actually use it</h2>
+                </div>
+                <div className={styles.howSteps}>
+                  {HOW_STEPS.map(s => (
+                    <div key={s.n} className={styles.howStep}>
+                      <div className={styles.howStepNum}>{s.n}</div>
+                      <p className={styles.howStepTitle}>{s.title}</p>
+                      <p className={styles.howStepDesc}>{s.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
 
-            {/* ── Features ── */}
-            <section className={styles.featuresSection}>
-              <div>
-                <p className={styles.sectionLabel}>What you get</p>
-                <h2 className={styles.sectionHeading}>Feedback you can do something with</h2>
-              </div>
-              <div className={styles.featuresGrid}>
-                {FEATURES.map(f => (
-                  <div key={f.title} className={styles.featureCard}>
-                    <div className={styles.featureIcon}>{f.icon}</div>
-                    <p className={styles.featureTitle}>{f.title}</p>
-                    <p className={styles.featureDesc}>{f.desc}</p>
+            {/* ── Sample result ── */}
+            <section className={styles.sampleSection}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.sHead}>
+                  <p className={styles.sEyebrow}>Sample result</p>
+                  <h2 className={styles.sTitle}>This is what you get.</h2>
+                  <p className={styles.sSub}>A real score, real feedback, and specific rewrites — not a generic checklist.</p>
+                </div>
+                <div className={styles.sampleCard}>
+                  {/* Score + summary */}
+                  <div className={styles.sampleTop}>
+                    <div className={styles.sampleRing} style={{ position:'relative', flexShrink:0 }}>
+                      <svg width="110" height="110" viewBox="0 0 110 110">
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--bg-muted)" strokeWidth="6"/>
+                        <circle cx="55" cy="55" r="44" fill="none" stroke="var(--accent)" strokeWidth="6"
+                          strokeLinecap="round" strokeDasharray={`${(72/100)*2*Math.PI*44} ${2*Math.PI*44}`}
+                          transform="rotate(-90 55 55)"/>
+                      </svg>
+                      <div className={styles.sampleRingInner}>
+                        <span className={styles.sampleScore}>72</span>
+                        <span className={styles.sampleScoreMax}>/100</span>
+                      </div>
+                    </div>
+                    <div className={styles.sampleMeta}>
+                      <span className={styles.sampleBadge}>Good</span>
+                      <p className={styles.sampleSummary}>Solid structure and clear contact info. The experience section reads like a job description rather than a track record — adding numbers would move this from Good to Strong quickly.</p>
+                    </div>
                   </div>
-                ))}
+                  {/* Dimension bars */}
+                  <div className={styles.sampleBars}>
+                    {SAMPLE_DIMS.map(d => (
+                      <div key={d.label} className={styles.sampleBar}>
+                        <div className={styles.sampleBarHeader}>
+                          <span className={styles.sampleBarLabel}>{d.label}</span>
+                          <span className={styles.sampleBarScore}>{d.pct}</span>
+                        </div>
+                        <div className={styles.sampleBarTrack}>
+                          <div className={styles.sampleBarFill} style={{ width:`${d.pct}%` }}/>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Observations */}
+                  <div className={styles.sampleObs}>
+                    {SAMPLE_OBS.map((o,i) => (
+                      <div key={i} className={styles.sampleObsCard} style={{
+                        background: o.type==='strength' ? 'rgba(93,202,165,0.07)' : 'rgba(240,149,149,0.07)',
+                        borderColor: o.type==='strength' ? 'rgba(93,202,165,0.2)' : 'rgba(240,149,149,0.2)',
+                      }}>
+                        <span className={styles.sampleObsType} style={{ color: o.type==='strength' ? 'var(--score-high)' : 'var(--score-low)' }}>
+                          {o.type==='strength' ? '✓ Strength' : '✗ Weakness'}
+                        </span>
+                        <p className={styles.sampleObsText}>{o.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ── 8 Dimensions ── */}
+            <section id="dims" className={styles.dimsSection}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.sHead}>
+                  <p className={styles.sEyebrow}>What we score</p>
+                  <h2 className={styles.sTitle}>8 dimensions, not just a vibe check.</h2>
+                  <p className={styles.sSub}>Each weighted by how much recruiters actually care — not what's easiest to measure.</p>
+                </div>
+                <div className={styles.dimsGrid}>
+                  {DIMS_LIST.map(d => (
+                    <div key={d.name} className={styles.dimCard}>
+                      <div className={styles.dimIcon}>{d.icon}</div>
+                      <p className={styles.dimName}>{d.name}</p>
+                      <p className={styles.dimDesc}>{d.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </section>
 
             {/* ── Pricing ── */}
-            <section className={styles.pricingSection}>
-              <div>
-                <p className={styles.sectionLabel}>Pricing</p>
-                <h2 className={styles.sectionHeading}>No tricks, no "contact us for pricing"</h2>
-                <p style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.6, marginTop:8, maxWidth:440 }}>
-                  Try it free. If the score makes you want to see the rest, Pro is €2. That's it.
+            <section id="pricing" className={styles.pricingSection}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.sHead}>
+                  <p className={styles.sEyebrow}>Pricing</p>
+                  <h2 className={styles.sTitle}>No tricks, no "contact us for pricing."</h2>
+                  <p className={styles.sSub}>Try free. If the score makes you want to see the rest, Pro is €2. That's it.</p>
+                </div>
+                <div className={styles.pricingCards}>
+                  {(['free','pro','premium'] as const).map(pk => {
+                    const p = PLAN_DEFS[pk]
+                    const isFeatured = pk === 'pro'
+                    const isCurrent  = tier === pk
+                    return (
+                      <div key={pk} className={`${styles.pricingCard} ${isFeatured?styles.pricingCardFeatured:''}`}>
+                        {isFeatured && <div className={styles.pricingBadge}>Most popular</div>}
+                        <div>
+                          <p className={styles.pricingCardName}>{p.label}</p>
+                          <div style={{ display:'flex', alignItems:'baseline', gap:4, marginTop:6 }}>
+                            <span className={styles.pricingCardPrice}>{p.price}</span>
+                            {p.period && <span className={styles.pricingCardPeriod}>{p.period}</span>}
+                          </div>
+                        </div>
+                        <ul className={styles.pricingFeatureList}>
+                          {p.features.map(f => (
+                            <li key={f} className={styles.pricingFeatureItem}>
+                              <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        {isCurrent ? (
+                          <div className={styles.pricingCtaGhost}>Current plan</div>
+                        ) : pk==='free' ? (
+                          <button className={styles.pricingCtaGhost} style={{ cursor:'pointer', transition:'all 0.15s' }} onClick={scrollToTop}>Try for free ↑</button>
+                        ) : pk==='pro' ? (
+                          <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>Get Pro — €2</button>
+                        ) : (
+                          <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium</button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className={styles.pricingGuarantee}>
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  Secure checkout via Stripe · No subscription on Pro
                 </p>
               </div>
-              <div className={styles.pricingCards}>
-                {(['free','pro','premium'] as const).map(pk => {
-                  const p = PLAN_DEFS[pk]
-                  const isFeatured = pk === 'pro'
-                  const isCurrent  = tier === pk
-                  return (
-                    <div key={pk} className={`${styles.pricingCard} ${isFeatured?styles.pricingCardFeatured:''}`}>
-                      {isFeatured && <div className={styles.pricingBadge}>Most popular</div>}
-                      <div>
-                        <p className={styles.pricingCardName}>{p.label}</p>
-                        <div style={{ display:'flex', alignItems:'baseline', gap:4, marginTop:6 }}>
-                          <span className={styles.pricingCardPrice}>{p.price}</span>
-                          {p.period && <span className={styles.pricingCardPeriod}>{p.period}</span>}
-                        </div>
-                      </div>
-                      <ul className={styles.pricingFeatureList}>
-                        {p.features.map(f => (
-                          <li key={f} className={styles.pricingFeatureItem}>
-                            <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                      {isCurrent ? (
-                        <div className={styles.pricingCtaGhost}>Current plan</div>
-                      ) : pk==='free' ? (
-                        <button className={styles.pricingCtaGhost} style={{ cursor:'pointer', transition:'all 0.15s' }} onClick={scrollToTop}>Start free ↑</button>
-                      ) : pk==='pro' ? (
-                        <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>Get Pro — €2</button>
-                      ) : (
-                        <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium</button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              <p className={styles.pricingGuarantee}>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                Secure checkout via Stripe · No subscription on Pro
-              </p>
             </section>
           </div>
         )}
 
-        {/* ── LOADING ── */}
+        {/* ══════════════════════ LOADING ══════════════════════ */}
         {appState === 'loading' && (
           <div className={styles.loadingState}>
             <div className={styles.loadingSpinner}/>
             <p className={styles.loadingText}>Analyzing your CV…</p>
             <div className={styles.loadingSteps}>
               {LOADING_STEPS.map((step,i) => (
-                <div key={step} className={styles.loadingStep} style={{ opacity:i<=loadingStep?1:0.28, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)', animationDelay:`${i*0.08}s` }}>
+                <div key={step} className={styles.loadingStep} style={{ opacity:i<=loadingStep?1:0.28, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)' }}>
                   <div className={styles.loadingDot} style={{ opacity:i===loadingStep?1:0.3, animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
                   {step}
                 </div>
@@ -784,7 +831,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* ── RESULTS ── */}
+        {/* ══════════════════════ RESULTS ══════════════════════ */}
         {appState === 'result' && result && (
           <div className={styles.results}>
             <div className={styles.resultsHeader}>
@@ -793,7 +840,7 @@ export default function Home() {
                 New analysis
               </button>
               {!user && (
-                <button className={styles.signInBtn} onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'5px 12px', cursor:'pointer' }}>
+                <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'5px 12px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
                   <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                   Sign in to save
                 </button>
@@ -915,7 +962,14 @@ export default function Home() {
 
       {/* ── Footer ── */}
       <footer className={styles.footer}>
-        <span>© 2026 CVCheck</span>
+        <div className={styles.footerLogo}>
+          <div className={styles.logoMark} style={{ width:22, height:22 }}>
+            <svg width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            </svg>
+          </div>
+          <span>CVCheck © 2026</span>
+        </div>
         <div className={styles.footerLinks}>
           <Link href="/privacy" className={styles.footerLink}>Privacy</Link>
           <Link href="/terms" className={styles.footerLink}>Terms</Link>
