@@ -23,9 +23,9 @@
 .header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   border-bottom: 0.5px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
 }
 
 .headerInner {
@@ -61,11 +61,18 @@
   padding: 6px 16px;
   font-size: 13px; font-weight: 500; color: var(--text-secondary);
   background: none; border: none; cursor: pointer;
-  transition: color 0.1s;
+  transition: color 0.15s;
   font-family: var(--font-sans); letter-spacing: -0.01em;
   text-decoration: none; display: block;
+  position: relative;
+}
+.navLink::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; right: 50%;
+  height: 0.5px; background: var(--text-primary);
+  transition: left 0.2s, right 0.2s;
 }
 .navLink:hover { color: var(--text-primary); }
+.navLink:hover::after { left: 16px; right: 16px; }
 
 .headerRight { display: flex; align-items: center; gap: 6px; }
 .headerAuthBtns { display: flex; align-items: center; gap: 5px; }
@@ -85,11 +92,11 @@
   background: var(--text-primary);
   border: none;
   border-radius: 4px; padding: 7px 17px;
-  cursor: pointer; transition: opacity 0.1s;
+  cursor: pointer; transition: opacity 0.1s, box-shadow 0.15s;
   white-space: nowrap; font-family: var(--font-sans);
   letter-spacing: -0.02em;
 }
-.upgradeHeaderBtn:hover { opacity: 0.82; }
+.upgradeHeaderBtn:hover { opacity: 0.88; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
 
 /* ─── Main ─────────────────────────────────────────────────────── */
 .main { flex: 1; width: 100%; display: flex; flex-direction: column; }
@@ -109,13 +116,19 @@
   pointer-events: none; z-index: 0;
 }
 
-/* Radial violet glow at top */
+/* Radial violet glow at top — richer, Ramp-like */
 .heroGradient {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 45% at 50% -5%,
-      color-mix(in srgb, var(--accent) 9%, transparent) 0%,
-      transparent 65%);
+    radial-gradient(ellipse 80% 50% at 50% -8%,
+      color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 40% 30% at 20% 30%,
+      color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 40% 30% at 80% 20%,
+      color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+      transparent 70%);
 }
 
 /* Bottom fade into bg so sections flow */
@@ -137,13 +150,14 @@
 /* ── Badge ── */
 .heroBadge {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 5px 13px;
-  border: 0.5px solid var(--border-strong);
-  background: color-mix(in srgb, var(--accent-subtle) 60%, transparent);
+  padding: 5px 14px;
+  border: 0.5px solid var(--accent-border);
+  background: color-mix(in srgb, var(--accent-subtle) 70%, transparent);
   font-size: 10px; color: var(--text-secondary);
   letter-spacing: 0.1em; text-transform: uppercase;
   font-weight: 700; border-radius: 2px; margin-bottom: 40px;
   animation: fadeUp 0.45s ease both;
+  box-shadow: 0 0 16px rgba(127,119,221,0.12), inset 0 0.5px 0 rgba(255,255,255,0.05);
 }
 
 .heroBadgeDot {
@@ -189,14 +203,23 @@
 .uploadBox {
   background: var(--bg-elevated);
   border: 0.5px solid var(--border-strong);
-  border-radius: 8px;
+  border-radius: 10px;
   width: 100%; max-width: 560px;
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(127,119,221,0.06),
-    0 4px 32px rgba(0,0,0,0.12),
-    0 1px 4px rgba(0,0,0,0.06);
+    0 0 0 1px rgba(127,119,221,0.10),
+    0 0 40px rgba(127,119,221,0.08),
+    0 8px 48px rgba(0,0,0,0.18),
+    0 2px 8px rgba(0,0,0,0.08);
   animation: fadeUp 0.45s 0.21s ease both;
+  transition: box-shadow 0.2s;
+}
+.uploadBox:hover {
+  box-shadow:
+    0 0 0 1px rgba(127,119,221,0.16),
+    0 0 60px rgba(127,119,221,0.12),
+    0 8px 48px rgba(0,0,0,0.22),
+    0 2px 8px rgba(0,0,0,0.08);
 }
 
 .uploadBoxInner {
@@ -251,12 +274,12 @@
   color: var(--bg);
   background: var(--text-primary);
   border: none; border-radius: 4px;
-  cursor: pointer; transition: opacity 0.1s;
+  cursor: pointer; transition: opacity 0.1s, box-shadow 0.15s;
   white-space: nowrap; flex-shrink: 0;
   font-family: var(--font-sans); letter-spacing: -0.02em;
 }
-.submitBtn:hover { opacity: 0.82; }
-.submitBtn:disabled { opacity: 0.28; cursor: not-allowed; }
+.submitBtn:hover { opacity: 0.88; box-shadow: 0 2px 14px rgba(0,0,0,0.2); }
+.submitBtn:disabled { opacity: 0.28; cursor: not-allowed; box-shadow: none; }
 
 /* Dropzone */
 .dropzone {
@@ -324,10 +347,6 @@
 }
 
 /* ─── Stats strip ─────────────────────────────────────────────── */
-/*
-  Ramp-style: full-bleed row, 4 columns, big serif numbers,
-  separated by hairline vertical dividers.
-*/
 .statsStrip {
   position: relative; z-index: 2;
   display: flex;
@@ -338,17 +357,19 @@
 
 .statItem {
   flex: 1;
-  padding: 32px 40px;
-  display: flex; flex-direction: column; gap: 6px;
+  padding: 38px 48px;
+  display: flex; flex-direction: column; gap: 7px;
   border-right: 0.5px solid var(--border);
+  transition: background 0.15s;
 }
 .statItem:last-child { border-right: none; }
+.statItem:hover { background: var(--bg-subtle); }
 
 .statNum {
   font-family: var(--font-serif);
-  font-size: 44px; font-weight: 400;
+  font-size: 48px; font-weight: 400;
   color: var(--text-primary);
-  letter-spacing: -2.5px; line-height: 1;
+  letter-spacing: -3px; line-height: 1;
 }
 
 .statLabel {
@@ -388,17 +409,17 @@
 }
 
 /* ─── How it works ────────────────────────────────────────────── */
-.howSection { padding: 108px 0; background: var(--bg); }
+.howSection { padding: 112px 0; background: var(--bg); }
 
 .howSteps {
   display: grid; grid-template-columns: repeat(3, 1fr);
   border: 0.5px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  border-radius: 10px; overflow: hidden;
   background: var(--bg-elevated);
 }
 
 .howStep {
-  padding: 44px 38px;
+  padding: 48px 40px;
   border-right: 0.5px solid var(--border);
   display: flex; flex-direction: column; gap: 18px;
   transition: background 0.15s;
@@ -406,11 +427,13 @@
 }
 .howStep:last-child { border-right: none; }
 .howStep:hover { background: var(--bg-subtle); }
+.howStep:hover .howStepNum { color: var(--accent); }
 
 .howStepNum {
   font-family: var(--font-mono); font-size: 10.5px; font-weight: 500;
   color: var(--text-tertiary); line-height: 1;
   letter-spacing: 0.08em; text-transform: uppercase;
+  transition: color 0.15s;
 }
 
 .howStepTitle {
@@ -424,12 +447,13 @@
 }
 
 /* ─── Sample result ───────────────────────────────────────────── */
-.sampleSection { padding: 108px 0; background: var(--bg-subtle); }
+.sampleSection { padding: 112px 0; background: var(--bg-subtle); }
 
 .sampleCard {
   background: var(--bg-elevated);
-  border: 0.5px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .sampleTop {
@@ -498,32 +522,34 @@
 .sampleObsText { font-size: 12.5px; color: var(--text-secondary); line-height: 1.68; margin: 0; }
 
 /* ─── 8 Dimensions ────────────────────────────────────────────── */
-.dimsSection { padding: 108px 0; background: var(--bg); }
+.dimsSection { padding: 112px 0; background: var(--bg); }
 
 .dimsGrid {
   display: grid; grid-template-columns: repeat(4, 1fr);
   background: var(--bg-elevated);
   border: 0.5px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  border-radius: 10px; overflow: hidden;
 }
 
 .dimCard {
-  padding: 32px 26px;
+  padding: 34px 28px;
   border-right: 0.5px solid var(--border);
   border-bottom: 0.5px solid var(--border);
-  display: flex; flex-direction: column; gap: 11px;
+  display: flex; flex-direction: column; gap: 12px;
   transition: background 0.15s;
 }
 .dimCard:hover { background: var(--bg-subtle); }
+.dimCard:hover .dimIcon { border-color: var(--accent-border); background: var(--accent-subtle); }
 .dimCard:nth-child(4n) { border-right: none; }
 .dimCard:nth-child(n+5) { border-bottom: none; }
 
 .dimIcon {
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   background: var(--bg-muted);
   border: 0.5px solid var(--border);
-  border-radius: 4px;
+  border-radius: 5px;
   display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
 }
 
 .dimName {
@@ -537,14 +563,15 @@
 }
 
 /* ─── Pricing ─────────────────────────────────────────────────── */
-.pricingSection { padding: 108px 0; background: var(--bg-subtle); }
+.pricingSection { padding: 112px 0; background: var(--bg-subtle); }
 
 .pricingCards {
   display: grid; grid-template-columns: repeat(3, 1fr);
   background: var(--bg-elevated);
-  border: 0.5px solid var(--border);
-  border-radius: 8px; overflow: hidden;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 10px; overflow: hidden;
   position: relative;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.08);
 }
 
 .pricingCard {
@@ -554,12 +581,14 @@
   position: relative; transition: background 0.15s;
 }
 .pricingCard:last-child { border-right: none; }
+.pricingCard:hover { background: var(--bg-subtle); }
 
 .pricingCardFeatured {
   background: var(--bg);
   outline: 1px solid var(--text-primary);
   outline-offset: -1px;
   border-radius: 0;
+  box-shadow: inset 0 0 40px rgba(127,119,221,0.04);
 }
 
 .pricingBadge {
@@ -662,7 +691,7 @@
   max-width: 740px; margin: 0 auto;
   padding: 98px 24px 84px;
   display: flex; flex-direction: column; gap: 32px;
-  animation: fadeUp 0.35s ease;
+  animation: scaleIn 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .resultsHeader {
@@ -699,8 +728,9 @@
   display: flex; align-items: center; gap: 32px;
   padding: 36px;
   background: var(--bg-elevated);
-  border: 0.5px solid var(--border);
-  border-radius: 8px;
+  border: 0.5px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.02) inset;
 }
 
 .scoreRing { position: relative; flex-shrink: 0; }
@@ -924,8 +954,9 @@
 /* ─── Animations ──────────────────────────────────────────────── */
 @keyframes spin    { to { transform: rotate(360deg); } }
 @keyframes pulse   { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
-@keyframes fadeUp  { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fadeUp  { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: none; } }
 
 /* ─── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 1024px) {

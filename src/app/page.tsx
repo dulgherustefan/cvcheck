@@ -42,15 +42,16 @@ function ParticleCanvas() {
     let animId: number
     let W = 0, H = 0
 
-    const mouse = { x: -9999, y: -9999 }
+    const mouse = { x: -9999, y: -9999, active: false }
     const onMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
       mouse.x = e.clientX - rect.left
       mouse.y = e.clientY - rect.top
+      mouse.active = true
     }
-    const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999 }
+    const onMouseLeave = () => { mouse.active = false; mouse.x = -9999; mouse.y = -9999 }
     window.addEventListener('mousemove', onMouseMove)
-    canvas.addEventListener('mouseleave', onMouseLeave)
+    window.addEventListener('mouseleave', onMouseLeave)
 
     const resize = () => {
       W = canvas.offsetWidth
@@ -62,98 +63,154 @@ function ParticleCanvas() {
     resize()
     window.addEventListener('resize', resize)
 
-    const getColor = () => {
-      const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-      return isDark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
+    const isDark = () => document.documentElement.getAttribute('data-theme') !== 'light'
+
+    // 340 particles — much denser than before
+    const COUNT = 340
+    type P = {
+      x: number; y: number
+      vx: number; vy: number
+      ox: number; oy: number
+      r: number; opacity: number
+      pulsePhase: number; pulseSpeed: number
     }
+    const pts: P[] = Array.from({ length: COUNT }, () => {
+      const vx = (Math.random() - 0.5) * 0.22
+      const vy = (Math.random() - 0.5) * 0.22
+      return {
+        x: Math.random() * (W || window.innerWidth),
+        y: Math.random() * (H || window.innerHeight),
+        vx, vy, ox: vx, oy: vy,
+        r: Math.random() * 1.4 + 0.3,
+        opacity: Math.random() * 0.45 + 0.08,
+        pulsePhase: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.008 + Math.random() * 0.012,
+      }
+    })
 
-    // Many small slow particles — more density than original
-    const COUNT = 200
-    type P = { x:number; y:number; vx:number; vy:number; ox:number; oy:number; r:number; opacity:number }
-    const pts: P[] = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * (W || window.innerWidth),
-      y: Math.random() * (H || window.innerHeight),
-      vx: (Math.random() - 0.5) * 0.28,
-      vy: (Math.random() - 0.5) * 0.28,
-      ox: 0, oy: 0,
-      r: Math.random() * 1.6 + 0.5,
-      opacity: Math.random() * 0.4 + 0.1,
-    }))
-    pts.forEach(p => { p.ox = p.vx; p.oy = p.vy })
+    const CONNECT = 130
+    const ATTRACT  = 160   // cursor attract radius
+    const REPEL    = 80    // cursor repel inner radius
+    const REPEL_F  = 0.018
 
-    const CONNECT = 120
-    const REPEL   = 100
-    const REPEL_F = 0.014
+    let frame = 0
 
     const draw = () => {
+      frame++
       ctx.clearRect(0, 0, W, H)
-      const col = getColor()
 
+      const dark = isDark()
+      // base particle/line color
+      const col      = dark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
+      // accent color for hub lines
+      const colAccent = dark ? 'rgba(160,154,232,' : 'rgba(83,74,183,'
+
+      // ── update positions ──
       for (const p of pts) {
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < REPEL && dist > 0) {
-          const force = (REPEL - dist) / REPEL
-          p.vx += (dx / dist) * force * REPEL_F * 4
-          p.vy += (dy / dist) * force * REPEL_F * 4
+        const dist2 = dx * dx + dy * dy
+        const dist  = Math.sqrt(dist2)
+
+        if (dist < ATTRACT && dist > 0) {
+          if (dist < REPEL) {
+            // repel
+            const force = (REPEL - dist) / REPEL
+            p.vx += (dx / dist) * force * REPEL_F * 5
+            p.vy += (dy / dist) * force * REPEL_F * 5
+          } else {
+            // gentle attract
+            const force = ((ATTRACT - dist) / ATTRACT) * 0.0018
+            p.vx -= (dx / dist) * force * dist
+            p.vy -= (dy / dist) * force * dist
+          }
         }
-        p.vx += (p.ox - p.vx) * 0.014
-        p.vy += (p.oy - p.vy) * 0.014
+
+        // spring back to original velocity
+        p.vx += (p.ox - p.vx) * 0.016
+        p.vy += (p.oy - p.vy) * 0.016
+
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
-        if (speed > 1.4) { p.vx = (p.vx / speed) * 1.4; p.vy = (p.vy / speed) * 1.4 }
+        if (speed > 1.6) { p.vx = (p.vx / speed) * 1.6; p.vy = (p.vy / speed) * 1.6 }
+
         p.x += p.vx; p.y += p.vy
         if (p.x < 0) p.x = W
         if (p.x > W) p.x = 0
         if (p.y < 0) p.y = H
         if (p.y > H) p.y = 0
+
+        p.pulsePhase += p.pulseSpeed
       }
 
-      // Connecting lines
+      // ── connecting lines between all nearby particles ──
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const ddx = pts[i].x - pts[j].x
           const ddy = pts[i].y - pts[j].y
           const d = Math.sqrt(ddx * ddx + ddy * ddy)
           if (d < CONNECT) {
-            const a = (1 - d / CONNECT) * 0.18
+            const a = (1 - d / CONNECT) * 0.16
             ctx.beginPath()
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
             ctx.strokeStyle = `${col}${a})`
-            ctx.lineWidth = 0.4
+            ctx.lineWidth = 0.35
             ctx.stroke()
           }
         }
       }
 
-      // Cursor hub lines to nearest 10 particles
-      if (mouse.x > 0 && mouse.x < W) {
+      // ── cursor glow + hub lines ──
+      if (mouse.active && mouse.x > -100) {
+        // soft glow under cursor
+        const glowR = 120
+        const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowR)
+        grd.addColorStop(0, dark ? 'rgba(127,119,221,0.10)' : 'rgba(83,74,183,0.08)')
+        grd.addColorStop(1, 'rgba(0,0,0,0)')
+        ctx.beginPath()
+        ctx.arc(mouse.x, mouse.y, glowR, 0, Math.PI * 2)
+        ctx.fillStyle = grd
+        ctx.fill()
+
+        // hub lines to nearest 14 particles
         const sorted = [...pts]
           .map(p => ({ p, d: Math.hypot(p.x - mouse.x, p.y - mouse.y) }))
-          .filter(e => e.d < 200)
+          .filter(e => e.d < 220)
           .sort((a, b) => a.d - b.d)
-          .slice(0, 10)
+          .slice(0, 14)
+
         for (const { p, d } of sorted) {
-          const a = (1 - d / 200) * 0.4
+          const a = (1 - d / 220) * 0.55
           ctx.beginPath()
           ctx.moveTo(mouse.x, mouse.y)
           ctx.lineTo(p.x, p.y)
-          ctx.strokeStyle = `${col}${a})`
-          ctx.lineWidth = 0.5
+          ctx.strokeStyle = `${colAccent}${a})`
+          ctx.lineWidth = 0.6
           ctx.stroke()
         }
+
+        // cursor dot with glow
         ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, 2.5, 0, Math.PI * 2)
-        ctx.fillStyle = `${col}0.5)`
+        ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2)
+        ctx.fillStyle = dark ? 'rgba(160,154,232,0.7)' : 'rgba(83,74,183,0.6)'
         ctx.fill()
+
+        // outer ring pulse
+        const pulse = 0.4 + 0.3 * Math.sin(frame * 0.06)
+        ctx.beginPath()
+        ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2)
+        ctx.strokeStyle = dark ? `rgba(127,119,221,${pulse * 0.4})` : `rgba(83,74,183,${pulse * 0.35})`
+        ctx.lineWidth = 0.8
+        ctx.stroke()
       }
 
-      // Dots
+      // ── draw dots ──
       for (const p of pts) {
+        // slight opacity pulse per particle
+        const op = p.opacity * (0.82 + 0.18 * Math.sin(p.pulsePhase))
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = `${col}${p.opacity})`
+        ctx.fillStyle = `${col}${op})`
         ctx.fill()
       }
 
@@ -165,7 +222,7 @@ function ParticleCanvas() {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouseMove)
-      canvas.removeEventListener('mouseleave', onMouseLeave)
+      window.removeEventListener('mouseleave', onMouseLeave)
     }
   }, [])
 
