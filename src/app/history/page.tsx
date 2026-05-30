@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { createSupabaseBrowser } from '@/lib/supabase'
-import type { Rating, CVScores, ImprovementTip, Observation } from '@/lib/types'
+import type { Rating, CVScores, FirstImpression, ImpactAnalysis, ATSAnalysis, RedFlag, CareerStory, FormatAnalysis, CredibilityAnalysis, PriorityAction } from '@/lib/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,12 +16,19 @@ interface HistoryEntry {
   source: string | null
   total_score: number
   rating: Rating
+  detected_domain: string | null
+  detected_level: string | null
   summary: string
   scores: CVScores
-  observations: Observation[]
-  improvements: ImprovementTip[]
-  top_priority: string
-  tier?: 'free' | 'pro' | 'premium'  // ← adaugă asta
+  first_impression: FirstImpression | null
+  impact: ImpactAnalysis | null
+  ats: ATSAnalysis | null
+  red_flags: RedFlag[] | null
+  career_story: CareerStory | null
+  format: FormatAnalysis | null
+  credibility: CredibilityAnalysis | null
+  top_3_actions: PriorityAction[] | null
+  tier?: 'free' | 'pro' | 'premium'
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -61,7 +68,6 @@ function formatSource(source: string | null): string {
     const url = new URL(source.startsWith('http') ? source : `https://${source}`)
     return url.hostname.replace('www.', '')
   } catch {
-    // Likely a filename (PDF)
     return source.length > 32 ? source.slice(0, 30) + '…' : source
   }
 }
@@ -136,6 +142,11 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
           }}>
             {RATING_LABELS[entry.rating]}
           </span>
+          {entry.detected_domain && (
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+              {entry.detected_domain}
+            </span>
+          )}
           <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
             {formatSource(entry.source)}
           </span>
@@ -176,6 +187,12 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
       document.body.style.overflow = ''
     }
   }, [onClose])
+
+  const severityColor = (s: string) => {
+    if (s === 'dealbreaker') return '#DC2626'
+    if (s === 'warning') return '#CA8A04'
+    return '#6B7280'
+  }
 
   return (
     <div
@@ -265,73 +282,67 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
               }}>
                 {RATING_LABELS[entry.rating]}
               </span>
+              {(entry.detected_domain || entry.detected_level) && (
+                <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 6px' }}>
+                  {[entry.detected_domain, entry.detected_level].filter(Boolean).join(' · ')}
+                </p>
+              )}
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                 {entry.summary}
               </p>
             </div>
           </div>
 
-          {/* Observations */}
-          <div style={{ position: 'relative' }}>
-            <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-              Observations
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
-              {entry.observations.map((obs, i) => {
-                const isStrength = obs.type === 'strength'
-                const color = isStrength ? '#16A34A' : '#DC2626'
-                const bg = isStrength ? 'rgba(34,197,94,0.06)' : 'rgba(220,38,38,0.06)'
-                const border = isStrength ? 'rgba(34,197,94,0.2)' : 'rgba(220,38,38,0.2)'
-                return (
-                  <div key={i} style={{ padding: '12px 14px', background: bg, borderRadius: 'var(--radius-md)', border: `1px solid ${border}` }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color, padding: '2px 7px', borderRadius: 4, background: isStrength ? 'rgba(34,197,94,0.12)' : 'rgba(220,38,68,0.12)' }}>
-                        {isStrength ? '✓ Strength' : '✗ Weakness'}
-                      </span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{obs.title}</span>
-                    </div>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>{obs.detail}</p>
-                  </div>
-                )
-              })}
-            </div>
-            {!isPro && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <a href="/" style={{ padding: '10px 20px', background: 'var(--text-primary)', color: 'var(--bg)', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                  Unlock full analysis — €2
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Improvements */}
-          {entry.improvements.length > 0 && (
-            <div style={{ position: 'relative' }}>
+          {/* First Impression */}
+          {entry.first_impression && (
+            <div>
               <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-                How to improve
+                First Impression
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
-                {entry.improvements.map((tip, i) => {
-                  const impColors: Record<string, string> = { high: '#DC2626', medium: '#CA8A04', low: '#6B7280' }
-                  const ic = impColors[tip.impact] ?? '#6B7280'
+              <div style={{ padding: '14px 16px', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                  {entry.first_impression.what_recruiter_sees}
+                </p>
+                {entry.first_impression.recommended_title !== entry.first_impression.current_title && (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>{entry.first_impression.current_title}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>→</span>
+                    <span style={{ fontSize: 11, color: 'var(--score-high)', fontWeight: 600 }}>{entry.first_impression.recommended_title}</span>
+                  </div>
+                )}
+                <span style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                  color: entry.first_impression.passes_7_second_test ? '#16A34A' : '#DC2626',
+                  alignSelf: 'flex-start',
+                }}>
+                  {entry.first_impression.passes_7_second_test ? '✓ Passes 7-second test' : '✗ Fails 7-second test'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Red Flags */}
+          {entry.red_flags && entry.red_flags.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
+                Red Flags
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {entry.red_flags.map((flag, i) => {
+                  const c = severityColor(flag.severity)
                   return (
-                    <div key={i} style={{
-                      padding: '14px 16px', background: 'var(--bg)',
-                      borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                          color: ic, background: `${ic}14`, border: `1px solid ${ic}30`,
-                          padding: '2px 7px', borderRadius: 20,
-                        }}>{tip.impact}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{tip.area}</span>
+                    <div key={i} style={{ padding: '12px 14px', background: `${c}08`, borderRadius: 'var(--radius-md)', border: `1px solid ${c}25` }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isPro && flag.how_to_fix ? 8 : 0 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: c, padding: '2px 7px', borderRadius: 4, background: `${c}14` }}>
+                          {flag.severity}
+                        </span>
+                        <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{flag.flag}</span>
                       </div>
-                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 10px' }}>{tip.problem}</p>
-                      <div style={{ padding: '10px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid var(--text-primary)' }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How to fix it</p>
-                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{tip.fix}</p>
-                      </div>
+                      {isPro && flag.how_to_fix && (
+                        <div style={{ padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: `3px solid ${c}` }}>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{flag.how_to_fix}</p>
+                        </div>
+                      )}
                     </div>
                   )
                 })}
@@ -339,22 +350,74 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
             </div>
           )}
 
-          {/* Priority */}
-          <div style={{
-            padding: '16px 18px',
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid var(--text-primary)',
-            borderRadius: 'var(--radius-md)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Do this first</span>
+          {/* Top 3 Actions */}
+          {entry.top_3_actions && entry.top_3_actions.length > 0 && (
+            <div style={{ position: 'relative' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
+                Top Actions
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
+                {entry.top_3_actions.map((action, i) => (
+                  <div key={i} style={{
+                    padding: '14px 16px', background: 'var(--bg)',
+                    borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
+                    borderLeft: '3px solid var(--text-primary)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-muted)', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {i + 1}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{action.action}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.5, margin: 0 }}>{action.why_it_matters}</p>
+                    {isPro && action.how && (
+                      <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)' }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{action.how}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {!isPro && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <a href="/" style={{ padding: '10px 20px', background: 'var(--text-primary)', color: 'var(--bg)', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+                    Unlock full analysis — €2
+                  </a>
+                </div>
+              )}
             </div>
-            <p style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, margin: 0 }}>{entry.top_priority}</p>
-          </div>
+          )}
+
+          {/* Career Story */}
+          {entry.career_story && (
+            <div>
+              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
+                Career Story
+              </h3>
+              <div style={{ padding: '14px 16px', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                  {entry.career_story.trajectory_detected}
+                </p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                    color: entry.career_story.progression_clear ? '#16A34A' : '#CA8A04',
+                    padding: '2px 7px', borderRadius: 4,
+                    background: entry.career_story.progression_clear ? 'rgba(34,197,94,0.1)' : 'rgba(202,138,4,0.1)',
+                  }}>
+                    {entry.career_story.progression_clear ? '✓ Clear progression' : '⚠ Unclear progression'}
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+                    color: 'var(--text-tertiary)', padding: '2px 7px', borderRadius: 4, background: 'var(--bg-muted)',
+                  }}>
+                    {entry.career_story.seniority_match}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
@@ -401,7 +464,7 @@ function EmptyState() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function HistoryPage() {
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [entries, setEntries] = useState<HistoryEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -422,7 +485,7 @@ export default function HistoryPage() {
         if (!error && data) setEntries(data as HistoryEntry[])
         setLoading(false)
       })
-  }, [user, authLoading])
+  }, [user, authLoading, router])
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
