@@ -19,7 +19,7 @@
 }
 .logoMark {
   width: 28px; height: 28px; border-radius: 7px;
-  background: var(--accent);
+  background: var(--text-primary);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
@@ -37,13 +37,13 @@
 }
 .signInBtn:hover { color: var(--text-primary); }
 .upgradeHeaderBtn {
-  font-size: 12px; font-weight: 600; color: #fff;
-  background: var(--accent); border: none;
+  font-size: 12px; font-weight: 600; color: var(--text-inverse);
+  background: var(--text-primary); border: none;
   border-radius: var(--radius-sm); padding: 6px 14px;
   cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
   letter-spacing: -0.01em;
 }
-.upgradeHeaderBtn:hover { opacity: 0.85; }
+.upgradeHeaderBtn:hover { opacity: 0.8; }
 .accountBtn {
   display: flex; align-items: center; gap: 7px;
   padding: 4px 10px 4px 4px;
@@ -53,7 +53,7 @@
 .accountBtn:hover { border-color: var(--border-strong); background: var(--bg-subtle); }
 .accountAvatar {
   width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent-subtle); color: var(--accent-text);
+  background: var(--bg-muted); color: var(--text-secondary);
   font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
@@ -91,7 +91,7 @@
 }
 .heroEyebrowDot {
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--accent); flex-shrink: 0;
+  background: var(--score-high); flex-shrink: 0;
 }
 
 /* Main headline */
@@ -102,7 +102,7 @@
 }
 .heroTitleItalic {
   font-family: var(--font-serif); font-style: italic; font-weight: 400;
-  color: var(--accent); letter-spacing: -0.02em;
+  color: var(--text-primary); letter-spacing: -0.02em;
 }
 
 .heroSubtitle {
@@ -166,7 +166,7 @@
 .urlField:hover { border-color: var(--border-strong); }
 .urlField:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 /* Dropzone */
@@ -220,12 +220,12 @@
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 13px 20px;
   font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
-  color: #fff; background: var(--accent);
+  color: var(--text-inverse); background: var(--text-primary);
   border-radius: var(--radius-sm); border: none;
   transition: opacity 0.15s;
   cursor: pointer;
 }
-.submitBtn:hover:not(:disabled) { opacity: 0.85; }
+.submitBtn:hover:not(:disabled) { opacity: 0.82; }
 .submitBtn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .freeNote {
@@ -265,11 +265,11 @@
   display: flex; flex-direction: column; gap: 48px;
 }
 .sectionLabel {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--accent-text);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-tertiary);
 }
 .sectionHeading {
-  font-size: clamp(22px, 3vw, 28px); letter-spacing: -0.03em;
+  font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: -0.03em;
   color: var(--text-primary); margin: 10px 0 0;
   font-family: var(--font-serif); font-style: italic; font-weight: 400;
 }
@@ -278,7 +278,7 @@
 .howStep:last-child { border-right: none; }
 .howStepNum {
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-  color: var(--accent-text); font-family: var(--font-mono);
+  color: var(--text-tertiary); font-family: var(--font-mono);
   text-transform: uppercase;
 }
 .howStepTitle { font-size: 14px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.015em; line-height: 1.4; }
@@ -317,12 +317,13 @@
 }
 .pricingCard:last-child { border-right: none; }
 .pricingCardFeatured {
-  background: color-mix(in srgb, var(--accent) 5%, var(--bg-elevated));
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 40%, transparent);
+  background: var(--bg-elevated);
+  border-right-color: var(--border-strong);
+  box-shadow: inset 0 0 0 1.5px var(--border-strong);
 }
 .pricingBadge {
   position: absolute; top: 16px; right: 16px;
-  background: var(--accent); color: #fff;
+  background: var(--text-primary); color: var(--bg);
   font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
   padding: 3px 8px; border-radius: 4px; white-space: nowrap;
 }
@@ -333,16 +334,16 @@
 .pricingFeatureItem { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
 .pricingCtaAccent {
   width: 100%; padding: 11px 16px;
-  font-size: 13px; font-weight: 600; color: #fff;
-  background: var(--accent); border: none;
+  font-size: 13px; font-weight: 600; color: var(--text-inverse);
+  background: var(--text-primary); border: none;
   border-radius: var(--radius-sm);
   cursor: pointer; transition: opacity 0.15s; letter-spacing: -0.01em;
   font-family: var(--font-sans);
 }
-.pricingCtaAccent:hover:not(:disabled) { opacity: 0.85; }
+.pricingCtaAccent:hover:not(:disabled) { opacity: 0.82; }
 .pricingCtaDark {
   width: 100%; padding: 11px 16px;
-  font-size: 13px; font-weight: 600; color: var(--text-inverse);
+  font-size: 13px; font-weight: 600; color: var(--bg);
   background: var(--text-primary); border: none; border-radius: var(--radius-sm);
   cursor: pointer; transition: opacity 0.15s; letter-spacing: -0.01em;
   font-family: var(--font-sans);
@@ -369,7 +370,7 @@
 .loadingSpinner {
   width: 32px; height: 32px;
   border: 2px solid var(--border);
-  border-top-color: var(--accent);
+  border-top-color: var(--text-primary);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -381,7 +382,7 @@
 }
 .loadingDot {
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--accent); flex-shrink: 0;
+  background: var(--text-primary); flex-shrink: 0;
 }
 
 /* ─── Results ────────────────────────────────────────────────────────────── */
@@ -501,10 +502,10 @@
 .tipIssue { font-size: 13px; line-height: 1.7; color: var(--text-secondary); margin: 0; }
 .tipFix {
   background: var(--bg-subtle); border: 1px solid var(--border);
-  border-left: 2px solid var(--accent); border-radius: var(--radius-sm);
+  border-left: 2px solid var(--text-primary); border-radius: var(--radius-sm);
   padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
 }
-.tipFixLabel { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); }
+.tipFixLabel { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); }
 .tipFixText { font-size: 13px; line-height: 1.7; color: var(--text-primary); margin: 0; }
 .tipCardLocked { cursor: pointer; }
 
@@ -522,14 +523,14 @@
 .priorityCard {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--text-primary);
   border-radius: var(--radius-md); padding: 20px 24px;
   display: flex; flex-direction: column; gap: 8px;
 }
 .priorityCardHeader {
   display: flex; align-items: center; gap: 8px;
   font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
-  text-transform: uppercase; color: var(--accent-text);
+  text-transform: uppercase; color: var(--text-tertiary);
 }
 .priorityText { font-size: 14px; line-height: 1.7; color: var(--text-primary); margin: 0; }
 
@@ -539,21 +540,16 @@
   border-radius: var(--radius-lg); padding: 28px; position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: space-between; gap: 24px;
 }
-.upgradeBanner::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, transparent) 0%, transparent 60%);
-  pointer-events: none;
-}
 .upgradeBannerContent { display: flex; flex-direction: column; gap: 6px; }
 .upgradeBannerTitle { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
 .upgradeBannerSub { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0; max-width: 360px; }
 .upgradeBannerActions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
 .upgradeBannerPro {
-  padding: 10px 22px; font-size: 13px; font-weight: 600; color: #fff;
-  background: var(--accent); border: none; border-radius: var(--radius-sm);
+  padding: 10px 22px; font-size: 13px; font-weight: 600; color: var(--text-inverse);
+  background: var(--text-primary); border: none; border-radius: var(--radius-sm);
   cursor: pointer; transition: opacity 0.15s; white-space: nowrap; font-family: var(--font-sans);
 }
-.upgradeBannerPro:hover { opacity: 0.85; }
+.upgradeBannerPro:hover { opacity: 0.8; }
 .upgradeBannerPremium {
   padding: 10px 22px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
   background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -572,11 +568,6 @@
 .footerLinks { display: flex; align-items: center; gap: 16px; }
 .footerLink { font-size: 12px; color: var(--text-tertiary); cursor: pointer; transition: color 0.15s; text-decoration: none; }
 .footerLink:hover { color: var(--text-secondary); }
-
-/* ─── Animations ────────────────────────────────────────────────────────── */
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 760px) {
