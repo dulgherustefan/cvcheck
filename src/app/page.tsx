@@ -29,7 +29,7 @@ const IMPACT_COLORS: Record<ImprovementTip['impact'], string> = {
   high: '#DC2626', medium: '#CA8A04', low: '#6B7280',
 }
 
-// ─── Particle Canvas — Ramp-style, cursor-reactive ────────────────────────────
+// ─── Particle Canvas — Ramp-style, cursor-reactive ───────────────────────────
 function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -42,7 +42,6 @@ function ParticleCanvas() {
     let animId: number
     let W = 0, H = 0
 
-    // Mouse position (normalized to canvas coords)
     const mouse = { x: -9999, y: -9999 }
     const onMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect()
@@ -50,7 +49,7 @@ function ParticleCanvas() {
       mouse.y = e.clientY - rect.top
     }
     const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999 }
-    canvas.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mousemove', onMouseMove)
     canvas.addEventListener('mouseleave', onMouseLeave)
 
     const resize = () => {
@@ -63,42 +62,34 @@ function ParticleCanvas() {
     resize()
     window.addEventListener('resize', resize)
 
-    // Detect colours from CSS vars
     const getColor = () => {
-      const cs = getComputedStyle(document.documentElement)
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+      const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
       return isDark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
     }
 
-    // Particles — many, small, slow
-    const COUNT = 160
-    type P = {
-      x: number; y: number
-      vx: number; vy: number
-      ox: number; oy: number   // original/base velocity
-      r: number; opacity: number
-    }
+    // Many small slow particles — more density than original
+    const COUNT = 200
+    type P = { x:number; y:number; vx:number; vy:number; ox:number; oy:number; r:number; opacity:number }
     const pts: P[] = Array.from({ length: COUNT }, () => ({
       x: Math.random() * (W || window.innerWidth),
       y: Math.random() * (H || window.innerHeight),
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.28,
       ox: 0, oy: 0,
-      r: Math.random() * 1.6 + 0.6,
-      opacity: Math.random() * 0.45 + 0.12,
+      r: Math.random() * 1.6 + 0.5,
+      opacity: Math.random() * 0.4 + 0.1,
     }))
     pts.forEach(p => { p.ox = p.vx; p.oy = p.vy })
 
-    const CONNECT = 130
-    const REPEL   = 90   // cursor repel radius
-    const REPEL_F = 0.012 // repel force
+    const CONNECT = 120
+    const REPEL   = 100
+    const REPEL_F = 0.014
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
       const col = getColor()
 
       for (const p of pts) {
-        // Cursor interaction — gentle push away
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
         const dist = Math.sqrt(dx * dx + dy * dy)
@@ -107,14 +98,10 @@ function ParticleCanvas() {
           p.vx += (dx / dist) * force * REPEL_F * 4
           p.vy += (dy / dist) * force * REPEL_F * 4
         }
-        // Drift back to original velocity
-        p.vx += (p.ox - p.vx) * 0.015
-        p.vy += (p.oy - p.vy) * 0.015
-
-        // Clamp speed
+        p.vx += (p.ox - p.vx) * 0.014
+        p.vy += (p.oy - p.vy) * 0.014
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
-        if (speed > 1.5) { p.vx = (p.vx / speed) * 1.5; p.vy = (p.vy / speed) * 1.5 }
-
+        if (speed > 1.4) { p.vx = (p.vx / speed) * 1.4; p.vy = (p.vy / speed) * 1.4 }
         p.x += p.vx; p.y += p.vy
         if (p.x < 0) p.x = W
         if (p.x > W) p.x = 0
@@ -129,7 +116,7 @@ function ParticleCanvas() {
           const ddy = pts[i].y - pts[j].y
           const d = Math.sqrt(ddx * ddx + ddy * ddy)
           if (d < CONNECT) {
-            const a = (1 - d / CONNECT) * 0.2
+            const a = (1 - d / CONNECT) * 0.18
             ctx.beginPath()
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
@@ -140,15 +127,15 @@ function ParticleCanvas() {
         }
       }
 
-      // Cursor — bright hub lines to nearest 8 particles
-      if (mouse.x > 0) {
+      // Cursor hub lines to nearest 10 particles
+      if (mouse.x > 0 && mouse.x < W) {
         const sorted = [...pts]
           .map(p => ({ p, d: Math.hypot(p.x - mouse.x, p.y - mouse.y) }))
-          .filter(e => e.d < 180)
+          .filter(e => e.d < 200)
           .sort((a, b) => a.d - b.d)
-          .slice(0, 8)
+          .slice(0, 10)
         for (const { p, d } of sorted) {
-          const a = (1 - d / 180) * 0.35
+          const a = (1 - d / 200) * 0.4
           ctx.beginPath()
           ctx.moveTo(mouse.x, mouse.y)
           ctx.lineTo(p.x, p.y)
@@ -156,10 +143,9 @@ function ParticleCanvas() {
           ctx.lineWidth = 0.5
           ctx.stroke()
         }
-        // Small cursor dot
         ctx.beginPath()
-        ctx.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2)
-        ctx.fillStyle = `${col}0.4)`
+        ctx.arc(mouse.x, mouse.y, 2.5, 0, Math.PI * 2)
+        ctx.fillStyle = `${col}0.5)`
         ctx.fill()
       }
 
@@ -173,18 +159,17 @@ function ParticleCanvas() {
 
       animId = requestAnimationFrame(draw)
     }
-
     draw()
 
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
-      canvas.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mousemove', onMouseMove)
       canvas.removeEventListener('mouseleave', onMouseLeave)
     }
   }, [])
 
-  return <canvas ref={canvasRef} className={styles.heroCanvas} style={{ pointerEvents: 'auto' }}/>
+  return <canvas ref={canvasRef} className={styles.heroCanvas} style={{ pointerEvents: 'none' }}/>
 }
 
 // ─── ScoreRing ────────────────────────────────────────────────────────────────
@@ -195,8 +180,8 @@ function ScoreRing({ score }: { score: number }) {
   return (
     <div className={styles.scoreRing}>
       <svg width="136" height="136" viewBox="0 0 136 136">
-        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="6"/>
-        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="6"
+        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
+        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)"
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}/>
       </svg>
@@ -224,7 +209,7 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
           <span className={styles.dimDesc}  style={{ filter:'blur(3px)', userSelect:'none' }}>{desc}</span>
         </div>
         <span className={styles.lockIcon}>
-          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
         </span>
@@ -257,31 +242,33 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
 }) {
   const isStrength = obs.type === 'strength'
   const color  = isStrength ? 'var(--score-high)' : 'var(--score-low)'
-  const bg     = isStrength ? 'rgba(22,163,74,0.05)' : 'rgba(220,38,38,0.05)'
-  const border = isStrength ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)'
+  const bg     = isStrength ? 'rgba(22,163,74,0.04)' : 'rgba(220,38,38,0.04)'
+  const border = isStrength ? 'rgba(22,163,74,0.14)' : 'rgba(220,38,38,0.14)'
 
   if (locked) return (
     <div onClick={onUnlock} style={{
-      padding:'14px 18px', borderRadius:'var(--radius-sm)',
-      background:'var(--bg-elevated)', border:'1px solid var(--border)',
+      padding:'14px 18px', borderRadius:6,
+      background:'var(--bg-elevated)',
+      border:'0.5px solid var(--border)',
       display:'flex', alignItems:'flex-start', gap:12, cursor:'pointer',
+      transition:'background 0.1s',
     }}
     onMouseOver={e => (e.currentTarget.style.background='var(--bg-subtle)')}
     onMouseOut={e  => (e.currentTarget.style.background='var(--bg-elevated)')}>
-      <span style={{ fontSize:9.5, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.07em', padding:'2px 7px', borderRadius:2, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
+      <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', padding:'2px 7px', borderRadius:2, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
         {String(index+1).padStart(2,'0')}
       </span>
-      <p style={{ fontSize:13, color:'var(--text-secondary)', filter:'blur(5px)', userSelect:'none', flex:1, margin:0, lineHeight:1.6 }}>{obs.detail}</p>
+      <p style={{ fontSize:12.5, color:'var(--text-secondary)', filter:'blur(5px)', userSelect:'none', flex:1, margin:0, lineHeight:1.65 }}>{obs.detail}</p>
       <div style={{ color:'var(--text-tertiary)', flexShrink:0, display:'flex', alignItems:'center' }}>
-        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
       </div>
     </div>
   )
 
   return (
-    <div style={{ padding:'16px 18px', borderRadius:'var(--radius-sm)', background:bg, border:`1px solid ${border}`, display:'flex', flexDirection:'column', gap:8 }}>
+    <div style={{ padding:'16px 18px', borderRadius:6, background:bg, border:`0.5px solid ${border}`, display:'flex', flexDirection:'column', gap:8 }}>
       <div className={styles.obsCardHeader}>
-        <span className={styles.obsTypeBadge} style={{ color, background:isStrength?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${border}` }}>
+        <span className={styles.obsTypeBadge} style={{ color, background:isStrength?'rgba(22,163,74,0.07)':'rgba(220,38,38,0.07)', border:`0.5px solid ${border}` }}>
           {isStrength ? '✓ Strength' : '✗ Weakness'}
         </span>
         <span className={styles.obsTitle}>{obs.title}</span>
@@ -305,12 +292,12 @@ function TipCard({ tip, index, locked, onUnlock }: {
           <span className={styles.tipArea} style={{ filter:'blur(4px)', userSelect:'none' }}>{tip.area}</span>
         </div>
         <div className={styles.lockBadge}>
-          <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           Unlock
         </div>
       </div>
       <div className={styles.tipBody} style={{ paddingTop:0 }}>
-        <p style={{ filter:'blur(5px)', userSelect:'none', fontSize:13, color:'var(--text-secondary)', lineHeight:1.6, margin:0 }}>{tip.problem}</p>
+        <p style={{ filter:'blur(5px)', userSelect:'none', fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.65, margin:0 }}>{tip.problem}</p>
       </div>
     </div>
   )
@@ -322,7 +309,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
           <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}10`, borderColor:`${IMPACT_COLORS[tip.impact]}30` }}>{tip.impact}</span>
           <span className={styles.tipArea}>{tip.area}</span>
         </div>
-        <svg className={`${styles.tipChevron} ${open ? styles.tipChevronOpen : ''}`} width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg className={`${styles.tipChevron} ${open ? styles.tipChevronOpen : ''}`} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open && (
         <div className={styles.tipBody}>
@@ -340,14 +327,15 @@ function TipCard({ tip, index, locked, onUnlock }: {
 // ─── AccountDropdown ──────────────────────────────────────────────────────────
 const TIER_META: Record<string,{label:string;color:string}> = {
   free:    { label:'Free',    color:'var(--text-tertiary)' },
-  pro:     { label:'Pro',     color:'var(--text-primary)'   },
+  pro:     { label:'Pro',     color:'var(--text-primary)'  },
   premium: { label:'Premium', color:'var(--score-high)'    },
 }
 const ddItem: React.CSSProperties = {
   display:'flex', alignItems:'center', gap:9, width:'100%',
   padding:'9px 16px', background:'transparent', border:'none',
-  color:'var(--text-secondary)', fontSize:13, cursor:'pointer',
+  color:'var(--text-secondary)', fontSize:12.5, cursor:'pointer',
   textAlign:'left' as const, fontFamily:'var(--font-sans)', transition:'background 0.1s, color 0.1s',
+  letterSpacing:'-0.01em',
 }
 
 function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: {
@@ -369,34 +357,34 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   return (
     <div ref={ref} style={{ position:'relative' }}>
       <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-row:hover{background:var(--bg-subtle)!important;color:var(--text-primary)!important}.dd-danger:hover{background:rgba(239,68,68,0.07)!important;color:#ef4444!important}`}</style>
-      <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 4px', background:open?'var(--bg-subtle)':'transparent', border:'1px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.12s', fontFamily:'var(--font-sans)' }}>
-        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--text-primary)', color:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10.5, fontWeight:700, flexShrink:0 }}>{initials}</span>
-        <span style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:13, fontWeight:500, color:'var(--text-secondary)' }}>{user.email?.split('@')[0]}</span>
-        <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+      <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 5px', background:open?'var(--bg-subtle)':'transparent', border:'0.5px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.1s', fontFamily:'var(--font-sans)' }}>
+        <span style={{ width:25, height:25, borderRadius:'50%', background:'var(--text-primary)', color:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, flexShrink:0 }}>{initials}</span>
+        <span style={{ maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:12.5, fontWeight:500, color:'var(--text-secondary)', letterSpacing:'-0.01em' }}>{user.email?.split('@')[0]}</span>
+        <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open && (
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:220, background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000, animation:'dropIn 0.12s ease' }}>
-          <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
-            <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.email}</div>
-            <div style={{ fontSize:11, color:meta.color, fontWeight:600, marginTop:3 }}>{meta.label} plan</div>
+        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:216, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000, animation:'dropIn 0.12s ease' }}>
+          <div style={{ padding:'13px 16px', borderBottom:'0.5px solid var(--border)' }}>
+            <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>{user.email}</div>
+            <div style={{ fontSize:10.5, color:meta.color, fontWeight:600, marginTop:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>{meta.label} plan</div>
           </div>
           <div style={{ padding:'4px 0' }}>
             <button className="dd-row" onClick={() => { onOpenAccount(); setOpen(false) }} style={ddItem}>
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               My account
             </button>
             <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
               History
             </button>
             <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={ddItem}>
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               Plans
             </button>
           </div>
-          <div style={{ borderTop:'1px solid var(--border)', padding:'4px 0' }}>
+          <div style={{ borderTop:'0.5px solid var(--border)', padding:'4px 0' }}>
             <button className="dd-danger" onClick={() => { onSignOut(); setOpen(false) }} style={{ ...ddItem, color:'#ef4444' }}>
-              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Sign out
             </button>
           </div>
@@ -406,15 +394,15 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   )
 }
 
-// ─── PlansModal ────────────────────────────────────────────────────────────────
+// ─── PlansModal ───────────────────────────────────────────────────────────────
 const PLAN_DEFS = {
-  free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'', features:['Overall score /100','Rating & summary','2 observations','1 improvement tip'] },
-  pro:     { label:'Pro',     color:'var(--text-primary)',   price:'€2',    period:'one-time', features:['Overall score + 8 detailed dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
-  premium: { label:'Premium', color:'var(--score-high)',    price:'€7.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Track progress over time','Priority support'] },
+  free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'',         features:['Overall score /100','Rating & summary','2 observations','1 improvement tip'] },
+  pro:     { label:'Pro',     color:'var(--text-primary)',  price:'€2',    period:'one-time', features:['Overall score + 8 detailed dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
+  premium: { label:'Premium', color:'var(--score-high)',   price:'€7.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Track progress over time','Priority support'] },
 }
 
 function Chk() {
-  return <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
+  return <svg width="12" height="12" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>
 }
 
 function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
@@ -434,39 +422,39 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
-      <div style={{ background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:32, display:'flex', flexDirection:'column', gap:24, boxShadow:'0 24px 80px rgba(0,0,0,0.2)' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
+      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:10, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', padding:30, display:'flex', flexDirection:'column', gap:22, boxShadow:'0 24px 80px rgba(0,0,0,0.22)' }}>
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
           <div>
-            <h2 style={{ fontSize:20, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Choose a plan</h2>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0 }}>Start free, unlock more when you need it.</p>
+            <h2 style={{ fontSize:19, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Choose a plan</h2>
+            <p style={{ fontSize:12.5, color:'var(--text-secondary)', margin:0 }}>Start free, unlock more when you need it.</p>
           </div>
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-tertiary)', padding:4, fontFamily:'var(--font-sans)' }}>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:0, border:'1px solid var(--border)', borderRadius:'var(--radius-md)', overflow:'hidden' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:0, border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden' }}>
           {(['free','pro','premium'] as const).map(pk => {
             const p = PLAN_DEFS[pk]
             const isFeatured = pk === 'pro'
             const isCurrent  = tier === pk
             return (
-              <div key={pk} style={{ padding:'20px 24px', background:isFeatured?'var(--bg-subtle)':'transparent', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:20, justifyContent:'space-between', outline:isFeatured?'1.5px solid var(--text-primary)':'none', outlineOffset:-1 }}>
+              <div key={pk} style={{ padding:'18px 22px', background:isFeatured?'var(--bg-subtle)':'transparent', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:20, justifyContent:'space-between', outline:isFeatured?'1px solid var(--text-primary)':'none', outlineOffset:-1 }}>
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                  <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
-                    <span style={{ fontSize:10, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.09em' }}>{p.label}</span>
-                    <span style={{ fontSize:22, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-1px', fontFamily:'var(--font-serif)' }}>{p.price}</span>
-                    {p.period && <span style={{ fontSize:12, color:'var(--text-tertiary)' }}>{p.period}</span>}
+                  <div style={{ display:'flex', alignItems:'baseline', gap:7 }}>
+                    <span style={{ fontSize:9.5, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.1em' }}>{p.label}</span>
+                    <span style={{ fontSize:21, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-1.5px', fontFamily:'var(--font-serif)' }}>{p.price}</span>
+                    {p.period && <span style={{ fontSize:11.5, color:'var(--text-tertiary)' }}>{p.period}</span>}
                   </div>
                   <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:4, margin:0, padding:0 }}>
-                    {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12.5, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}
+                    {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}
                   </ul>
                 </div>
                 <div style={{ flexShrink:0 }}>
                   {isCurrent ? (
-                    <span style={{ fontSize:12, color:'var(--text-tertiary)', padding:'8px 16px', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', display:'block' }}>Current</span>
+                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current</span>
                   ) : pk==='free' ? null : (
-                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'9px 20px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:'var(--radius-sm)', cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.12s' }}>
+                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
                       {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium'}
                     </button>
                   )}
@@ -475,7 +463,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
             )
           })}
         </div>
-        <p style={{ fontSize:11.5, color:'var(--text-tertiary)', textAlign:'center' as const, margin:0 }}>Secure checkout via Stripe · No subscription on Pro</p>
+        <p style={{ fontSize:11, color:'var(--text-tertiary)', textAlign:'center' as const, margin:0 }}>Secure checkout via Stripe · No subscription on Pro</p>
       </div>
     </div>
   )
@@ -507,14 +495,14 @@ const SAMPLE_OBS = [
 ]
 
 const DIMS_LIST = [
-  { icon:'⚡', name:'First impression',    desc:'What a recruiter sees in the first 6 seconds of scanning' },
-  { icon:'🎯', name:'Positioning',         desc:'Does it immediately communicate who you are and why you matter?' },
-  { icon:'📈', name:'Experience proof',    desc:'Results and impact, not just a list of responsibilities' },
-  { icon:'🔧', name:'Skills relevance',    desc:'Are the right skills prominent for the roles you\'re targeting?' },
-  { icon:'🏅', name:'Credibility signals', desc:'Education, recognitions, publications, social proof' },
-  { icon:'📐', name:'Structure',           desc:'Scannable layout, visual hierarchy, section ordering' },
-  { icon:'🗣️', name:'Language',            desc:'Clarity, action verbs, appropriate tone, no filler phrases' },
-  { icon:'📬', name:'Contact clarity',     desc:'Can a recruiter reach you without hunting for contact info?' },
+  { name:'First impression',    desc:'What a recruiter sees in the first 6 seconds of scanning' },
+  { name:'Positioning',         desc:'Does it immediately communicate who you are and why you matter?' },
+  { name:'Experience proof',    desc:'Results and impact, not just a list of responsibilities' },
+  { name:'Skills relevance',    desc:'Are the right skills prominent for the roles you\'re targeting?' },
+  { name:'Credibility signals', desc:'Education, recognitions, publications, social proof' },
+  { name:'Structure',           desc:'Scannable layout, visual hierarchy, section ordering' },
+  { name:'Language',            desc:'Clarity, action verbs, appropriate tone, no filler phrases' },
+  { name:'Contact clarity',     desc:'Can a recruiter reach you without hunting for contact info?' },
 ]
 
 const LOADING_STEPS = [
@@ -534,9 +522,9 @@ export default function Home() {
   const [showAccountModal, setShowAccountModal] = useState(false)
   const [showPlansModal,   setShowPlansModal]   = useState(false)
 
-  const [mode, setMode]           = useState<InputMode>('url')
-  const [url,  setUrl]            = useState('')
-  const [file, setFile]           = useState<File | null>(null)
+  const [mode, setMode]             = useState<InputMode>('url')
+  const [url,  setUrl]              = useState('')
+  const [file, setFile]             = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [appState,   setAppState]   = useState<AppState>('idle')
   const [result,     setResult]     = useState<GatedAnalysisResult | null>(null)
@@ -628,27 +616,35 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+
       {/* ── Header ── */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
+
+          {/* Logo */}
           <div className={styles.logo}>
             <div className={styles.logoMark}>
-              <svg width="13" height="13" fill="none" stroke="var(--bg)" strokeWidth="2.4" viewBox="0 0 24 24">
+              <svg width="12" height="12" fill="none" stroke="var(--bg)" strokeWidth="2.4" viewBox="0 0 24 24">
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
               </svg>
             </div>
             <span className={styles.logoText}>CVCheck</span>
           </div>
 
+          {/* Nav */}
           <nav className={styles.navCenter}>
             <button className={styles.navLink} onClick={() => document.getElementById('how')?.scrollIntoView({behavior:'smooth'})}>How it works</button>
             <button className={styles.navLink} onClick={() => document.getElementById('dims')?.scrollIntoView({behavior:'smooth'})}>What we score</button>
             <button className={styles.navLink} onClick={() => document.getElementById('pricing')?.scrollIntoView({behavior:'smooth'})}>Pricing</button>
           </nav>
 
+          {/* Auth */}
           <div className={styles.headerRight}>
             {!authLoading && (user ? (
-              <AccountDropdown user={user} tier={tier} onOpenAccount={() => setShowAccountModal(true)} onOpenPlans={() => setShowPlansModal(true)} onSignOut={() => signOut()}/>
+              <AccountDropdown user={user} tier={tier}
+                onOpenAccount={() => setShowAccountModal(true)}
+                onOpenPlans={() => setShowPlansModal(true)}
+                onSignOut={() => signOut()}/>
             ) : (
               <div className={styles.headerAuthBtns}>
                 <button className={styles.signInBtn} onClick={() => setShowAuthModal(true)}>Sign in</button>
@@ -657,6 +653,7 @@ export default function Home() {
             ))}
             <ThemeToggle/>
           </div>
+
         </div>
       </header>
 
@@ -672,13 +669,14 @@ export default function Home() {
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
 
-            {/* Particle canvas — cursor-reactive */}
+            {/* Particle canvas */}
             <ParticleCanvas/>
             <div className={styles.heroGradient}/>
             <div className={styles.heroGradientBottom}/>
 
-            {/* ── Hero centred ── */}
+            {/* ── Hero centre ── */}
             <div className={styles.heroInner}>
+
               <div className={styles.heroBadge}>
                 <span className={styles.heroBadgeDot}/>
                 AI feedback · CVs &amp; portfolios
@@ -696,17 +694,20 @@ export default function Home() {
               {/* Upload box */}
               <div className={styles.uploadBox}>
                 <div className={styles.uploadBoxInner}>
+
+                  {/* Tabs */}
                   <div className={styles.modeTabs}>
                     {(['url','pdf'] as const).map(m => (
                       <button key={m} className={`${styles.modeTab} ${mode===m?styles.modeTabActive:''}`} onClick={() => setMode(m)}>
                         {m==='url'
-                          ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>
-                          : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>
+                          ? <><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>
+                          : <><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>
                         }
                       </button>
                     ))}
                   </div>
 
+                  {/* URL input */}
                   {mode === 'url' && (
                     <div className={styles.urlRow}>
                       <input type="url" className={styles.urlField}
@@ -716,11 +717,12 @@ export default function Home() {
                         autoComplete="off" spellCheck={false}/>
                       <button className={styles.submitBtn} onClick={submit} disabled={!url.trim()}>
                         Analyze
-                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                       </button>
                     </div>
                   )}
 
+                  {/* PDF dropzone */}
                   {mode === 'pdf' && (
                     <>
                       <div className={`${styles.dropzone} ${isDragging?styles.dropzoneActive:''} ${file?styles.dropzoneHasFile:''}`}
@@ -728,16 +730,27 @@ export default function Home() {
                         onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
                         onDragLeave={() => setIsDragging(false)}
                         onClick={() => !file && fileInputRef.current?.click()}>
-                        <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e => { const f=e.target.files?.[0]; if (f?.type==='application/pdf') setFile(f) }} style={{ display:'none' }}/>
+                        <input ref={fileInputRef} type="file" accept=".pdf,application/pdf"
+                          onChange={e => { const f=e.target.files?.[0]; if (f?.type==='application/pdf') setFile(f) }}
+                          style={{ display:'none' }}/>
                         {file ? (
                           <div className={styles.filePreview}>
-                            <div className={styles.fileIcon}><svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                            <div className={styles.fileMeta}><span className={styles.fileName}>{file.name}</span><span className={styles.fileSize}>{(file.size/1024).toFixed(0)} KB · PDF ready</span></div>
-                            <button className={styles.fileRemove} onClick={e => { e.stopPropagation(); setFile(null) }}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                            <div className={styles.fileIcon}>
+                              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div className={styles.fileMeta}>
+                              <span className={styles.fileName}>{file.name}</span>
+                              <span className={styles.fileSize}>{(file.size/1024).toFixed(0)} KB · PDF ready</span>
+                            </div>
+                            <button className={styles.fileRemove} onClick={e => { e.stopPropagation(); setFile(null) }}>
+                              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
                           </div>
                         ) : (
                           <div className={styles.dropzonePrompt}>
-                            <div className={styles.dropzoneIconWrap}><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                            <div className={styles.dropzoneIconWrap}>
+                              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
                             <span className={styles.dropzoneText}>Drop your CV here</span>
                             <span className={styles.dropzoneHint}>or click to browse · PDF · max 10 MB</span>
                           </div>
@@ -745,17 +758,19 @@ export default function Home() {
                       </div>
                       <button className={styles.submitBtn} onClick={submit} disabled={!file} style={{ width:'100%' }}>
                         Analyze my CV
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                       </button>
                     </>
                   )}
 
+                  {/* Error */}
                   {appState === 'error' && error && (
                     <div className={styles.errorBox}>
-                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       {error}
                     </div>
                   )}
+
                 </div>
                 <div className={styles.freeNote}>Free to try · No account required</div>
               </div>
@@ -807,10 +822,10 @@ export default function Home() {
                 <div className={styles.sampleCard}>
                   <div className={styles.sampleTop}>
                     <div className={styles.sampleRing}>
-                      <svg width="96" height="96" viewBox="0 0 96 96">
-                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
-                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--score-high)" strokeWidth="5"
-                          strokeLinecap="round" strokeDasharray="180 251" transform="rotate(-90 48 48)"/>
+                      <svg width="92" height="92" viewBox="0 0 92 92">
+                        <circle cx="46" cy="46" r="38" fill="none" stroke="var(--bg-muted)" strokeWidth="4.5"/>
+                        <circle cx="46" cy="46" r="38" fill="none" stroke="var(--score-high)" strokeWidth="4.5"
+                          strokeLinecap="round" strokeDasharray="172 239" transform="rotate(-90 46 46)"/>
                       </svg>
                       <div className={styles.sampleScore}>
                         <span className={styles.sampleScoreNum}>72</span>
@@ -827,7 +842,7 @@ export default function Home() {
                       <div key={d.label} className={styles.sampleBar}>
                         <div className={styles.sampleBarHeader}>
                           <span className={styles.sampleBarLabel}>{d.label}</span>
-                          <span className={styles.sampleBarScore}>{d.pct}</span>
+                          <span className={styles.sampleBarScore}>{d.pct}%</span>
                         </div>
                         <div className={styles.sampleBarTrack}>
                           <div className={styles.sampleBarFill} style={{ width:`${d.pct}%` }}/>
@@ -838,8 +853,8 @@ export default function Home() {
                   <div className={styles.sampleObs}>
                     {SAMPLE_OBS.map((o,i) => (
                       <div key={i} className={styles.sampleObsCard} style={{
-                        borderTop: i >= 2 ? '1px solid var(--border)' : 'none',
-                        borderRight: i % 2 === 0 ? '1px solid var(--border)' : 'none',
+                        borderTop: i >= 2 ? '0.5px solid var(--border)' : 'none',
+                        borderRight: i % 2 === 0 ? '0.5px solid var(--border)' : 'none',
                       }}>
                         <span className={styles.sampleObsType} style={{ color: o.type==='strength' ? 'var(--score-high)' : 'var(--score-low)' }}>
                           {o.type==='strength' ? '✓ Strength' : '✗ Weakness'}
@@ -864,7 +879,7 @@ export default function Home() {
                   {DIMS_LIST.map((d, i) => (
                     <div key={d.name} className={styles.dimCard}>
                       <div className={styles.dimIcon}>
-                        <span style={{ fontFamily:'var(--font-mono)', fontSize:10.5, fontWeight:600, color:'var(--text-tertiary)', letterSpacing:'0.04em' }}>
+                        <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, fontWeight:600, color:'var(--text-tertiary)', letterSpacing:'0.06em' }}>
                           {String(i+1).padStart(2,'0')}
                         </span>
                       </div>
@@ -902,7 +917,7 @@ export default function Home() {
                         <ul className={styles.pricingFeatureList}>
                           {p.features.map(f => (
                             <li key={f} className={styles.pricingFeatureItem}>
-                              <svg width="12" height="12" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:2, opacity:0.4 }}><polyline points="20 6 9 17 4 12"/></svg>
+                              <svg width="11" height="11" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:2, opacity:0.35 }}><polyline points="20 6 9 17 4 12"/></svg>
                               {f}
                             </li>
                           ))}
@@ -921,11 +936,12 @@ export default function Home() {
                   })}
                 </div>
                 <p className={styles.pricingGuarantee}>
-                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   Secure checkout via Stripe · No subscription on Pro
                 </p>
               </div>
             </section>
+
           </div>
         )}
 
@@ -936,8 +952,10 @@ export default function Home() {
             <p className={styles.loadingText}>Analyzing your CV…</p>
             <div className={styles.loadingSteps}>
               {LOADING_STEPS.map((step,i) => (
-                <div key={step} className={styles.loadingStep} style={{ opacity:i<=loadingStep?1:0.25, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)' }}>
-                  <div className={styles.loadingDot} style={{ opacity:i===loadingStep?1:0.25, animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
+                <div key={step} className={styles.loadingStep}
+                  style={{ opacity:i<=loadingStep?1:0.22, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)' }}>
+                  <div className={styles.loadingDot}
+                    style={{ opacity:i===loadingStep?1:0.22, animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
                   {step}
                 </div>
               ))}
@@ -948,27 +966,29 @@ export default function Home() {
         {/* ══════════════════════ RESULTS ══════════════════════ */}
         {appState === 'result' && result && (
           <div className={styles.results}>
+
+            {/* Header row */}
             <div className={styles.resultsHeader}>
               <button className={styles.backBtn} onClick={reset}>
-                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                 New analysis
               </button>
               {!user && (
-                <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'6px 14px', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.12s', letterSpacing:'-0.01em' }}>
-                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s', letterSpacing:'-0.01em' }}>
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                   Sign in to save
                 </button>
               )}
               {user && savedToHistory && (
-                <span style={{ fontSize:12, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}>
-                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style={{ fontSize:11.5, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}>
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                   Saved to history
                 </span>
               )}
               <button className={styles.shareBtn} onClick={copyShare}>
                 {copied
-                  ? <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!</>
-                  : <><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share score</>}
+                  ? <><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!</>
+                  : <><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share score</>}
               </button>
             </div>
 
@@ -990,7 +1010,7 @@ export default function Home() {
                 <h2 className={styles.sectionTitle}>Score Breakdown</h2>
                 {result.scores_locked && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     Unlock — €2
                   </button>
                 )}
@@ -1012,12 +1032,12 @@ export default function Home() {
                 <h2 className={styles.sectionTitle}>Observations</h2>
                 {!isPro && result.observations.length > result.observations_locked_from && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     See all {result.observations.length}
                   </button>
                 )}
               </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
                 {result.observations.map((obs,i) => (
                   <ObservationCard key={i} obs={obs} index={i}
                     locked={i >= result.observations_locked_from}
@@ -1032,7 +1052,7 @@ export default function Home() {
                 <h2 className={styles.sectionTitle}>How to improve</h2>
                 {!isPro && result.improvements.length > result.improvements_locked_from && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     Unlock {result.improvements.length - result.improvements_locked_from} more
                   </button>
                 )}
@@ -1049,7 +1069,7 @@ export default function Home() {
             {/* Top priority */}
             <div className={styles.priorityCard}>
               <div className={styles.priorityCardHeader}>
-                <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 Do this first
               </div>
               <p className={styles.priorityText}>{result.top_priority}</p>
@@ -1070,14 +1090,16 @@ export default function Home() {
                 </div>
               </div>
             )}
+
           </div>
         )}
+
       </main>
 
       {/* ── Footer ── */}
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>
-          <div className={styles.logoMark} style={{ width:22, height:22, borderRadius:5 }}>
+          <div className={styles.logoMark} style={{ width:22, height:22, borderRadius:4 }}>
             <svg width="10" height="10" fill="none" stroke="var(--bg)" strokeWidth="2.2" viewBox="0 0 24 24">
               <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
             </svg>
@@ -1090,6 +1112,7 @@ export default function Home() {
           <button className={styles.footerLink} style={{ background:'none', border:'none', fontFamily:'var(--font-sans)', fontSize:12, cursor:'pointer', padding:0 }} onClick={() => setShowUpgradeModal(true)}>Pricing</button>
         </div>
       </footer>
+
     </div>
   )
 }
