@@ -430,10 +430,18 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               My account
             </button>
-            <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
-              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-              History
-            </button>
+            {(tier === 'premium') && (
+              <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                History
+              </button>
+            )}
+            {(tier === 'free' || tier === 'pro') && (
+              <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={{ ...ddItem, color:'var(--text-tertiary)' }}>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+                History <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', marginLeft:4, color:'var(--accent)', opacity:0.8 }}>Premium</span>
+              </button>
+            )}
             <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={ddItem}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               Plans
@@ -453,9 +461,9 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
 // ─── PlansModal ───────────────────────────────────────────────────────────────
 const PLAN_DEFS = {
-  free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'',         features:['Overall score /100','Rating & summary','2 observations','1 improvement tip'] },
-  pro:     { label:'Pro',     color:'var(--text-primary)',  price:'€2',    period:'one-time', features:['Overall score + 8 detailed dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
-  premium: { label:'Premium', color:'var(--score-high)',   price:'€7.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Track progress over time','Priority support'] },
+  free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'',         features:['1 analysis total','Overall score /100','Rating & summary','2 observations','1 improvement tip (no rewrite)'] },
+  pro:     { label:'Pro',     color:'var(--text-primary)',  price:'€2',    period:'one-time', features:['1 analysis (full breakdown)','Score across all 8 dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
+  premium: { label:'Premium', color:'var(--score-high)',   price:'€7.99', period:'/month',   features:['Unlimited analyses','Everything in Pro — every time','History & progress tracking','Priority support'] },
 }
 
 function Chk() {
@@ -507,15 +515,17 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                     {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}
                   </ul>
                 </div>
-                <div style={{ flexShrink:0 }}>
-                  {isCurrent ? (
-                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current</span>
-                  ) : pk==='free' ? null : (
-                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
-                      {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium'}
-                    </button>
-                  )}
-                </div>
+                    <div style={{ flexShrink:0 }}>
+                      {isCurrent ? (
+                        <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current plan</span>
+                      ) : pk==='free' ? (
+                        <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', display:'block' }}>1 free scan</span>
+                      ) : (
+                        <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
+                          {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
+                        </button>
+                      )}
+                    </div>
               </div>
             )
           })}
@@ -530,7 +540,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 const HOW_STEPS = [
   { n:'01', title:'Paste a link or drop your PDF', desc:'Works with portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
   { n:'02', title:'We read it the way a recruiter would', desc:'CVCheck looks at 8 things recruiters actually care about — positioning, proof, structure, language, and more.' },
-  { n:'03', title:'You get a score and real feedback', desc:'Not "consider improving your experience section." Actual specific changes, with rewritten examples you can use right away.' },
+  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the overall score and rating. Pro unlocks all 8 dimensions, observations, and improvement tips with rewritten examples — for €2, one-time.' },
 ]
 
 const SAMPLE_DIMS = [
@@ -745,7 +755,7 @@ export default function Home() {
               </h1>
 
               <p className={styles.heroSubtitle}>
-                Paste a link or upload your CV. Score, breakdown, and specific fixes — in about 30 seconds.
+                Paste a link or upload your CV. Get a score, rating, and real feedback — free for your first scan.
               </p>
 
               {/* Upload box */}
@@ -829,17 +839,22 @@ export default function Home() {
                   )}
 
                 </div>
-                <div className={styles.freeNote}>Free to try · No account required</div>
+                <div className={styles.freeNote}>
+                  {tier === 'free' && analysisCount >= 1
+                    ? <>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={() => setShowUpgradeModal(true)}>Unlock Pro for €2</button> to analyze again</>
+                    : '1 free analysis · No account required'
+                  }
+                </div>
               </div>
             </div>
 
             {/* ── Stats strip ── */}
             <div className={styles.statsStrip}>
               {[
-                { num:'8',    label:'dimensions scored' },
+                { num:'8',    label:'dimensions scored per CV' },
                 { num:'~30s', label:'average analysis time' },
-                { num:'€2',   label:'one-time Pro unlock' },
-                { num:'0',    label:'sugarcoating' },
+                { num:'€2',   label:'one-time Pro — not a subscription' },
+                { num:'0',    label:'vague "consider improving" feedback' },
               ].map(s => (
                 <div key={s.num} className={styles.statItem}>
                   <span className={styles.statNum}>{s.num}</span>
@@ -854,7 +869,7 @@ export default function Home() {
                 <div className={styles.sHead}>
                   <p className={styles.sEyebrow}>How it works</p>
                   <h2 className={styles.sTitle}>Three steps, thirty seconds.</h2>
-                  <p className={styles.sSub}>No signup required to get your score.</p>
+                  <p className={styles.sSub}>No account needed for your first scan.</p>
                 </div>
                 <div className={styles.howSteps}>
                   {HOW_STEPS.map(s => (
@@ -874,7 +889,7 @@ export default function Home() {
                 <div className={styles.sHead}>
                   <p className={styles.sEyebrow}>What you get</p>
                   <h2 className={styles.sTitle}>A real score, not a pep talk.</h2>
-                  <p className={styles.sSub}>Here's what an actual CVCheck result looks like.</p>
+                  <p className={styles.sSub}>Free gives you the score and a preview. Pro unlocks the full picture — all 8 dimensions, observations, and fixes with rewritten examples.</p>
                 </div>
                 <div className={styles.sampleCard}>
                   <div className={styles.sampleTop}>
@@ -954,7 +969,7 @@ export default function Home() {
                 <div className={styles.sHead}>
                   <p className={styles.sEyebrow}>Pricing</p>
                   <h2 className={styles.sTitle}>No tricks, no "contact us for pricing."</h2>
-                  <p className={styles.sSub}>Try free. If the score makes you want to see the rest, Pro is €2. That's it.</p>
+                  <p className={styles.sSub}>One free scan to see your score. Pro unlocks the full breakdown for €2 — once. Premium for unlimited.</p>
                 </div>
                 <div className={styles.pricingCards}>
                   {(['free','pro','premium'] as const).map(pk => {
@@ -982,11 +997,11 @@ export default function Home() {
                         {isCurrent ? (
                           <div className={styles.pricingCtaGhost} style={{ textAlign:'center' as const }}>Current plan</div>
                         ) : pk==='free' ? (
-                          <button className={styles.pricingCtaGhost} onClick={scrollToTop}>Try for free ↑</button>
+                          <button className={styles.pricingCtaGhost} onClick={scrollToTop}>Try free — 1 scan ↑</button>
                         ) : pk==='pro' ? (
                           <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>Get Pro — €2</button>
                         ) : (
-                          <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium</button>
+                          <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium — €7.99/mo</button>
                         )}
                       </div>
                     )
@@ -994,7 +1009,7 @@ export default function Home() {
                 </div>
                 <p className={styles.pricingGuarantee}>
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                  Secure checkout via Stripe · No subscription on Pro
+                  Secure checkout via Stripe · No subscription on Pro · 1 scan always free
                 </p>
               </div>
             </section>
@@ -1068,7 +1083,7 @@ export default function Home() {
                 {result.scores_locked && (
                   <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
                     <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    Unlock — €2
+                    Unlock all 8 — €2
                   </button>
                 )}
               </div>
@@ -1138,12 +1153,12 @@ export default function Home() {
                 <div className={styles.upgradeBannerContent}>
                   <p className={styles.upgradeBannerTitle}>There's more here you haven't seen</p>
                   <p className={styles.upgradeBannerSub}>
-                    The free version shows the headline. Pro unlocks all {result.observations.length} observations, {result.improvements.length} improvement tips with rewrites, and the full breakdown across 8 dimensions. €2, one-time.
+                    Free shows the headline score. Pro unlocks all {result.observations.length} observations, {result.improvements.length} improvement tips with rewritten examples, and the full 8-dimension breakdown — €2, one-time, no subscription.
                   </p>
                 </div>
                 <div className={styles.upgradeBannerActions}>
-                  <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock — €2 one-time</button>
-                  <button className={styles.upgradeBannerPremium} onClick={() => setShowUpgradeModal(true)}>Premium — €7.99/mo</button>
+                  <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock Pro — €2</button>
+                  <button className={styles.upgradeBannerPremium} onClick={() => setShowPlansModal(true)}>See all plans</button>
                 </div>
               </div>
             )}
