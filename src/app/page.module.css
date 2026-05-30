@@ -175,11 +175,11 @@
 /* ── Title ── */
 .heroTitle {
   font-family: var(--font-serif);
-  font-size: clamp(50px, 7.5vw, 92px);
-  line-height: 0.96;
-  letter-spacing: -3.5px;
+  font-size: clamp(38px, 5.2vw, 68px);
+  line-height: 1.0;
+  letter-spacing: -2.5px;
   color: var(--text-primary);
-  margin: 0 0 26px;
+  margin: 0 0 22px;
   font-weight: 400;
   animation: fadeUp 0.45s 0.07s ease both;
 }
@@ -192,9 +192,9 @@
 
 /* ── Subtitle ── */
 .heroSubtitle {
-  font-size: 16.5px; color: var(--text-secondary);
-  line-height: 1.65; max-width: 450px;
-  margin: 0 auto 52px;
+  font-size: 15.5px; color: var(--text-secondary);
+  line-height: 1.65; max-width: 400px;
+  margin: 0 auto 48px;
   letter-spacing: -0.01em; font-weight: 400;
   animation: fadeUp 0.45s 0.14s ease both;
 }
@@ -1003,6 +1003,6 @@
 
 @media (max-width: 480px) {
   .upgradeHeaderBtn { display: none; }
-  .heroTitle { font-size: 44px; letter-spacing: -2.5px; }
+  .heroTitle { font-size: 36px; letter-spacing: -1.8px; }
   .sTitle { font-size: 30px; letter-spacing: -1.5px; }
 }
