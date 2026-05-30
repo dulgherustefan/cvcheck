@@ -12,14 +12,13 @@ interface AccountModalProps {
   onSignOut: () => void
 }
 
-const TIER_META: Record<string, { label: string; color: string; bg: string }> = {
-  free:    { label: 'Free',    color: '#6b7280', bg: 'rgba(107,114,128,0.1)' },
-  pro:     { label: 'Pro',     color: 'var(--text-primary)', bg: 'var(--bg-muted)' },
-  premium: { label: 'Premium', color: 'var(--score-high)', bg: 'rgba(34,197,94,0.1)' },
+const TIER_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  free:    { label: 'Free',    color: 'var(--text-tertiary)',  bg: 'var(--bg-subtle)',   border: 'var(--border)' },
+  pro:     { label: 'Pro',     color: 'var(--accent-text)',    bg: 'var(--accent-subtle)', border: 'var(--border-strong)' },
+  premium: { label: 'Premium', color: '#B8881C',               bg: 'rgba(239,159,39,0.10)', border: 'rgba(239,159,39,0.25)' },
 }
 
 export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut }: AccountModalProps) {
-  const [pwCurrent, setPwCurrent] = useState('')
   const [pwNew, setPwNew] = useState('')
   const [pwConfirm, setPwConfirm] = useState('')
   const [pwError, setPwError] = useState('')
@@ -43,95 +42,211 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
     if (error) setPwError(error.message)
     else {
       setPwSuccess(true)
-      setPwCurrent(''); setPwNew(''); setPwConfirm('')
+      setPwNew(''); setPwConfirm('')
       setTimeout(() => { setPwSuccess(false); setShowPwForm(false) }, 2500)
     }
   }
 
   return (
-    <div style={s.overlay} onClick={onClose}>
-      <div style={s.modal} onClick={e => e.stopPropagation()}>
+    <>
+      <style>{`
+        @keyframes _accFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes _accFadeUp {
+          from { opacity: 0; transform: translateY(10px) scale(0.985); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        ._acc-input:focus {
+          border-color: var(--accent) !important;
+          box-shadow: 0 0 0 3px var(--accent-subtle) !important;
+          outline: none !important;
+        }
+        ._acc-accordion:hover { background: var(--bg-subtle) !important; }
+        ._acc-signout:hover { color: #dc2626 !important; background: rgba(220,38,38,0.06) !important; }
+        ._acc-close:hover { background: var(--accent-subtle) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+        ._acc-upgrade:hover { color: var(--accent) !important; }
+      `}</style>
 
-        <button style={s.closeBtn} onClick={onClose} aria-label="Close">
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-
-        {/* Profile section */}
-        <div style={s.profileSection}>
-          <div style={s.avatar}>{initials}</div>
-          <div style={{ minWidth: 0 }}>
-            <div style={s.emailText}>{userEmail}</div>
-            <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ ...s.tierBadge, color: meta.color, background: meta.bg }}>
-                {meta.label}
-              </span>
-              {tier !== 'premium' && (
-                <button onClick={onUpgrade} style={s.upgradeLink}>
-                  Upgrade →
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div style={s.divider} />
-
-        {/* Change password accordion */}
-        <div>
-          <button onClick={() => { setShowPwForm(v => !v); setPwError(''); setPwSuccess(false) }} style={s.accordionTrigger}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 14, fontWeight: 500 }}>
-              <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2"/>
-                <path d="M7 11V7a5 5 0 0110 0v4"/>
-              </svg>
-              Change password
-            </span>
-            <svg
-              width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-              style={{ color: 'var(--text-tertiary)', transform: showPwForm ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
-            >
-              <polyline points="6 9 12 15 18 9"/>
+      <div
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 2000, padding: 24,
+          animation: '_accFadeIn 0.18s ease',
+        }}
+        onClick={onClose}
+      >
+        <div
+          style={{
+            width: '100%', maxWidth: 400,
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border-strong)',
+            borderRadius: 'var(--radius-xl)',
+            padding: 28,
+            display: 'flex', flexDirection: 'column', gap: 0,
+            boxShadow: 'var(--shadow-xl)',
+            position: 'relative',
+            animation: '_accFadeUp 0.22s cubic-bezier(0.16,1,0.3,1)',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Close */}
+          <button
+            className="_acc-close"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              position: 'absolute', top: 14, right: 14,
+              width: 30, height: 30,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-tertiary)', cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
 
-          {showPwForm && (
-            <form onSubmit={handleChangePassword} style={s.pwForm}>
-              <p style={s.pwHint}>
-                Dacă te-ai autentificat cu Google, după salvare poți folosi și email + parolă.
-              </p>
-              <PwField label="New password" placeholder="Min. 8 characters"
-                value={pwNew} onChange={setPwNew} autoComplete="new-password" />
-              <PwField label="Confirm password" placeholder="Repeat password"
-                value={pwConfirm} onChange={setPwConfirm} autoComplete="new-password" />
-
-              {pwError && <p style={s.errorMsg}>{pwError}</p>}
-              {pwSuccess && <p style={s.successMsg}>✓ Password changed successfully.</p>}
-
-              <button type="submit" disabled={pwLoading} style={{
-                ...s.pwSubmit,
-                opacity: pwLoading ? 0.6 : 1,
-                cursor: pwLoading ? 'not-allowed' : 'pointer',
+          {/* Profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingRight: 32, marginBottom: 20 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%',
+              background: 'var(--accent)', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, fontWeight: 700, flexShrink: 0,
+              border: '2px solid var(--border-strong)',
+            }}>
+              {initials}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                marginBottom: 6,
               }}>
-                {pwLoading ? 'Saving…' : 'Save password'}
-              </button>
-            </form>
-          )}
+                {userEmail}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  padding: '2px 9px', borderRadius: 20,
+                  color: meta.color, background: meta.bg,
+                  border: `1px solid ${meta.border}`,
+                }}>
+                  {meta.label}
+                </span>
+                {tier !== 'premium' && (
+                  <button
+                    className="_acc-upgrade"
+                    onClick={onUpgrade}
+                    style={{
+                      fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    Upgrade →
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
+
+          {/* Change password */}
+          <div style={{ marginBottom: 16 }}>
+            <button
+              className="_acc-accordion"
+              onClick={() => { setShowPwForm(v => !v); setPwError(''); setPwSuccess(false) }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', background: 'none', border: 'none',
+                padding: '9px 10px', borderRadius: 'var(--radius-md)',
+                cursor: 'pointer', transition: 'background 0.15s',
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 9, color: 'var(--text-primary)', fontSize: 14, fontWeight: 500 }}>
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                Change password
+              </span>
+              <svg
+                width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                style={{ color: 'var(--text-tertiary)', transform: showPwForm ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+              >
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            {showPwForm && (
+              <form onSubmit={handleChangePassword} style={{
+                display: 'flex', flexDirection: 'column', gap: 12,
+                marginTop: 10, padding: 16,
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+              }}>
+                <PwField label="New password" placeholder="Min. 8 characters" value={pwNew} onChange={setPwNew} autoComplete="new-password"/>
+                <PwField label="Confirm password" placeholder="Same again" value={pwConfirm} onChange={setPwConfirm} autoComplete="new-password"/>
+
+                {pwError && (
+                  <p style={{ fontSize: 12, color: 'var(--score-low)', margin: 0, padding: '8px 10px', background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--radius-sm)' }}>
+                    {pwError}
+                  </p>
+                )}
+                {pwSuccess && (
+                  <p style={{ fontSize: 12, color: 'var(--score-high)', margin: 0, padding: '8px 10px', background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.15)', borderRadius: 'var(--radius-sm)' }}>
+                    ✓ Password changed successfully.
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={pwLoading}
+                  style={{
+                    padding: '10px', background: 'var(--accent)', border: 'none',
+                    borderRadius: 'var(--radius-sm)', color: '#fff',
+                    fontSize: 13, fontWeight: 600,
+                    opacity: pwLoading ? 0.6 : 1,
+                    cursor: pwLoading ? 'not-allowed' : 'pointer',
+                    transition: 'opacity 0.15s',
+                  }}
+                >
+                  {pwLoading ? 'Saving…' : 'Save password'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
+
+          {/* Sign out */}
+          <button
+            className="_acc-signout"
+            onClick={onSignOut}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 9,
+              background: 'none', border: 'none',
+              color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500,
+              cursor: 'pointer', padding: '9px 10px',
+              borderRadius: 'var(--radius-md)', transition: 'all 0.15s',
+              width: '100%',
+            }}
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Sign out
+          </button>
         </div>
-
-        <div style={s.divider} />
-
-        {/* Sign out */}
-        <button onClick={onSignOut} style={s.signOutBtn}>
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Sign out
-        </button>
-
       </div>
-    </div>
+    </>
   )
 }
 
@@ -141,121 +256,23 @@ function PwField({ label, placeholder, value, onChange, autoComplete }: {
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
+      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>
         {label}
       </label>
       <input
         type="password" placeholder={placeholder} value={value}
         onChange={e => onChange(e.target.value)}
         autoComplete={autoComplete} required
+        className="_acc-input"
         style={{
-          padding: '10px 13px',
-          background: 'var(--bg)',
-          border: '1px solid var(--border)',
+          padding: '10px 12px',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-strong)',
           borderRadius: 'var(--radius-md)',
           color: 'var(--text-primary)', fontSize: 14,
-          outline: 'none',
+          outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
         }}
-        onFocus={e => (e.target.style.borderColor = 'var(--border-strong)')}
-        onBlur={e => (e.target.style.borderColor = 'var(--border)')}
       />
     </div>
   )
-}
-
-const s: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'fixed', inset: 0,
-    background: 'rgba(0,0,0,0.6)',
-    backdropFilter: 'blur(8px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 2000, padding: 24,
-  },
-  modal: {
-    width: '100%', maxWidth: 400,
-    background: 'var(--bg-elevated)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-xl)',
-    padding: 28,
-    display: 'flex', flexDirection: 'column', gap: 16,
-    boxShadow: '0 40px 100px rgba(0,0,0,0.45)',
-    position: 'relative',
-  },
-  closeBtn: {
-    position: 'absolute', top: 14, right: 14,
-    width: 30, height: 30,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--bg)', border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-sm)',
-    color: 'var(--text-tertiary)', cursor: 'pointer',
-  },
-  profileSection: {
-    display: 'flex', alignItems: 'center', gap: 14, paddingRight: 24,
-  },
-  avatar: {
-    width: 48, height: 48, borderRadius: '50%',
-    background: 'var(--bg-muted)',
-    color: 'var(--text-secondary)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 16, fontWeight: 700, flexShrink: 0,
-    border: '1px solid var(--border)',
-  },
-  emailText: {
-    fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-  },
-  tierBadge: {
-    fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-    textTransform: 'uppercase',
-    padding: '2px 8px', borderRadius: 20,
-    display: 'inline-block',
-  },
-  upgradeLink: {
-    fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
-    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-    textDecoration: 'underline', textUnderlineOffset: '2px',
-  },
-  divider: {
-    height: 1, background: 'var(--border)', margin: '0 -4px',
-  },
-  accordionTrigger: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    width: '100%', background: 'none', border: 'none',
-    padding: '2px 0', cursor: 'pointer', textAlign: 'left' as const,
-  },
-  pwForm: {
-    display: 'flex', flexDirection: 'column', gap: 12,
-    marginTop: 14, padding: 16,
-    background: 'var(--bg)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-md)',
-  },
-  pwHint: {
-    fontSize: 12, color: 'var(--text-tertiary)', margin: 0, lineHeight: 1.5,
-  },
-  pwSubmit: {
-    padding: '10px', background: 'var(--text-primary)', border: 'none',
-    borderRadius: 'var(--radius-sm)', color: 'var(--bg)',
-    fontSize: 14, fontWeight: 600,
-  },
-  errorMsg: {
-    fontSize: 13, color: '#ef4444', margin: 0,
-    padding: '8px 12px',
-    background: 'rgba(239,68,68,0.08)',
-    border: '1px solid rgba(239,68,68,0.2)',
-    borderRadius: 'var(--radius-sm)',
-  },
-  successMsg: {
-    fontSize: 13, color: '#22c55e', margin: 0,
-    padding: '8px 12px',
-    background: 'rgba(34,197,94,0.08)',
-    border: '1px solid rgba(34,197,94,0.2)',
-    borderRadius: 'var(--radius-sm)',
-  },
-  signOutBtn: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    background: 'none', border: 'none',
-    color: '#ef4444', fontSize: 13, fontWeight: 500,
-    cursor: 'pointer', padding: '2px 0',
-  },
 }
