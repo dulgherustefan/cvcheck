@@ -190,7 +190,6 @@ export async function POST(req: NextRequest) {
         return fwd ? fwd.split(',')[0].trim() : null
       })()
       if (ip) {
-        // Găsim roast-uri anonime recente (ultimele 24h) de la același IP via free_scans
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         const { error: claimError } = await supabaseAdmin
           .from('roasts')
@@ -210,11 +209,21 @@ export async function POST(req: NextRequest) {
           source: source ?? null,
           total_score: result.total_score,
           rating: result.rating,
+          detected_domain: result.detected_domain,
+          detected_level: result.detected_level,
           summary: result.summary,
           scores: result.scores,
-          observations: result.observations,
-          improvements: result.improvements,
-          top_priority: result.top_priority,
+          first_impression: result.first_impression,
+          impact: result.impact,
+          ats: result.ats,
+          red_flags: result.red_flags,
+          career_story: result.career_story,
+          format: result.format,
+          credibility: result.credibility,
+          top_3_actions: result.top_3_actions,
+          observations: null,
+          improvements: null,
+          top_priority: null,
           tier,
         })
       if (insertError) console.error('[roast] Failed to save to Supabase:', insertError)
