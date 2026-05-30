@@ -29,7 +29,7 @@ const IMPACT_COLORS: Record<ImprovementTip['impact'], string> = {
   high: '#DC2626', medium: '#CA8A04', low: '#6B7280',
 }
 
-// ─── Particle Canvas ──────────────────────────────────────────────────────────
+// ─── Particle Canvas — Ramp-style, cursor-reactive ────────────────────────────
 function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -42,41 +42,79 @@ function ParticleCanvas() {
     let animId: number
     let W = 0, H = 0
 
-    // Detect accent color from CSS variable
-    const getAccent = () => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
-      return v || '#7F77DD'
+    // Mouse position (normalized to canvas coords)
+    const mouse = { x: -9999, y: -9999 }
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect()
+      mouse.x = e.clientX - rect.left
+      mouse.y = e.clientY - rect.top
     }
+    const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999 }
+    canvas.addEventListener('mousemove', onMouseMove)
+    canvas.addEventListener('mouseleave', onMouseLeave)
 
     const resize = () => {
       W = canvas.offsetWidth
       H = canvas.offsetHeight
-      canvas.width  = W
-      canvas.height = H
+      canvas.width  = W * window.devicePixelRatio
+      canvas.height = H * window.devicePixelRatio
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     }
     resize()
     window.addEventListener('resize', resize)
 
-    // Particles
-    const COUNT = 80
-    type Particle = { x: number; y: number; vx: number; vy: number; r: number; opacity: number }
-    const pts: Particle[] = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      r: Math.random() * 2 + 1,
-      opacity: Math.random() * 0.5 + 0.2,
-    }))
+    // Detect colours from CSS vars
+    const getColor = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+      return isDark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
+    }
 
-    const CONNECT_DIST = 140
+    // Particles — many, small, slow
+    const COUNT = 160
+    type P = {
+      x: number; y: number
+      vx: number; vy: number
+      ox: number; oy: number   // original/base velocity
+      r: number; opacity: number
+    }
+    const pts: P[] = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * (W || window.innerWidth),
+      y: Math.random() * (H || window.innerHeight),
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      ox: 0, oy: 0,
+      r: Math.random() * 1.6 + 0.6,
+      opacity: Math.random() * 0.45 + 0.12,
+    }))
+    pts.forEach(p => { p.ox = p.vx; p.oy = p.vy })
+
+    const CONNECT = 130
+    const REPEL   = 90   // cursor repel radius
+    const REPEL_F = 0.012 // repel force
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
-      const accent = getAccent()
+      const col = getColor()
 
-      // Update positions
       for (const p of pts) {
+        // Cursor interaction — gentle push away
+        const dx = p.x - mouse.x
+        const dy = p.y - mouse.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < REPEL && dist > 0) {
+          const force = (REPEL - dist) / REPEL
+          p.vx += (dx / dist) * force * REPEL_F * 4
+          p.vy += (dy / dist) * force * REPEL_F * 4
+        }
+        // Drift back to original velocity
+        p.vx += (p.ox - p.vx) * 0.015
+        p.vy += (p.oy - p.vy) * 0.015
+
+        // Clamp speed
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy)
+        if (speed > 1.5) { p.vx = (p.vx / speed) * 1.5; p.vy = (p.vy / speed) * 1.5 }
+
         p.x += p.vx; p.y += p.vy
         if (p.x < 0) p.x = W
         if (p.x > W) p.x = 0
@@ -84,35 +122,55 @@ function ParticleCanvas() {
         if (p.y > H) p.y = 0
       }
 
-      // Draw lines
+      // Connecting lines
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
-          const dx = pts[i].x - pts[j].x
-          const dy = pts[i].y - pts[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < CONNECT_DIST) {
-            const alpha = (1 - dist / CONNECT_DIST) * 0.25
+          const ddx = pts[i].x - pts[j].x
+          const ddy = pts[i].y - pts[j].y
+          const d = Math.sqrt(ddx * ddx + ddy * ddy)
+          if (d < CONNECT) {
+            const a = (1 - d / CONNECT) * 0.2
             ctx.beginPath()
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
-            ctx.strokeStyle = accent
-            ctx.globalAlpha = alpha
-            ctx.lineWidth = 0.5
+            ctx.strokeStyle = `${col}${a})`
+            ctx.lineWidth = 0.4
             ctx.stroke()
           }
         }
       }
 
-      // Draw dots
-      for (const p of pts) {
+      // Cursor — bright hub lines to nearest 8 particles
+      if (mouse.x > 0) {
+        const sorted = [...pts]
+          .map(p => ({ p, d: Math.hypot(p.x - mouse.x, p.y - mouse.y) }))
+          .filter(e => e.d < 180)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, 8)
+        for (const { p, d } of sorted) {
+          const a = (1 - d / 180) * 0.35
+          ctx.beginPath()
+          ctx.moveTo(mouse.x, mouse.y)
+          ctx.lineTo(p.x, p.y)
+          ctx.strokeStyle = `${col}${a})`
+          ctx.lineWidth = 0.5
+          ctx.stroke()
+        }
+        // Small cursor dot
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = accent
-        ctx.globalAlpha = p.opacity
+        ctx.arc(mouse.x, mouse.y, 2, 0, Math.PI * 2)
+        ctx.fillStyle = `${col}0.4)`
         ctx.fill()
       }
 
-      ctx.globalAlpha = 1
+      // Dots
+      for (const p of pts) {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = `${col}${p.opacity})`
+        ctx.fill()
+      }
+
       animId = requestAnimationFrame(draw)
     }
 
@@ -121,10 +179,12 @@ function ParticleCanvas() {
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
+      canvas.removeEventListener('mousemove', onMouseMove)
+      canvas.removeEventListener('mouseleave', onMouseLeave)
     }
   }, [])
 
-  return <canvas ref={canvasRef} className={styles.heroCanvas}/>
+  return <canvas ref={canvasRef} className={styles.heroCanvas} style={{ pointerEvents: 'auto' }}/>
 }
 
 // ─── ScoreRing ────────────────────────────────────────────────────────────────
@@ -135,8 +195,8 @@ function ScoreRing({ score }: { score: number }) {
   return (
     <div className={styles.scoreRing}>
       <svg width="136" height="136" viewBox="0 0 136 136">
-        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="7"/>
-        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="7"
+        <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="6"/>
+        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="6"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)"
           style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}/>
       </svg>
@@ -197,18 +257,18 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
 }) {
   const isStrength = obs.type === 'strength'
   const color  = isStrength ? 'var(--score-high)' : 'var(--score-low)'
-  const bg     = isStrength ? 'rgba(22,163,74,0.06)' : 'rgba(220,38,38,0.06)'
-  const border = isStrength ? 'rgba(22,163,74,0.18)' : 'rgba(220,38,38,0.18)'
+  const bg     = isStrength ? 'rgba(22,163,74,0.05)' : 'rgba(220,38,38,0.05)'
+  const border = isStrength ? 'rgba(22,163,74,0.15)' : 'rgba(220,38,38,0.15)'
 
   if (locked) return (
     <div onClick={onUnlock} style={{
-      padding:'14px 18px', borderRadius:'var(--radius-md)',
-      background:'var(--bg-elevated)', border:'0.5px solid var(--border)',
+      padding:'14px 18px', borderRadius:'var(--radius-sm)',
+      background:'var(--bg-elevated)', border:'1px solid var(--border)',
       display:'flex', alignItems:'flex-start', gap:12, cursor:'pointer',
     }}
     onMouseOver={e => (e.currentTarget.style.background='var(--bg-subtle)')}
     onMouseOut={e  => (e.currentTarget.style.background='var(--bg-elevated)')}>
-      <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.05em', padding:'2px 8px', borderRadius:4, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
+      <span style={{ fontSize:9.5, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.07em', padding:'2px 7px', borderRadius:2, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
         {String(index+1).padStart(2,'0')}
       </span>
       <p style={{ fontSize:13, color:'var(--text-secondary)', filter:'blur(5px)', userSelect:'none', flex:1, margin:0, lineHeight:1.6 }}>{obs.detail}</p>
@@ -219,9 +279,9 @@ function ObservationCard({ obs, index, locked, onUnlock }: {
   )
 
   return (
-    <div style={{ padding:'16px 18px', borderRadius:'var(--radius-md)', background:bg, border:`0.5px solid ${border}`, display:'flex', flexDirection:'column', gap:8 }}>
+    <div style={{ padding:'16px 18px', borderRadius:'var(--radius-sm)', background:bg, border:`1px solid ${border}`, display:'flex', flexDirection:'column', gap:8 }}>
       <div className={styles.obsCardHeader}>
-        <span className={styles.obsTypeBadge} style={{ color, background:isStrength?'rgba(22,163,74,0.1)':'rgba(220,38,38,0.1)' }}>
+        <span className={styles.obsTypeBadge} style={{ color, background:isStrength?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${border}` }}>
           {isStrength ? '✓ Strength' : '✗ Weakness'}
         </span>
         <span className={styles.obsTitle}>{obs.title}</span>
@@ -241,7 +301,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
     <div className={`${styles.tipCard} ${styles.tipCardLocked}`} onClick={onUnlock}>
       <div className={styles.tipHeader} style={{ cursor:'pointer' }}>
         <div className={styles.tipHeaderLeft}>
-          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}14`, borderColor:`${IMPACT_COLORS[tip.impact]}28` }}>{tip.impact}</span>
+          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}10`, borderColor:`${IMPACT_COLORS[tip.impact]}30` }}>{tip.impact}</span>
           <span className={styles.tipArea} style={{ filter:'blur(4px)', userSelect:'none' }}>{tip.area}</span>
         </div>
         <div className={styles.lockBadge}>
@@ -259,7 +319,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
     <div className={styles.tipCard}>
       <button className={styles.tipHeader} onClick={() => setOpen(!open)}>
         <div className={styles.tipHeaderLeft}>
-          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}14`, borderColor:`${IMPACT_COLORS[tip.impact]}28` }}>{tip.impact}</span>
+          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}10`, borderColor:`${IMPACT_COLORS[tip.impact]}30` }}>{tip.impact}</span>
           <span className={styles.tipArea}>{tip.area}</span>
         </div>
         <svg className={`${styles.tipChevron} ${open ? styles.tipChevronOpen : ''}`} width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -280,7 +340,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
 // ─── AccountDropdown ──────────────────────────────────────────────────────────
 const TIER_META: Record<string,{label:string;color:string}> = {
   free:    { label:'Free',    color:'var(--text-tertiary)' },
-  pro:     { label:'Pro',     color:'var(--accent-text, var(--accent))'   },
+  pro:     { label:'Pro',     color:'var(--text-primary)'   },
   premium: { label:'Premium', color:'var(--score-high)'    },
 }
 const ddItem: React.CSSProperties = {
@@ -309,14 +369,14 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   return (
     <div ref={ref} style={{ position:'relative' }}>
       <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-row:hover{background:var(--bg-subtle)!important;color:var(--text-primary)!important}.dd-danger:hover{background:rgba(239,68,68,0.07)!important;color:#ef4444!important}`}</style>
-      <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 4px', background:open?'var(--bg-subtle)':'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.15s', fontFamily:'var(--font-sans)' }}>
-        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, flexShrink:0 }}>{initials}</span>
+      <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 4px', background:open?'var(--bg-subtle)':'transparent', border:'1px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.12s', fontFamily:'var(--font-sans)' }}>
+        <span style={{ width:26, height:26, borderRadius:'50%', background:'var(--text-primary)', color:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10.5, fontWeight:700, flexShrink:0 }}>{initials}</span>
         <span style={{ maxWidth:120, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:13, fontWeight:500, color:'var(--text-secondary)' }}>{user.email?.split('@')[0]}</span>
-        <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.2s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
+        <svg width="11" height="11" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open && (
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:220, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:'var(--radius-lg)', overflow:'hidden', boxShadow:'0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08)', zIndex:1000, animation:'dropIn 0.15s ease' }}>
-          <div style={{ padding:'14px 16px', borderBottom:'0.5px solid var(--border)' }}>
+        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:220, background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-md)', overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000, animation:'dropIn 0.12s ease' }}>
+          <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)' }}>
             <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.email}</div>
             <div style={{ fontSize:11, color:meta.color, fontWeight:600, marginTop:3 }}>{meta.label} plan</div>
           </div>
@@ -334,7 +394,7 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
               Plans
             </button>
           </div>
-          <div style={{ borderTop:'0.5px solid var(--border)', padding:'4px 0' }}>
+          <div style={{ borderTop:'1px solid var(--border)', padding:'4px 0' }}>
             <button className="dd-danger" onClick={() => { onSignOut(); setOpen(false) }} style={{ ...ddItem, color:'#ef4444' }}>
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Sign out
@@ -362,16 +422,9 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   onClose: () => void; onBuy: () => void
 }) {
   const [buying, setBuying] = useState<string|null>(null)
-  const [showLoginGate, setShowLoginGate] = useState(false)
-  const [authMode, setAuthMode] = useState<'login'|'signup'>('login')
-  const [email, setEmail] = useState(userEmail ?? '')
-  const [password, setPassword] = useState('')
-  const [authLoading, setAuthLoading] = useState(false)
-  const isFree = tier === 'free'
-  const isPremium = tier === 'premium'
 
   const handleBuy = async (plan: 'pro'|'premium') => {
-    if (!userId) { setShowLoginGate(true); return }
+    if (!userId) { onBuy(); return }
     setBuying(plan)
     try {
       const res = await fetch('/api/stripe/checkout', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ plan, userId, email:userEmail }) })
@@ -381,28 +434,28 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
-      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:'var(--radius-xl)', width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:32, display:'flex', flexDirection:'column', gap:24, boxShadow:'0 24px 80px rgba(0,0,0,0.25)' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
+      <div style={{ background:'var(--bg-elevated)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', width:'100%', maxWidth:560, maxHeight:'90vh', overflowY:'auto', padding:32, display:'flex', flexDirection:'column', gap:24, boxShadow:'0 24px 80px rgba(0,0,0,0.2)' }}>
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
           <div>
-            <h2 style={{ fontSize:20, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.03em' }}>Choose a plan</h2>
+            <h2 style={{ fontSize:20, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Choose a plan</h2>
             <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0 }}>Start free, unlock more when you need it.</p>
           </div>
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-tertiary)', padding:4, fontFamily:'var(--font-sans)' }}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:0, border:'1px solid var(--border)', borderRadius:'var(--radius-md)', overflow:'hidden' }}>
           {(['free','pro','premium'] as const).map(pk => {
             const p = PLAN_DEFS[pk]
             const isFeatured = pk === 'pro'
             const isCurrent  = tier === pk
             return (
-              <div key={pk} style={{ padding:'20px 22px', borderRadius:'var(--radius-lg)', background:isFeatured?'var(--accent-subtle)':'var(--bg-subtle)', border:`0.5px solid ${isFeatured?'var(--accent)':'var(--border)'}`, display:'flex', alignItems:'center', gap:20, justifyContent:'space-between' }}>
+              <div key={pk} style={{ padding:'20px 24px', background:isFeatured?'var(--bg-subtle)':'transparent', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:20, justifyContent:'space-between', outline:isFeatured?'1.5px solid var(--text-primary)':'none', outlineOffset:-1 }}>
                 <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
                   <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
-                    <span style={{ fontSize:13, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.04em' }}>{p.label}</span>
-                    <span style={{ fontSize:22, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.5px' }}>{p.price}</span>
+                    <span style={{ fontSize:10, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.09em' }}>{p.label}</span>
+                    <span style={{ fontSize:22, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-1px', fontFamily:'var(--font-serif)' }}>{p.price}</span>
                     {p.period && <span style={{ fontSize:12, color:'var(--text-tertiary)' }}>{p.period}</span>}
                   </div>
                   <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:4, margin:0, padding:0 }}>
@@ -411,9 +464,9 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                 </div>
                 <div style={{ flexShrink:0 }}>
                   {isCurrent ? (
-                    <span style={{ fontSize:12, color:'var(--text-tertiary)', padding:'8px 16px', border:'0.5px solid var(--border)', borderRadius:'var(--radius-sm)', display:'block' }}>Current</span>
+                    <span style={{ fontSize:12, color:'var(--text-tertiary)', padding:'8px 16px', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', display:'block' }}>Current</span>
                   ) : pk==='free' ? null : (
-                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'9px 20px', fontSize:13, fontWeight:600, color:'#fff', background:'var(--accent)', border:'none', borderRadius:'var(--radius-md)', cursor:'pointer', opacity:buying===pk?0.6:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const }}>
+                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'9px 20px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:'var(--radius-sm)', cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.12s' }}>
                       {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium'}
                     </button>
                   )}
@@ -580,7 +633,7 @@ export default function Home() {
         <div className={styles.headerInner}>
           <div className={styles.logo}>
             <div className={styles.logoMark}>
-              <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24">
+              <svg width="13" height="13" fill="none" stroke="var(--bg)" strokeWidth="2.4" viewBox="0 0 24 24">
                 <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
               </svg>
             </div>
@@ -619,7 +672,7 @@ export default function Home() {
         {(appState === 'idle' || appState === 'error') && (
           <div className={styles.hero}>
 
-            {/* Particle canvas */}
+            {/* Particle canvas — cursor-reactive */}
             <ParticleCanvas/>
             <div className={styles.heroGradient}/>
             <div className={styles.heroGradientBottom}/>
@@ -711,10 +764,10 @@ export default function Home() {
             {/* ── Stats strip ── */}
             <div className={styles.statsStrip}>
               {[
-                { num:'8', label:'dimensions scored' },
+                { num:'8',    label:'dimensions scored' },
                 { num:'~30s', label:'average analysis time' },
-                { num:'€2', label:'one-time Pro unlock' },
-                { num:'0', label:'sugarcoating' },
+                { num:'€2',   label:'one-time Pro unlock' },
+                { num:'0',    label:'sugarcoating' },
               ].map(s => (
                 <div key={s.num} className={styles.statItem}>
                   <span className={styles.statNum}>{s.num}</span>
@@ -755,8 +808,8 @@ export default function Home() {
                   <div className={styles.sampleTop}>
                     <div className={styles.sampleRing}>
                       <svg width="96" height="96" viewBox="0 0 96 96">
-                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--bg-muted)" strokeWidth="6"/>
-                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--score-high)" strokeWidth="6"
+                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
+                        <circle cx="48" cy="48" r="40" fill="none" stroke="var(--score-high)" strokeWidth="5"
                           strokeLinecap="round" strokeDasharray="180 251" transform="rotate(-90 48 48)"/>
                       </svg>
                       <div className={styles.sampleScore}>
@@ -785,9 +838,8 @@ export default function Home() {
                   <div className={styles.sampleObs}>
                     {SAMPLE_OBS.map((o,i) => (
                       <div key={i} className={styles.sampleObsCard} style={{
-                        background: o.type==='strength' ? 'rgba(93,202,165,0.07)' : 'rgba(240,149,149,0.07)',
-                        borderTop: i >= 2 ? '0.5px solid var(--border)' : 'none',
-                        borderRight: i % 2 === 0 ? '0.5px solid var(--border)' : 'none',
+                        borderTop: i >= 2 ? '1px solid var(--border)' : 'none',
+                        borderRight: i % 2 === 0 ? '1px solid var(--border)' : 'none',
                       }}>
                         <span className={styles.sampleObsType} style={{ color: o.type==='strength' ? 'var(--score-high)' : 'var(--score-low)' }}>
                           {o.type==='strength' ? '✓ Strength' : '✗ Weakness'}
@@ -809,9 +861,13 @@ export default function Home() {
                   <p className={styles.sSub}>Each weighted by how much recruiters actually care — not what's easiest to measure.</p>
                 </div>
                 <div className={styles.dimsGrid}>
-                  {DIMS_LIST.map(d => (
+                  {DIMS_LIST.map((d, i) => (
                     <div key={d.name} className={styles.dimCard}>
-                      <div className={styles.dimIcon}>{d.icon}</div>
+                      <div className={styles.dimIcon}>
+                        <span style={{ fontFamily:'var(--font-mono)', fontSize:10.5, fontWeight:600, color:'var(--text-tertiary)', letterSpacing:'0.04em' }}>
+                          {String(i+1).padStart(2,'0')}
+                        </span>
+                      </div>
                       <p className={styles.dimName}>{d.name}</p>
                       <p className={styles.dimDesc}>{d.desc}</p>
                     </div>
@@ -838,7 +894,7 @@ export default function Home() {
                         {isFeatured && <div className={styles.pricingBadge}>Most popular</div>}
                         <div>
                           <p className={styles.pricingCardName}>{p.label}</p>
-                          <div style={{ display:'flex', alignItems:'baseline', gap:6, marginTop:8 }}>
+                          <div style={{ display:'flex', alignItems:'baseline', gap:6, marginTop:10 }}>
                             <span className={styles.pricingCardPrice}>{p.price}</span>
                             {p.period && <span className={styles.pricingCardPeriod}>{p.period}</span>}
                           </div>
@@ -846,7 +902,7 @@ export default function Home() {
                         <ul className={styles.pricingFeatureList}>
                           {p.features.map(f => (
                             <li key={f} className={styles.pricingFeatureItem}>
-                              <svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:2 }}><polyline points="20 6 9 17 4 12"/></svg>
+                              <svg width="12" height="12" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:2, opacity:0.4 }}><polyline points="20 6 9 17 4 12"/></svg>
                               {f}
                             </li>
                           ))}
@@ -865,7 +921,7 @@ export default function Home() {
                   })}
                 </div>
                 <p className={styles.pricingGuarantee}>
-                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   Secure checkout via Stripe · No subscription on Pro
                 </p>
               </div>
@@ -880,8 +936,8 @@ export default function Home() {
             <p className={styles.loadingText}>Analyzing your CV…</p>
             <div className={styles.loadingSteps}>
               {LOADING_STEPS.map((step,i) => (
-                <div key={step} className={styles.loadingStep} style={{ opacity:i<=loadingStep?1:0.28, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)' }}>
-                  <div className={styles.loadingDot} style={{ opacity:i===loadingStep?1:0.3, animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
+                <div key={step} className={styles.loadingStep} style={{ opacity:i<=loadingStep?1:0.25, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)' }}>
+                  <div className={styles.loadingDot} style={{ opacity:i===loadingStep?1:0.25, animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
                   {step}
                 </div>
               ))}
@@ -898,7 +954,7 @@ export default function Home() {
                 New analysis
               </button>
               {!user && (
-                <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'6px 14px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+                <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'1px solid var(--border)', borderRadius:'var(--radius-sm)', padding:'6px 14px', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.12s', letterSpacing:'-0.01em' }}>
                   <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                   Sign in to save
                 </button>
@@ -920,7 +976,7 @@ export default function Home() {
             <div className={styles.scoreHero}>
               <ScoreRing score={result.total_score}/>
               <div className={styles.scoreHeroMeta}>
-                <span className={styles.ratingBadge} style={{ color:RATING_COLORS[result.rating], borderColor:`${RATING_COLORS[result.rating]}28`, background:`${RATING_COLORS[result.rating]}10` }}>
+                <span className={styles.ratingBadge} style={{ color:RATING_COLORS[result.rating], borderColor:`${RATING_COLORS[result.rating]}30`, background:`${RATING_COLORS[result.rating]}08` }}>
                   {RATING_LABELS[result.rating]}
                 </span>
                 <p className={styles.scoreSummary}>{result.summary}</p>
@@ -993,7 +1049,7 @@ export default function Home() {
             {/* Top priority */}
             <div className={styles.priorityCard}>
               <div className={styles.priorityCardHeader}>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 Do this first
               </div>
               <p className={styles.priorityText}>{result.top_priority}</p>
@@ -1021,8 +1077,8 @@ export default function Home() {
       {/* ── Footer ── */}
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>
-          <div className={styles.logoMark} style={{ width:22, height:22 }}>
-            <svg width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24">
+          <div className={styles.logoMark} style={{ width:22, height:22, borderRadius:5 }}>
+            <svg width="10" height="10" fill="none" stroke="var(--bg)" strokeWidth="2.2" viewBox="0 0 24 24">
               <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
             </svg>
           </div>
