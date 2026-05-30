@@ -1,34 +1,34 @@
 import type { Tier, GatedAnalysisResult, AnalysisResult } from './types'
 
-export const TIER_LIMITS = {
-  free: {
-    observations: 2,
-    improvements: 1,
-    scores_visible: false,
-  },
-  pro: {
-    observations: 99,
-    improvements: 99,
-    scores_visible: true,
-  },
-  premium: {
-    observations: 99,
-    improvements: 99,
-    scores_visible: true,
-  },
-} as const
+// ── What each tier sees ───────────────────────────────────────────────────────
+//
+// FREE  — genuinely useful: score, first impression, impact stats, red flag
+//         count+severity, career trajectory, format verdict, ATS verdict.
+//         Locked: rewrites, how_to_fix, missing keywords, gaps detail,
+//         missing credibility signals, top 3 actions (how+example).
+//
+// PRO   — everything unlocked for that one scan (€2 one-time)
+//
+// PREMIUM — same as Pro, unlimited scans + history for all plans
 
 export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisResult {
-  const limits = TIER_LIMITS[tier]
+  const isPro = tier === 'pro' || tier === 'premium'
+
   return {
     ...result,
     tier,
-    scores_locked: !limits.scores_visible,
-    observations_locked_from: limits.observations,
-    improvements_locked_from: limits.improvements,
+
+    // These flags drive UI rendering — all false for pro/premium
+    rewrites_locked:        !isPro,   // impact.rewrites
+    how_to_fix_locked:      !isPro,   // red_flags[].how_to_fix
+    keywords_locked:        !isPro,   // ats.missing_keywords + formatting_issues
+    gaps_locked:            !isPro,   // career_story.gaps_or_transitions
+    missing_signals_locked: !isPro,   // credibility.signals_missing
+    actions_locked:         !isPro,   // top_3_actions[].how + example
   }
 }
 
+// ── Plans shown in UI ─────────────────────────────────────────────────────────
 export const PLANS = {
   pro: {
     name: 'Pro Analysis',
@@ -36,26 +36,35 @@ export const PLANS = {
     period: 'one-time',
     description: 'Full breakdown for this CV',
     features: [
-      'Score breakdown across 8 dimensions',
-      'All observations (strengths & weaknesses)',
-      'All improvement suggestions with rewrites',
-      'Top priority recommendation',
+      'Bullet rewrites — your exact text, improved',
+      'How to fix every red flag',
+      'Missing ATS keywords for your domain',
+      'Career gaps & seniority analysis',
+      'Top 3 priority actions with examples',
+      'Saved to history',
     ],
-    cta: 'Get Full Analysis — €2',
+    cta: 'Unlock Full Analysis — €2',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PRO_PRICE_ID',
   },
   premium: {
     name: 'Premium',
     price: '€7.99',
     period: 'month',
-    description: 'Unlimited analyses',
+    description: 'Unlimited full analyses',
     features: [
       'Everything in Pro',
       'Unlimited analyses',
-      'Saved history',
-      'Compare versions over time',
+      'Full history on all scans',
+      'Track CV progress over time',
     ],
     cta: 'Start Premium — €7.99/mo',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
   },
 } as const
+
+// ── History access ────────────────────────────────────────────────────────────
+// History is available to ALL logged-in users regardless of tier.
+// The tier column on each roast row reflects what was purchased for that scan.
+export function canAccessHistory(tier: Tier | null, isLoggedIn: boolean): boolean {
+  return isLoggedIn
+}

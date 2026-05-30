@@ -9,25 +9,20 @@ import { UpgradeModal } from '@/components/UpgradeModal'
 import { AccountModal } from '@/components/AccountModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useTier } from '@/hooks/useTier'
-import type { GatedAnalysisResult, ImprovementTip, Observation, Rating } from '@/lib/types'
-import { SCORE_DIMENSIONS } from '@/lib/constants'
+import type {
+  GatedAnalysisResult, Rating,
+  RedFlagSeverity, BulletRewrite, PriorityAction, RedFlag,
+} from '@/lib/types'
+import {
+  SCORE_DIMENSIONS, RATING_LABELS, RATING_COLORS,
+  RED_FLAG_COLORS, RED_FLAG_LABELS,
+  ATS_VERDICT_LABELS, ATS_VERDICT_COLORS, LEVEL_LABELS,
+} from '@/lib/constants'
 import { createSupabaseBrowser } from '@/lib/supabase'
 import styles from './page.module.css'
 
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
-
-const RATING_LABELS: Record<Rating, string> = {
-  needs_work: 'Needs Work', below_average: 'Below Average', average: 'Average',
-  good: 'Good', strong: 'Strong', excellent: 'Excellent',
-}
-const RATING_COLORS: Record<Rating, string> = {
-  needs_work: '#DC2626', below_average: '#EA580C', average: '#CA8A04',
-  good: '#65A30D', strong: '#16A34A', excellent: '#0891B2',
-}
-const IMPACT_COLORS: Record<ImprovementTip['impact'], string> = {
-  high: '#DC2626', medium: '#CA8A04', low: '#6B7280',
-}
 
 // ─── Particle Canvas — Ramp-style, cursor-reactive ───────────────────────────
 function ParticleCanvas() {
@@ -65,7 +60,6 @@ function ParticleCanvas() {
 
     const isDark = () => document.documentElement.getAttribute('data-theme') !== 'light'
 
-    // 340 particles — much denser than before
     const COUNT = 340
     type P = {
       x: number; y: number
@@ -89,8 +83,8 @@ function ParticleCanvas() {
     })
 
     const CONNECT = 130
-    const ATTRACT  = 160   // cursor attract radius
-    const REPEL    = 80    // cursor repel inner radius
+    const ATTRACT  = 160
+    const REPEL    = 80
     const REPEL_F  = 0.018
 
     let frame = 0
@@ -100,12 +94,9 @@ function ParticleCanvas() {
       ctx.clearRect(0, 0, W, H)
 
       const dark = isDark()
-      // base particle/line color
       const col      = dark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
-      // accent color for hub lines
       const colAccent = dark ? 'rgba(160,154,232,' : 'rgba(83,74,183,'
 
-      // ── update positions ──
       for (const p of pts) {
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
@@ -114,19 +105,16 @@ function ParticleCanvas() {
 
         if (dist < ATTRACT && dist > 0) {
           if (dist < REPEL) {
-            // repel
             const force = (REPEL - dist) / REPEL
             p.vx += (dx / dist) * force * REPEL_F * 5
             p.vy += (dy / dist) * force * REPEL_F * 5
           } else {
-            // gentle attract
             const force = ((ATTRACT - dist) / ATTRACT) * 0.0018
             p.vx -= (dx / dist) * force * dist
             p.vy -= (dy / dist) * force * dist
           }
         }
 
-        // spring back to original velocity
         p.vx += (p.ox - p.vx) * 0.016
         p.vy += (p.oy - p.vy) * 0.016
 
@@ -142,7 +130,6 @@ function ParticleCanvas() {
         p.pulsePhase += p.pulseSpeed
       }
 
-      // ── connecting lines between all nearby particles ──
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const ddx = pts[i].x - pts[j].x
@@ -160,9 +147,7 @@ function ParticleCanvas() {
         }
       }
 
-      // ── cursor glow + hub lines ──
       if (mouse.active && mouse.x > -100) {
-        // soft glow under cursor
         const glowR = 120
         const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowR)
         grd.addColorStop(0, dark ? 'rgba(127,119,221,0.10)' : 'rgba(83,74,183,0.08)')
@@ -172,7 +157,6 @@ function ParticleCanvas() {
         ctx.fillStyle = grd
         ctx.fill()
 
-        // hub lines to nearest 14 particles
         const sorted = [...pts]
           .map(p => ({ p, d: Math.hypot(p.x - mouse.x, p.y - mouse.y) }))
           .filter(e => e.d < 220)
@@ -189,13 +173,11 @@ function ParticleCanvas() {
           ctx.stroke()
         }
 
-        // cursor dot with glow
         ctx.beginPath()
         ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2)
         ctx.fillStyle = dark ? 'rgba(160,154,232,0.7)' : 'rgba(83,74,183,0.6)'
         ctx.fill()
 
-        // outer ring pulse
         const pulse = 0.4 + 0.3 * Math.sin(frame * 0.06)
         ctx.beginPath()
         ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2)
@@ -204,9 +186,7 @@ function ParticleCanvas() {
         ctx.stroke()
       }
 
-      // ── draw dots ──
       for (const p of pts) {
-        // slight opacity pulse per particle
         const op = p.opacity * (0.82 + 0.18 * Math.sin(p.pulsePhase))
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
@@ -250,6 +230,31 @@ function ScoreRing({ score }: { score: number }) {
   )
 }
 
+// ─── Lock overlay used in multiple components ─────────────────────────────────
+function LockIcon({ size = 11 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  )
+}
+
+function UnlockBtn({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      display:'flex', alignItems:'center', gap:5, fontSize:11, fontWeight:600,
+      color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)',
+      borderRadius:4, padding:'4px 10px', cursor:'pointer', fontFamily:'var(--font-sans)',
+      letterSpacing:'-0.01em', transition:'color 0.1s, border-color 0.1s',
+    }}
+    onMouseOver={e => { e.currentTarget.style.color='var(--text-primary)'; e.currentTarget.style.borderColor='var(--border-strong)' }}
+    onMouseOut={e  => { e.currentTarget.style.color='var(--text-tertiary)'; e.currentTarget.style.borderColor='var(--border)' }}>
+      <LockIcon size={9}/> {label}
+    </button>
+  )
+}
+
 // ─── DimensionBar ─────────────────────────────────────────────────────────────
 function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
   label: string; score: number; max: number; desc: string
@@ -265,11 +270,7 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
           <span className={styles.dimLabel} style={{ filter:'blur(4px)', userSelect:'none' }}>{label}</span>
           <span className={styles.dimDesc}  style={{ filter:'blur(3px)', userSelect:'none' }}>{desc}</span>
         </div>
-        <span className={styles.lockIcon}>
-          <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-          </svg>
-        </span>
+        <span className={styles.lockIcon}><LockIcon/></span>
       </div>
       <div className={styles.barTrack}><div className={styles.barFillLocked} style={{ width:'60%' }}/></div>
     </div>
@@ -293,88 +294,122 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
   )
 }
 
-// ─── ObservationCard ──────────────────────────────────────────────────────────
-function ObservationCard({ obs, index, locked, onUnlock }: {
-  obs: Observation; index: number; locked: boolean; onUnlock: () => void
+// ─── RedFlagCard ──────────────────────────────────────────────────────────────
+function RedFlagCard({ flag, index, howToFixLocked, onUnlock }: {
+  flag: { flag: string; severity: RedFlagSeverity; how_to_fix: string }
+  index: number; howToFixLocked: boolean; onUnlock: () => void
 }) {
-  const isStrength = obs.type === 'strength'
-  const color  = isStrength ? 'var(--score-high)' : 'var(--score-low)'
-  const bg     = isStrength ? 'rgba(22,163,74,0.04)' : 'rgba(220,38,38,0.04)'
-  const border = isStrength ? 'rgba(22,163,74,0.14)' : 'rgba(220,38,38,0.14)'
-
-  if (locked) return (
-    <div onClick={onUnlock} style={{
-      padding:'14px 18px', borderRadius:6,
-      background:'var(--bg-elevated)',
-      border:'0.5px solid var(--border)',
-      display:'flex', alignItems:'flex-start', gap:12, cursor:'pointer',
-      transition:'background 0.1s',
-    }}
-    onMouseOver={e => (e.currentTarget.style.background='var(--bg-subtle)')}
-    onMouseOut={e  => (e.currentTarget.style.background='var(--bg-elevated)')}>
-      <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', padding:'2px 7px', borderRadius:2, background:'var(--bg-muted)', color:'var(--text-tertiary)', flexShrink:0 }}>
-        {String(index+1).padStart(2,'0')}
-      </span>
-      <p style={{ fontSize:12.5, color:'var(--text-secondary)', filter:'blur(5px)', userSelect:'none', flex:1, margin:0, lineHeight:1.65 }}>{obs.detail}</p>
-      <div style={{ color:'var(--text-tertiary)', flexShrink:0, display:'flex', alignItems:'center' }}>
-        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      </div>
-    </div>
-  )
+  const color = RED_FLAG_COLORS[flag.severity]
+  const label = RED_FLAG_LABELS[flag.severity]
 
   return (
-    <div style={{ padding:'16px 18px', borderRadius:6, background:bg, border:`0.5px solid ${border}`, display:'flex', flexDirection:'column', gap:8 }}>
-      <div className={styles.obsCardHeader}>
-        <span className={styles.obsTypeBadge} style={{ color, background:isStrength?'rgba(22,163,74,0.07)':'rgba(220,38,38,0.07)', border:`0.5px solid ${border}` }}>
-          {isStrength ? '✓ Strength' : '✗ Weakness'}
+    <div style={{
+      padding:'14px 18px', borderRadius:6,
+      background:`${color}05`,
+      border:`0.5px solid ${color}25`,
+      display:'flex', flexDirection:'column', gap:8,
+    }}>
+      <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+        <span style={{
+          fontSize:9, fontWeight:700, textTransform:'uppercase' as const,
+          letterSpacing:'0.09em', padding:'2px 7px', borderRadius:2,
+          color, background:`${color}12`, border:`0.5px solid ${color}30`,
+          flexShrink:0,
+        }}>{label}</span>
+        <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>
+          {flag.flag}
         </span>
-        <span className={styles.obsTitle}>{obs.title}</span>
       </div>
-      <p className={styles.obsDetail}>{obs.detail}</p>
+      {howToFixLocked ? (
+        <div onClick={onUnlock} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
+          <span style={{ fontSize:12, color:'var(--text-secondary)', filter:'blur(4px)', userSelect:'none', flex:1 }}>
+            {flag.how_to_fix}
+          </span>
+          <span style={{ color:'var(--text-tertiary)', flexShrink:0 }}><LockIcon size={10}/></span>
+        </div>
+      ) : (
+        <p style={{ fontSize:12.5, color:'var(--text-secondary)', margin:0, lineHeight:1.65 }}>
+          <span style={{ fontWeight:600, color:'var(--text-primary)' }}>Fix: </span>
+          {flag.how_to_fix}
+        </p>
+      )}
     </div>
   )
 }
 
-// ─── TipCard ──────────────────────────────────────────────────────────────────
-function TipCard({ tip, index, locked, onUnlock }: {
-  tip: ImprovementTip; index: number; locked: boolean; onUnlock: () => void
-}) {
-  const [open, setOpen] = useState(index === 0 && !locked)
-
-  if (locked) return (
-    <div className={`${styles.tipCard} ${styles.tipCardLocked}`} onClick={onUnlock}>
-      <div className={styles.tipHeader} style={{ cursor:'pointer' }}>
-        <div className={styles.tipHeaderLeft}>
-          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}10`, borderColor:`${IMPACT_COLORS[tip.impact]}30` }}>{tip.impact}</span>
-          <span className={styles.tipArea} style={{ filter:'blur(4px)', userSelect:'none' }}>{tip.area}</span>
-        </div>
-        <div className={styles.lockBadge}>
-          <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          Unlock
-        </div>
+// ─── BulletRewriteCard ────────────────────────────────────────────────────────
+function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
+  return (
+    <div style={{
+      borderRadius:6, border:'0.5px solid var(--border)',
+      overflow:'hidden', fontSize:12.5, lineHeight:1.65,
+    }}>
+      <div style={{ padding:'12px 16px', background:'rgba(220,38,38,0.04)', borderBottom:'0.5px solid var(--border)' }}>
+        <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-low)', marginBottom:6 }}>Before</div>
+        <p style={{ margin:0, color:'var(--text-secondary)' }}>{rewrite.original}</p>
       </div>
-      <div className={styles.tipBody} style={{ paddingTop:0 }}>
-        <p style={{ filter:'blur(5px)', userSelect:'none', fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.65, margin:0 }}>{tip.problem}</p>
+      <div style={{ padding:'12px 16px', background:'rgba(22,163,74,0.04)', borderBottom:'0.5px solid var(--border)' }}>
+        <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-high)', marginBottom:6 }}>After</div>
+        <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500 }}>{rewrite.rewritten}</p>
+      </div>
+      <div style={{ padding:'10px 16px', background:'var(--bg-subtle)' }}>
+        <p style={{ margin:0, fontSize:11.5, color:'var(--text-tertiary)' }}>
+          <span style={{ fontWeight:600, color:'var(--text-secondary)' }}>Why: </span>
+          {rewrite.why}
+        </p>
       </div>
     </div>
   )
+}
 
+// ─── ActionCard ───────────────────────────────────────────────────────────────
+function ActionCard({ action, index, detailsLocked, onUnlock }: {
+  action: PriorityAction; index: number; detailsLocked: boolean; onUnlock: () => void
+}) {
   return (
-    <div className={styles.tipCard}>
-      <button className={styles.tipHeader} onClick={() => setOpen(!open)}>
-        <div className={styles.tipHeaderLeft}>
-          <span className={styles.tipImpact} style={{ color:IMPACT_COLORS[tip.impact], background:`${IMPACT_COLORS[tip.impact]}10`, borderColor:`${IMPACT_COLORS[tip.impact]}30` }}>{tip.impact}</span>
-          <span className={styles.tipArea}>{tip.area}</span>
+    <div style={{
+      padding:'18px 20px', borderRadius:6,
+      border:'0.5px solid var(--border)',
+      background:'var(--bg-elevated)',
+      display:'flex', flexDirection:'column', gap:10,
+    }}>
+      <div style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
+        <span style={{
+          fontSize:11, fontWeight:800, color:'var(--text-primary)',
+          background:'var(--bg-subtle)', border:'0.5px solid var(--border)',
+          borderRadius:4, padding:'2px 8px', flexShrink:0, letterSpacing:'-0.01em',
+        }}>{String(index + 1).padStart(2, '0')}</span>
+        <div style={{ flex:1 }}>
+          <p style={{ margin:0, fontSize:13.5, fontWeight:600, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>
+            {action.action}
+          </p>
+          <p style={{ margin:'5px 0 0', fontSize:12, color:'var(--text-secondary)', lineHeight:1.6 }}>
+            {action.why_it_matters}
+          </p>
         </div>
-        <svg className={`${styles.tipChevron} ${open ? styles.tipChevronOpen : ''}`} width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      {open && (
-        <div className={styles.tipBody}>
-          <p className={styles.tipIssue}>{tip.problem}</p>
-          <div className={styles.tipFix}>
-            <span className={styles.tipFixLabel}>How to fix it</span>
-            <p className={styles.tipFixText}>{tip.fix}</p>
+      </div>
+      {detailsLocked ? (
+        <div onClick={onUnlock} style={{
+          padding:'10px 14px', borderRadius:5, border:'0.5px dashed var(--border)',
+          background:'var(--bg-subtle)', cursor:'pointer', display:'flex',
+          alignItems:'center', gap:8, transition:'background 0.1s',
+        }}
+        onMouseOver={e => (e.currentTarget.style.background='var(--bg-muted)')}
+        onMouseOut={e  => (e.currentTarget.style.background='var(--bg-subtle)')}>
+          <LockIcon size={10}/>
+          <span style={{ fontSize:12, color:'var(--text-tertiary)' }}>Unlock how-to + example — Pro</span>
+        </div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          <div style={{ padding:'10px 14px', borderRadius:5, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)' }}>
+            <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--accent)', marginBottom:5 }}>How</div>
+            <p style={{ margin:0, fontSize:12.5, color:'var(--text-primary)', lineHeight:1.65 }}>{action.how}</p>
           </div>
+          {action.example && (
+            <div style={{ padding:'10px 14px', borderRadius:5, background:'var(--bg-subtle)', border:'0.5px solid var(--border)', fontFamily:'monospace', fontSize:12, color:'var(--text-secondary)', lineHeight:1.65 }}>
+              {action.example}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -382,7 +417,7 @@ function TipCard({ tip, index, locked, onUnlock }: {
 }
 
 // ─── AccountDropdown ──────────────────────────────────────────────────────────
-const TIER_META: Record<string,{label:string;color:string}> = {
+const TIER_META: Record<string, { label:string; color:string }> = {
   free:    { label:'Free',    color:'var(--text-tertiary)' },
   pro:     { label:'Pro',     color:'var(--text-primary)'  },
   premium: { label:'Premium', color:'var(--score-high)'    },
@@ -396,17 +431,17 @@ const ddItem: React.CSSProperties = {
 }
 
 function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: {
-  user: { email?:string }; tier:string
-  onOpenAccount:()=>void; onOpenPlans:()=>void; onSignOut:()=>void
+  user: { email?: string }; tier: string
+  onOpenAccount: () => void; onOpenPlans: () => void; onSignOut: () => void
 }) {
   const [open, setOpen] = useState(false)
-  const ref  = useRef<HTMLDivElement>(null)
+  const ref    = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const meta   = TIER_META[tier] ?? TIER_META.free
-  const initials = (user.email ?? 'U').slice(0,2).toUpperCase()
+  const meta    = TIER_META[tier] ?? TIER_META.free
+  const initials = (user.email ?? 'U').slice(0, 2).toUpperCase()
 
   useEffect(() => {
-    const h = (e:MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener('mousedown', h)
     return () => document.removeEventListener('mousedown', h)
   }, [])
@@ -420,28 +455,21 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
         <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s', flexShrink:0 }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open && (
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:216, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000, animation:'dropIn 0.12s ease' }}>
+        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:220, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000, animation:'dropIn 0.12s ease' }}>
           <div style={{ padding:'13px 16px', borderBottom:'0.5px solid var(--border)' }}>
             <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>{user.email}</div>
-            <div style={{ fontSize:10.5, color:meta.color, fontWeight:600, marginTop:3, textTransform:'uppercase', letterSpacing:'0.06em' }}>{meta.label} plan</div>
+            <div style={{ fontSize:10.5, color:meta.color, fontWeight:600, marginTop:3, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{meta.label} plan</div>
           </div>
           <div style={{ padding:'4px 0' }}>
             <button className="dd-row" onClick={() => { onOpenAccount(); setOpen(false) }} style={ddItem}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               My account
             </button>
-            {(tier === 'premium') && (
-              <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-                History
-              </button>
-            )}
-            {(tier === 'free' || tier === 'pro') && (
-              <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={{ ...ddItem, color:'var(--text-tertiary)' }}>
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
-                History <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em', marginLeft:4, color:'var(--accent)', opacity:0.8 }}>Premium</span>
-              </button>
-            )}
+            {/* History — available to ALL logged-in users */}
+            <button className="dd-row" onClick={() => { router.push('/history'); setOpen(false) }} style={ddItem}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+              History
+            </button>
             <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={ddItem}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               Plans
@@ -461,9 +489,38 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
 // ─── PlansModal ───────────────────────────────────────────────────────────────
 const PLAN_DEFS = {
-  free:    { label:'Free',    color:'var(--text-tertiary)', price:'€0',    period:'',         features:['1 analysis total','Overall score /100','Rating & summary','2 observations','1 improvement tip (no rewrite)'] },
-  pro:     { label:'Pro',     color:'var(--text-primary)',  price:'€2',    period:'one-time', features:['1 analysis (full breakdown)','Score across all 8 dimensions','4 observations with context','3 improvement tips with rewrites','One-time — no subscription'] },
-  premium: { label:'Premium', color:'var(--score-high)',   price:'€7.99', period:'/month',   features:['Unlimited analyses','Everything in Pro — every time','History & progress tracking','Priority support'] },
+  free: {
+    label:'Free', color:'var(--text-tertiary)', price:'€0', period:'',
+    features:[
+      'Overall score /100 + rating',
+      'First impression (7-second test)',
+      'Impact stats — bullets with/without metrics',
+      'Red flag count + severity',
+      'ATS verdict',
+      'Career trajectory',
+      'Saved to history (with account)',
+    ],
+  },
+  pro: {
+    label:'Pro', color:'var(--text-primary)', price:'€2', period:'one-time',
+    features:[
+      'Everything in Free — fully unlocked',
+      'Bullet rewrites on your actual text',
+      'How to fix every red flag',
+      'Missing ATS keywords for your domain',
+      'Career gaps & seniority analysis',
+      'Top 3 priority actions with how-to + examples',
+    ],
+  },
+  premium: {
+    label:'Premium', color:'var(--score-high)', price:'€7.99', period:'/month',
+    features:[
+      'Everything in Pro — every time',
+      'Unlimited analyses',
+      'Full history on all scans',
+      'Track CV progress over time',
+    ],
+  },
 }
 
 function Chk() {
@@ -515,17 +572,17 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                     {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}
                   </ul>
                 </div>
-                    <div style={{ flexShrink:0 }}>
-                      {isCurrent ? (
-                        <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current plan</span>
-                      ) : pk==='free' ? (
-                        <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', display:'block' }}>1 free scan</span>
-                      ) : (
-                        <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
-                          {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
-                        </button>
-                      )}
-                    </div>
+                <div style={{ flexShrink:0 }}>
+                  {isCurrent ? (
+                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current plan</span>
+                  ) : pk==='free' ? (
+                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', display:'block' }}>1 free scan</span>
+                  ) : (
+                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
+                      {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
+                    </button>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -536,11 +593,344 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
   )
 }
 
+// ─── ResultContent ────────────────────────────────────────────────────────────
+function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
+  result: GatedAnalysisResult
+  isPro: boolean
+  user: { email?: string } | null
+  savedToHistory: boolean
+  setShowUpgradeModal: (v: boolean) => void
+  setShowPlansModal: (v: boolean) => void
+  setShowAuthModal: (v: boolean) => void
+}) {
+  const unlock = () => setShowUpgradeModal(true)
+
+  return (
+    <>
+      {/* ── Score hero ── */}
+      <div className={styles.scoreHero}>
+        <ScoreRing score={result.total_score}/>
+        <div className={styles.scoreHeroMeta}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+            <span className={styles.ratingBadge} style={{ color:RATING_COLORS[result.rating], borderColor:`${RATING_COLORS[result.rating]}30`, background:`${RATING_COLORS[result.rating]}08` }}>
+              {RATING_LABELS[result.rating]}
+            </span>
+            {result.detected_domain && result.detected_domain !== 'Unknown' && (
+              <span style={{ fontSize:10, fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--text-tertiary)', padding:'2px 8px', border:'0.5px solid var(--border)', borderRadius:3 }}>
+                {LEVEL_LABELS[result.detected_level]} · {result.detected_domain}
+              </span>
+            )}
+          </div>
+          <p className={styles.scoreSummary}>{result.summary}</p>
+          {result.source && <p className={styles.sourceLabel}>{result.source}</p>}
+        </div>
+      </div>
+
+      {/* ── First Impression ── */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>First Impression</h2>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {/* 7-second test verdict */}
+          <div style={{
+            padding:'16px 20px', borderRadius:6,
+            border:`0.5px solid ${result.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`,
+            background:result.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.04)' : 'rgba(220,38,38,0.04)',
+          }}>
+            <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:result.first_impression.passes_7_second_test ? 'var(--score-high)' : 'var(--score-low)', marginBottom:7 }}>
+              {result.first_impression.passes_7_second_test ? '✓ Passes 7-second test' : '✗ Fails 7-second test'}
+            </div>
+            <p style={{ margin:0, fontSize:13, color:'var(--text-primary)', fontStyle:'italic', lineHeight:1.6 }}>
+              "{result.first_impression.what_recruiter_sees}"
+            </p>
+            <p style={{ margin:'6px 0 0', fontSize:11.5, color:'var(--text-tertiary)' }}>
+              — what a recruiter understands about you in 7 seconds
+            </p>
+          </div>
+          {/* Title */}
+          {result.first_impression.recommended_title !== result.first_impression.current_title && (
+            <div style={{ display:'flex', alignItems:'center', gap:0, borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', fontSize:12.5 }}>
+              <div style={{ flex:1, padding:'12px 16px', background:'rgba(220,38,38,0.04)' }}>
+                <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-low)', marginBottom:4 }}>Current title</div>
+                <span style={{ color:'var(--text-secondary)' }}>{result.first_impression.current_title || '—'}</span>
+              </div>
+              <div style={{ width:1, background:'var(--border)', alignSelf:'stretch' }}/>
+              <div style={{ flex:1, padding:'12px 16px', background:'rgba(22,163,74,0.04)' }}>
+                <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-high)', marginBottom:4 }}>Recommended</div>
+                <span style={{ color:'var(--text-primary)', fontWeight:500 }}>{result.first_impression.recommended_title}</span>
+              </div>
+            </div>
+          )}
+          {/* Summary verdict */}
+          {result.first_impression.summary_verdict !== 'strong' && (
+            <div style={{ padding:'10px 14px', borderRadius:5, background:'var(--bg-subtle)', border:'0.5px solid var(--border)', fontSize:12, color:'var(--text-secondary)' }}>
+              <span style={{ fontWeight:600, color:'var(--text-primary)' }}>Summary/Objective: </span>
+              {{ missing:'Missing — add a 2-line summary targeted to your role', generic:'Too generic — replace with something role-specific', decent:'Decent — could be sharper', strong:'' }[result.first_impression.summary_verdict]}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Score Breakdown ── */}
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Score Breakdown</h2>
+        <div className={styles.categoryBars}>
+          {SCORE_DIMENSIONS.map(({ key, label, max, desc }) => (
+            <DimensionBar key={key} label={label}
+              score={(result.scores as unknown as Record<string, number>)[key] ?? 0}
+              max={max} desc={desc}
+              locked={false}
+              onUnlock={unlock}/>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Impact & Achievements ── */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitleRow}>
+          <h2 className={styles.sectionTitle}>Impact & Achievements</h2>
+          {result.rewrites_locked && (
+            <UnlockBtn label="Unlock rewrites — €2" onClick={unlock}/>
+          )}
+        </div>
+        {/* Stats bar */}
+        <div style={{ display:'flex', gap:0, borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', marginBottom:10 }}>
+          {[
+            { label:'With metrics', value:result.impact.bullets_with_metrics, color:'var(--score-high)' },
+            { label:'Without metrics', value:result.impact.bullets_without_metrics, color:'var(--score-low)' },
+          ].map((s, i) => (
+            <div key={i} style={{ flex:1, padding:'14px 18px', borderRight:i===0?'0.5px solid var(--border)':'none', background:'var(--bg-elevated)' }}>
+              <div style={{ fontSize:22, fontWeight:800, color:s.color, letterSpacing:'-1.5px', fontFamily:'var(--font-serif)' }}>{s.value}</div>
+              <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:2 }}>{s.label}</div>
+            </div>
+          ))}
+          <div style={{ flex:2, padding:'14px 18px', background:'var(--bg-elevated)' }}>
+            <div style={{ fontSize:11.5, fontWeight:600, color:'var(--text-primary)', marginBottom:3 }}>Pattern detected</div>
+            <div style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>{result.impact.dominant_pattern}</div>
+          </div>
+        </div>
+        {/* Verb quality */}
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+          <span style={{ fontSize:11, color:'var(--text-tertiary)' }}>Action verb quality:</span>
+          <span style={{
+            fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em',
+            padding:'2px 8px', borderRadius:2,
+            color: result.impact.action_verb_quality === 'strong' ? 'var(--score-high)' : result.impact.action_verb_quality === 'weak' ? 'var(--score-low)' : 'var(--score-mid)',
+            background: result.impact.action_verb_quality === 'strong' ? 'rgba(22,163,74,0.08)' : result.impact.action_verb_quality === 'weak' ? 'rgba(220,38,38,0.08)' : 'rgba(202,138,4,0.08)',
+          }}>{result.impact.action_verb_quality}</span>
+        </div>
+        {/* Rewrites */}
+        {result.rewrites_locked ? (
+          <div onClick={unlock} style={{
+            padding:'16px 20px', borderRadius:6, border:'0.5px dashed var(--border)',
+            background:'var(--bg-subtle)', cursor:'pointer', display:'flex',
+            alignItems:'center', justifyContent:'space-between',
+            transition:'background 0.1s',
+          }}
+          onMouseOver={e => (e.currentTarget.style.background='var(--bg-muted)')}
+          onMouseOut={e  => (e.currentTarget.style.background='var(--bg-subtle)')}>
+            <div>
+              <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', marginBottom:4 }}>
+                {result.impact.rewrites.length || 2}–3 bullet rewrites available
+              </div>
+              <div style={{ fontSize:12, color:'var(--text-secondary)' }}>
+                Your exact bullets rewritten with Action + Context + Quantified Result
+              </div>
+            </div>
+            <LockIcon size={13}/>
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            {result.impact.rewrites.map((rw, i) => (
+              <BulletRewriteCard key={i} rewrite={rw}/>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── ATS Compatibility ── */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitleRow}>
+          <h2 className={styles.sectionTitle}>ATS Compatibility</h2>
+          {result.keywords_locked && (
+            <UnlockBtn label="See missing keywords — €2" onClick={unlock}/>
+          )}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {/* Verdict */}
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{
+              fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em',
+              padding:'4px 10px', borderRadius:3,
+              color: ATS_VERDICT_COLORS[result.ats.verdict],
+              background:`${ATS_VERDICT_COLORS[result.ats.verdict]}10`,
+              border:`0.5px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30`,
+            }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
+            <span style={{ fontSize:12, color:'var(--text-secondary)' }}>
+              Title searchable: <span style={{ fontWeight:600, color:result.ats.title_is_searchable?'var(--score-high)':'var(--score-low)' }}>
+                {result.ats.title_is_searchable ? 'Yes' : 'No'}
+              </span>
+            </span>
+          </div>
+          {result.ats.notes && (
+            <p style={{ margin:0, fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.65 }}>{result.ats.notes}</p>
+          )}
+          {/* Locked: keywords + formatting issues */}
+          {result.keywords_locked ? (
+            <div onClick={unlock} style={{
+              padding:'12px 16px', borderRadius:5, border:'0.5px dashed var(--border)',
+              background:'var(--bg-subtle)', cursor:'pointer', fontSize:12,
+              color:'var(--text-tertiary)', display:'flex', alignItems:'center', gap:8,
+            }}>
+              <LockIcon size={10}/>
+              Missing keywords for your domain + formatting issues — unlock with Pro
+            </div>
+          ) : (
+            <>
+              {result.ats.missing_keywords.length > 0 && (
+                <div>
+                  <div style={{ fontSize:11, color:'var(--text-tertiary)', marginBottom:7 }}>Missing keywords for your domain</div>
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+                    {result.ats.missing_keywords.map(kw => (
+                      <span key={kw} style={{ fontSize:11.5, padding:'3px 10px', borderRadius:3, background:'rgba(220,38,38,0.06)', border:'0.5px solid rgba(220,38,38,0.2)', color:'var(--score-low)' }}>
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {result.ats.formatting_issues.length > 0 && (
+                <div>
+                  <div style={{ fontSize:11, color:'var(--text-tertiary)', marginBottom:7 }}>Formatting issues</div>
+                  {result.ats.formatting_issues.map((issue, i) => (
+                    <div key={i} style={{ fontSize:12.5, color:'var(--text-secondary)', padding:'6px 0', borderBottom:i<result.ats.formatting_issues.length-1?'0.5px solid var(--border)':'none' }}>
+                      · {issue}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Red Flags ── */}
+      {result.red_flags.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionTitleRow}>
+            <h2 className={styles.sectionTitle}>Red Flags</h2>
+            <div style={{ display:'flex', gap:6 }}>
+              {(['dealbreaker','warning','minor'] as const).map(sev => {
+                const count = result.red_flags.filter(f => f.severity === sev).length
+                if (!count) return null
+                return (
+                  <span key={sev} style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:3, color:RED_FLAG_COLORS[sev], background:`${RED_FLAG_COLORS[sev]}10`, border:`0.5px solid ${RED_FLAG_COLORS[sev]}30` }}>
+                    {count} {sev}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+            {result.red_flags.map((flag, i) => (
+              <RedFlagCard key={i} flag={flag} index={i}
+                howToFixLocked={result.how_to_fix_locked}
+                onUnlock={unlock}/>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Career Story ── */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitleRow}>
+          <h2 className={styles.sectionTitle}>Career Story</h2>
+          {result.gaps_locked && (
+            <UnlockBtn label="See full analysis — €2" onClick={unlock}/>
+          )}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          <div style={{ padding:'14px 18px', borderRadius:6, background:'var(--bg-elevated)', border:'0.5px solid var(--border)' }}>
+            <div style={{ fontSize:11, color:'var(--text-tertiary)', marginBottom:5 }}>Trajectory detected</div>
+            <p style={{ margin:0, fontSize:13, color:'var(--text-primary)', fontWeight:500 }}>{result.career_story.trajectory_detected}</p>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <div style={{ flex:1, padding:'12px 14px', borderRadius:6, background:'var(--bg-elevated)', border:'0.5px solid var(--border)' }}>
+              <div style={{ fontSize:10, color:'var(--text-tertiary)', marginBottom:4 }}>Progression clear</div>
+              <span style={{ fontSize:13, fontWeight:700, color:result.career_story.progression_clear?'var(--score-high)':'var(--score-low)' }}>
+                {result.career_story.progression_clear ? 'Yes' : 'No'}
+              </span>
+            </div>
+            <div style={{ flex:1, padding:'12px 14px', borderRadius:6, background:'var(--bg-elevated)', border:'0.5px solid var(--border)' }}>
+              <div style={{ fontSize:10, color:'var(--text-tertiary)', marginBottom:4 }}>Seniority match</div>
+              <span style={{ fontSize:12, fontWeight:600, color:'var(--text-primary)', textTransform:'capitalize' as const }}>
+                {result.career_story.seniority_match.replace('_', ' ')}
+              </span>
+            </div>
+          </div>
+          {result.gaps_locked ? (
+            <div onClick={unlock} style={{ padding:'12px 16px', borderRadius:5, border:'0.5px dashed var(--border)', background:'var(--bg-subtle)', cursor:'pointer', fontSize:12, color:'var(--text-tertiary)', display:'flex', alignItems:'center', gap:8 }}>
+              <LockIcon size={10}/>
+              Gaps, transitions & seniority detail — unlock with Pro
+            </div>
+          ) : result.career_story.gaps_or_transitions ? (
+            <div style={{ padding:'12px 16px', borderRadius:5, background:'rgba(202,138,4,0.05)', border:'0.5px solid rgba(202,138,4,0.25)', fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.65 }}>
+              <span style={{ fontWeight:600, color:'var(--score-mid)' }}>Gaps / Transitions: </span>
+              {result.career_story.gaps_or_transitions}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── Top 3 Priority Actions ── */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitleRow}>
+          <h2 className={styles.sectionTitle}>Top 3 Actions</h2>
+          {result.actions_locked && (
+            <UnlockBtn label="Unlock how-to + examples — €2" onClick={unlock}/>
+          )}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {result.top_3_actions.map((action, i) => (
+            <ActionCard key={i} action={action} index={i}
+              detailsLocked={result.actions_locked}
+              onUnlock={unlock}/>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Upgrade banner — only for free tier ── */}
+      {!isPro && (
+        <div className={styles.upgradeBanner}>
+          <div className={styles.upgradeBannerContent}>
+            <p className={styles.upgradeBannerTitle}>Unlock the full picture</p>
+            <p className={styles.upgradeBannerSub}>
+              Pro unlocks your bullet rewrites, how to fix every red flag, missing ATS keywords, career gap analysis, and full how-to steps for all 3 priority actions. €2, one-time.
+            </p>
+          </div>
+          <div className={styles.upgradeBannerActions}>
+            <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock Pro — €2</button>
+            <button className={styles.upgradeBannerPremium} onClick={() => setShowPlansModal(true)}>See all plans</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sign-in nudge — logged out ── */}
+      {!user && (
+        <div style={{ textAlign:'center' as const, padding:'16px', fontSize:12, color:'var(--text-tertiary)' }}>
+          <button onClick={() => setShowAuthModal(true)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline', padding:0 }}>
+            Sign in
+          </button> to save this analysis to your history — free for all accounts.
+        </div>
+      )}
+    </>
+  )
+}
+
 // ─── Static landing data ──────────────────────────────────────────────────────
 const HOW_STEPS = [
-  { n:'01', title:'Paste a link or drop your PDF', desc:'Works with portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
-  { n:'02', title:'We read it the way a recruiter would', desc:'CVCheck looks at 8 things recruiters actually care about — positioning, proof, structure, language, and more.' },
-  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the overall score and rating. Pro unlocks all 8 dimensions, observations, and improvement tips with rewritten examples — for €2, one-time.' },
+  { n:'01', title:'Paste a link or drop your PDF', desc:'Portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
+  { n:'02', title:'We read it like a recruiter would', desc:'CVCheck checks 7 things that actually determine whether your CV passes or fails — ATS, red flags, impact, story, and more.' },
+  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the score, first impression, impact stats, and red flag count. Pro unlocks rewrites, fixes, and priority actions — €2 one-time.' },
 ]
 
 const SAMPLE_DIMS = [
@@ -573,10 +963,10 @@ const DIMS_LIST = [
 ]
 
 const LOADING_STEPS = [
-  'Reading your content…',
-  'Evaluating structure & clarity…',
-  'Scoring 8 dimensions…',
-  'Writing your recommendations…',
+  'Reading your CV…',
+  'Running the 7-second test…',
+  'Checking ATS compatibility…',
+  'Writing your rewrites & actions…',
 ]
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -614,17 +1004,25 @@ export default function Home() {
     if (!user || !session || !pendingSave || savedToHistory) return
     const supabase = createSupabaseBrowser()
     supabase.from('roasts').insert({
-      id: pendingSave.analysis_id,
-      user_id: user.id,
-      source: pendingSave.source ?? null,
+      id:          pendingSave.analysis_id,
+      user_id:     user.id,
+      source:      pendingSave.source ?? null,
       total_score: pendingSave.total_score,
-      rating: pendingSave.rating,
-      summary: pendingSave.summary,
-      scores: pendingSave.scores,
-      observations: pendingSave.observations,
-      improvements: pendingSave.improvements,
-      top_priority: pendingSave.top_priority,
-      tier: pendingSave.tier,
+      rating:      pendingSave.rating,
+      summary:     pendingSave.summary,
+      scores:      pendingSave.scores,
+      // New structured fields
+      first_impression: pendingSave.first_impression,
+      impact:           pendingSave.impact,
+      ats:              pendingSave.ats,
+      red_flags:        pendingSave.red_flags,
+      career_story:     pendingSave.career_story,
+      format:           pendingSave.format,
+      credibility:      pendingSave.credibility,
+      top_3_actions:    pendingSave.top_3_actions,
+      detected_domain:  pendingSave.detected_domain,
+      detected_level:   pendingSave.detected_level,
+      tier:             pendingSave.tier,
     }).then(({ error }) => {
       if (!error) { setSavedToHistory(true); setPendingSave(null) }
       else console.error('[history] Failed to save pending analysis:', error)
@@ -1064,104 +1462,16 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Score hero */}
-            <div className={styles.scoreHero}>
-              <ScoreRing score={result.total_score}/>
-              <div className={styles.scoreHeroMeta}>
-                <span className={styles.ratingBadge} style={{ color:RATING_COLORS[result.rating], borderColor:`${RATING_COLORS[result.rating]}30`, background:`${RATING_COLORS[result.rating]}08` }}>
-                  {RATING_LABELS[result.rating]}
-                </span>
-                <p className={styles.scoreSummary}>{result.summary}</p>
-                {result.source && <p className={styles.sourceLabel}>{result.source}</p>}
-              </div>
-            </div>
-
-            {/* Score breakdown */}
-            <div className={styles.section}>
-              <div className={styles.sectionTitleRow}>
-                <h2 className={styles.sectionTitle}>Score Breakdown</h2>
-                {result.scores_locked && (
-                  <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    Unlock all 8 — €2
-                  </button>
-                )}
-              </div>
-              <div className={styles.categoryBars}>
-                {SCORE_DIMENSIONS.map(({ key, label, max, desc }) => (
-                  <DimensionBar key={key} label={label}
-                    score={(result.scores as unknown as Record<string,number>)[key] ?? 0}
-                    max={max} desc={desc}
-                    locked={result.scores_locked}
-                    onUnlock={() => setShowUpgradeModal(true)}/>
-                ))}
-              </div>
-            </div>
-
-            {/* Observations */}
-            <div className={styles.section}>
-              <div className={styles.sectionTitleRow}>
-                <h2 className={styles.sectionTitle}>Observations</h2>
-                {!isPro && result.observations.length > result.observations_locked_from && (
-                  <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    See all {result.observations.length}
-                  </button>
-                )}
-              </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                {result.observations.map((obs,i) => (
-                  <ObservationCard key={i} obs={obs} index={i}
-                    locked={i >= result.observations_locked_from}
-                    onUnlock={() => setShowUpgradeModal(true)}/>
-                ))}
-              </div>
-            </div>
-
-            {/* Improvements */}
-            <div className={styles.section}>
-              <div className={styles.sectionTitleRow}>
-                <h2 className={styles.sectionTitle}>How to improve</h2>
-                {!isPro && result.improvements.length > result.improvements_locked_from && (
-                  <button className={styles.unlockBtn} onClick={() => setShowUpgradeModal(true)}>
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                    Unlock {result.improvements.length - result.improvements_locked_from} more
-                  </button>
-                )}
-              </div>
-              <div className={styles.tips}>
-                {result.improvements.map((tip,i) => (
-                  <TipCard key={i} tip={tip} index={i}
-                    locked={i >= result.improvements_locked_from}
-                    onUnlock={() => setShowUpgradeModal(true)}/>
-                ))}
-              </div>
-            </div>
-
-            {/* Top priority */}
-            <div className={styles.priorityCard}>
-              <div className={styles.priorityCardHeader}>
-                <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Do this first
-              </div>
-              <p className={styles.priorityText}>{result.top_priority}</p>
-            </div>
-
-            {/* Upgrade banner */}
-            {!isPro && (
-              <div className={styles.upgradeBanner}>
-                <div className={styles.upgradeBannerContent}>
-                  <p className={styles.upgradeBannerTitle}>There's more here you haven't seen</p>
-                  <p className={styles.upgradeBannerSub}>
-                    Free shows the headline score. Pro unlocks all {result.observations.length} observations, {result.improvements.length} improvement tips with rewritten examples, and the full 8-dimension breakdown — €2, one-time, no subscription.
-                  </p>
-                </div>
-                <div className={styles.upgradeBannerActions}>
-                  <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock Pro — €2</button>
-                  <button className={styles.upgradeBannerPremium} onClick={() => setShowPlansModal(true)}>See all plans</button>
-                </div>
-              </div>
-            )}
+            {/* New result content */}
+            <ResultContent
+              result={result}
+              isPro={isPro}
+              user={user}
+              savedToHistory={savedToHistory}
+              setShowUpgradeModal={setShowUpgradeModal}
+              setShowPlansModal={setShowPlansModal}
+              setShowAuthModal={setShowAuthModal}
+            />
 
           </div>
         )}
