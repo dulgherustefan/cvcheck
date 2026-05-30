@@ -10,10 +10,10 @@ const client = new Anthropic({
 const MAX_CONTENT_CHARS = 6000
 
 const RATING_THRESHOLDS: [number, Rating][] = [
-  [20,  'needs_work'],
-  [40,  'below_average'],
-  [60,  'average'],
-  [75,  'good'],
+  [30,  'needs_work'],
+  [50,  'below_average'],
+  [65,  'average'],
+  [79,  'good'],
   [90,  'strong'],
   [100, 'excellent'],
 ]
@@ -27,14 +27,13 @@ function toRating(score: number): Rating {
 
 function clampScores(s: CVScores): CVScores {
   return {
-    first_impression:  Math.max(0, Math.min(10, Math.round(s.first_impression  ?? 0))),
-    positioning:       Math.max(0, Math.min(10, Math.round(s.positioning       ?? 0))),
-    experience_proof:  Math.max(0, Math.min(20, Math.round(s.experience_proof  ?? 0))),
-    skills_relevance:  Math.max(0, Math.min(10, Math.round(s.skills_relevance  ?? 0))),
-    credibility:       Math.max(0, Math.min(15, Math.round(s.credibility       ?? 0))),
-    structure:         Math.max(0, Math.min(15, Math.round(s.structure         ?? 0))),
-    language:          Math.max(0, Math.min(10, Math.round(s.language          ?? 0))),
-    contact_cta:       Math.max(0, Math.min(10, Math.round(s.contact_cta       ?? 0))),
+    first_impression:    Math.max(0, Math.min(15, Math.round(s.first_impression    ?? 0))),
+    impact_achievements: Math.max(0, Math.min(25, Math.round(s.impact_achievements ?? 0))),
+    ats_compatibility:   Math.max(0, Math.min(20, Math.round(s.ats_compatibility   ?? 0))),
+    red_flags_score:     Math.max(0, Math.min(20, Math.round(s.red_flags_score     ?? 0))),
+    career_story:        Math.max(0, Math.min(10, Math.round(s.career_story        ?? 0))),
+    format_scannability: Math.max(0, Math.min(5,  Math.round(s.format_scannability ?? 0))),
+    credibility:         Math.max(0, Math.min(5,  Math.round(s.credibility         ?? 0))),
   }
 }
 
@@ -53,7 +52,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1400,
+    max_tokens: 2000,
     system: SYSTEM_PROMPT,
     messages: [
       {
@@ -68,7 +67,7 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     .map(b => (b as { type: 'text'; text: string }).text)
     .join('')
 
-  // Extract JSON robustly — find first { and last } in case Claude adds text
+  // Extract JSON robustly — find first { and last }
   const cleaned = (() => {
     let s = raw
       .replace(/^```json\s*/i, '')
@@ -92,9 +91,9 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
     typeof parsed.total_score !== 'number' ||
     !parsed.scores ||
     !parsed.summary ||
-    !Array.isArray(parsed.observations) ||
-    !Array.isArray(parsed.improvements) ||
-    !parsed.top_priority
+    !parsed.first_impression ||
+    !Array.isArray(parsed.red_flags) ||
+    !Array.isArray(parsed.top_3_actions)
   ) {
     throw new Error('AI response missing required fields')
   }
@@ -102,9 +101,13 @@ export async function getRoast(content: string): Promise<AnalysisResult> {
   parsed.scores = clampScores(parsed.scores)
   const s = parsed.scores
   parsed.total_score =
-    s.first_impression + s.positioning + s.experience_proof +
-    s.skills_relevance + s.credibility + s.structure +
-    s.language + s.contact_cta
+    s.first_impression +
+    s.impact_achievements +
+    s.ats_compatibility +
+    s.red_flags_score +
+    s.career_story +
+    s.format_scannability +
+    s.credibility
 
   parsed.rating = toRating(parsed.total_score)
   parsed.analysis_id = randomUUID()
