@@ -593,14 +593,14 @@ const PLAN_DEFS = {
       'Impact stats — bullets with/without metrics',
       'Red flag count + severity',
       'ATS verdict',
-      'Career trajectory',
-      'Saved to history (with account)',
+      'Career trajectory + format verdict',
+      'History saved (requires account)',
     ],
   },
   pro: {
     label:'Pro', color:'var(--text-primary)', price:'€2', period:'one-time',
     features:[
-      'Everything in Free — fully unlocked',
+      'Everything in Free',
       'Bullet rewrites on your actual text',
       'How to fix every red flag',
       'Missing ATS keywords for your domain',
@@ -611,10 +611,8 @@ const PLAN_DEFS = {
   premium: {
     label:'Premium', color:'var(--score-high)', price:'€7.99', period:'/month',
     features:[
-      'Everything in Pro — every time',
+      'Everything in Pro',
       'Unlimited analyses',
-      'Full history on all scans',
-      'Track CV progress over time',
     ],
   },
 }
