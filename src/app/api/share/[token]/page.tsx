@@ -15,11 +15,16 @@ interface SharePageProps {
 
 async function getRoast(token: string) {
   const { createClient } = await import('@supabase/supabase-js')
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  )
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceKey) {
+    console.error('[share] Missing env vars — SUPABASE_URL:', !!supabaseUrl, 'SERVICE_KEY:', !!serviceKey)
+    return null
+  }
+
+  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
 
   const { data: roast, error } = await admin
     .from('roasts')
@@ -32,7 +37,14 @@ async function getRoast(token: string) {
     .eq('share_token', token)
     .single()
 
-  if (error || !roast) return null
+  if (error) {
+    console.error('[share] Supabase error:', JSON.stringify(error))
+    return null
+  }
+  if (!roast) {
+    console.error('[share] No roast found for token:', token)
+    return null
+  }
   return roast
 }
 
