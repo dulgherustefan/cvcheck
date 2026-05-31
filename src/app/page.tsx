@@ -1237,7 +1237,7 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
       )}
 
       {/* ── Job Matches ── */}
-      <JobMatchesSection result={result} token={token} isPremium={tier === 'premium'} onUnlock={() => setShowPlansModal(true)} />
+      <JobMatchesSection result={result} token={token} isPremium={result.tier === 'premium'} onUnlock={() => setShowPlansModal(true)} />
 
       {/* ── Sign-in nudge — logged out ── */}
       {!user && (
