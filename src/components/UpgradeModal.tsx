@@ -162,7 +162,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
               {/* Header */}
               <div style={{ marginBottom: 28, paddingRight: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-text)', margin: '0 0 8px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-hi)', margin: '0 0 8px' }}>
                   Unlock full access
                 </p>
                 <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 10px', lineHeight: 1.2 }}>
@@ -171,7 +171,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 </h2>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, maxWidth: 440 }}>
                   The free scan shows your overall score and a glimpse of what's holding you back.
-                  Pro unlocks all 8 dimension scores, every observation, and specific rewrite suggestions.
+                  Pro unlocks all 7 dimension scores, every red flag fix, bullet rewrites, and priority actions with how-to steps.
                 </p>
               </div>
 
@@ -186,7 +186,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                  You're seeing <strong style={{ color: 'var(--text-primary)' }}>2 of 4 observations</strong> and <strong style={{ color: 'var(--text-primary)' }}>1 of 3 improvement tips</strong>. The locked sections contain the most actionable feedback.
+                  Your score and first impression are visible. Pro unlocks <strong style={{ color: 'var(--text-primary)' }}>bullet rewrites</strong>, <strong style={{ color: 'var(--text-primary)' }}>how to fix every red flag</strong>, missing ATS keywords, and full how-to steps for all 3 priority actions.
                 </p>
               </div>
 
@@ -350,7 +350,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
               {/* Header */}
               <div style={{ marginBottom: 24, paddingRight: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-text)', margin: '0 0 8px' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-hi)', margin: '0 0 8px' }}>
                   {pendingPlan === 'pro' ? 'Pro — €2 one-time' : 'Premium — €7.99/month'}
                 </p>
                 <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.25 }}>

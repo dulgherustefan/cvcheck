@@ -1,4 +1,6 @@
-'use client'
+// No 'use client' — this is a Server Component.
+// It injects a blocking inline script before hydration runs,
+// preventing flash of wrong theme. Must be placed in <head> in layout.tsx.
 
 export function ThemeScript() {
   const script = `

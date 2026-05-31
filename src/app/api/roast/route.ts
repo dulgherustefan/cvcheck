@@ -184,26 +184,10 @@ export async function POST(req: NextRequest) {
     const gated = gateResult(result, tier)
 
     if (userId) {
-      // Adoptă analizele anonime făcute de același IP înainte de login
-      const ip = (() => {
-        const fwd = req.headers.get('x-forwarded-for')
-        return fwd ? fwd.split(',')[0].trim() : null
-      })()
-      if (ip) {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-        const { error: claimError } = await supabaseAdmin
-          .from('roasts')
-          .update({ user_id: userId })
-          .is('user_id', null)
-          .gte('created_at', since)
-        if (claimError) console.error('[roast] Failed to claim anonymous roasts:', claimError)
-        else console.log(`[roast] Claimed anonymous roasts for user ${userId}`)
-      }
-
-      // Salvează roast-ul
+      // Salvează roast-ul curent primul — previne race cu claim-ul de mai jos
       const { error: insertError } = await supabaseAdmin
         .from('roasts')
-        .insert({
+        .upsert({
           id: result.analysis_id,
           user_id: userId,
           source: source ?? null,
@@ -225,8 +209,25 @@ export async function POST(req: NextRequest) {
           improvements: null,
           top_priority: null,
           tier,
-        })
+        }, { onConflict: 'id', ignoreDuplicates: true })
       if (insertError) console.error('[roast] Failed to save to Supabase:', insertError)
+
+      // Adoptă analizele anonime făcute de același IP înainte de login
+      // Rulează DUPĂ insert ca să nu se claim-uiască roast-ul tocmai creat
+      const ip = (() => {
+        const fwd = req.headers.get('x-forwarded-for')
+        return fwd ? fwd.split(',')[0].trim() : null
+      })()
+      if (ip) {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const { error: claimError } = await supabaseAdmin
+          .from('roasts')
+          .update({ user_id: userId })
+          .is('user_id', null)
+          .gte('created_at', since)
+        if (claimError) console.error('[roast] Failed to claim anonymous roasts:', claimError)
+        else console.log(`[roast] Claimed anonymous roasts for user ${userId}`)
+      }
 
       // Daca a folosit creditul pro, reseteaza la free
       if (tier === 'pro') {
