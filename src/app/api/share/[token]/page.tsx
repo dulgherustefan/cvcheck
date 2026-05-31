@@ -2,6 +2,9 @@
 // Public share page — no auth required
 // Next.js 15: params must be awaited (Promise<{ token: string }>)
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
