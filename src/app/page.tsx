@@ -639,55 +639,162 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
     } catch { setBuying(null) }
   }
 
+  const plans = [
+    {
+      key: 'free' as const,
+      label: 'Free',
+      price: '€0',
+      period: '',
+      desc: 'See what's holding you back',
+      features: PLAN_DEFS.free.features,
+      color: 'var(--text-tertiary)',
+    },
+    {
+      key: 'pro' as const,
+      label: 'Pro',
+      price: '€2',
+      period: 'one-time',
+      desc: 'Full breakdown, once',
+      features: PLAN_DEFS.pro.features,
+      color: 'var(--text-primary)',
+      featured: true,
+    },
+    {
+      key: 'premium' as const,
+      label: 'Premium',
+      price: '€7.99',
+      period: '/mo',
+      desc: 'Unlimited analyses',
+      features: PLAN_DEFS.premium.features,
+      color: 'var(--score-high)',
+    },
+  ]
+
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }} onClick={e => e.target===e.currentTarget&&onClose()}>
-      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:10, width:'100%', maxWidth:540, maxHeight:'90vh', overflowY:'auto', padding:30, display:'flex', flexDirection:'column', gap:22, boxShadow:'0 24px 80px rgba(0,0,0,0.22)' }}>
-        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
-          <div>
-            <h2 style={{ fontSize:19, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Choose a plan</h2>
-            <p style={{ fontSize:12.5, color:'var(--text-secondary)', margin:0 }}>Start free, unlock more when you need it.</p>
+    <>
+      <style>{`
+        @keyframes _pmIn { from { opacity:0; transform:translateY(14px) scale(0.985); } to { opacity:1; transform:none; } }
+        @keyframes _pmBg { from { opacity:0; } to { opacity:1; } }
+        ._pm-card:hover { border-color: var(--border-strong) !important; }
+        ._pm-close:hover { background: var(--bg-muted) !important; color: var(--text-primary) !important; }
+        ._pm-btn:hover:not(:disabled) { opacity: 0.82 !important; }
+      `}</style>
+      <div
+        style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'20px 16px', animation:'_pmBg 0.18s ease' }}
+        onClick={e => e.target===e.currentTarget && onClose()}
+      >
+        <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:14, width:'100%', maxWidth:560, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)', animation:'_pmIn 0.22s cubic-bezier(0.16,1,0.3,1)', display:'flex', flexDirection:'column' }}>
+
+          {/* Header */}
+          <div style={{ padding:'26px 28px 22px', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
+            <div>
+              <h2 style={{ fontSize:18, fontWeight:700, color:'var(--text-primary)', margin:'0 0 5px', letterSpacing:'-0.04em' }}>Plans</h2>
+              <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0, letterSpacing:'-0.01em' }}>Start free. Upgrade when you need the full picture.</p>
+            </div>
+            <button
+              className="_pm-close"
+              onClick={onClose}
+              style={{ width:30, height:30, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-subtle)', border:'0.5px solid var(--border)', borderRadius:6, color:'var(--text-tertiary)', cursor:'pointer', transition:'all 0.15s', flexShrink:0, fontFamily:'var(--font-sans)' }}
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text-tertiary)', padding:4, fontFamily:'var(--font-sans)' }}>
-            <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:0, border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden' }}>
-          {(['free','pro','premium'] as const).map(pk => {
-            const p = PLAN_DEFS[pk]
-            const isFeatured = pk === 'pro'
-            const isCurrent  = tier === pk
-            return (
-              <div key={pk} style={{ padding:'18px 22px', background:isFeatured?'var(--bg-subtle)':'transparent', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:20, justifyContent:'space-between', outline:isFeatured?'1px solid var(--text-primary)':'none', outlineOffset:-1 }}>
-                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                  <div style={{ display:'flex', alignItems:'baseline', gap:7 }}>
-                    <span style={{ fontSize:9.5, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.1em' }}>{p.label}</span>
-                    <span style={{ fontSize:21, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-1.5px', fontFamily:'var(--font-serif)' }}>{p.price}</span>
-                    {p.period && <span style={{ fontSize:11.5, color:'var(--text-tertiary)' }}>{p.period}</span>}
+
+          {/* Plan cards */}
+          <div style={{ padding:'20px 28px', display:'flex', flexDirection:'column', gap:10 }}>
+            {plans.map(p => {
+              const isCurrent = tier === p.key
+              const isFeatured = p.featured
+              return (
+                <div
+                  key={p.key}
+                  className="_pm-card"
+                  style={{
+                    border: isFeatured ? '1.5px solid var(--border-strong)' : '0.5px solid var(--border)',
+                    borderRadius: 10,
+                    background: isFeatured ? 'var(--bg-subtle)' : 'var(--bg)',
+                    overflow: 'hidden',
+                    transition: 'border-color 0.15s',
+                  }}
+                >
+                  {/* Plan top row */}
+                  <div style={{ padding:'16px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                      <div>
+                        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:2 }}>
+                          <span style={{ fontSize:12, fontWeight:700, color:p.color, textTransform:'uppercase' as const, letterSpacing:'0.07em' }}>{p.label}</span>
+                          {isFeatured && (
+                            <span style={{ fontSize:8.5, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, background:'var(--text-primary)', color:'var(--bg)', padding:'2px 8px', borderRadius:20 }}>
+                              Popular
+                            </span>
+                          )}
+                          {isCurrent && (
+                            <span style={{ fontSize:8.5, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', border:'0.5px solid var(--border)', padding:'2px 8px', borderRadius:20 }}>
+                              Current
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize:12, color:'var(--text-tertiary)', margin:0 }}>{p.desc}</p>
+                      </div>
+                    </div>
+                    <div style={{ display:'flex', alignItems:'baseline', gap:3, flexShrink:0 }}>
+                      <span style={{ fontSize:22, fontWeight:800, letterSpacing:'-0.03em', color:'var(--text-primary)', lineHeight:1 }}>{p.price}</span>
+                      {p.period && <span style={{ fontSize:11, color:'var(--text-tertiary)' }}>{p.period}</span>}
+                    </div>
                   </div>
-                  <ul style={{ listStyle:'none', display:'flex', flexDirection:'column', gap:4, margin:0, padding:0 }}>
-                    {p.features.map(f => <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><Chk/>{f}</li>)}
-                  </ul>
-                </div>
-                <div style={{ flexShrink:0 }}>
-                  {isCurrent ? (
-                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', border:'0.5px solid var(--border)', borderRadius:4, display:'block' }}>Current plan</span>
-                  ) : pk==='free' ? (
-                    <span style={{ fontSize:11.5, color:'var(--text-tertiary)', padding:'7px 14px', display:'block' }}>1 free scan</span>
-                  ) : (
-                    <button onClick={() => handleBuy(pk)} disabled={!!buying} style={{ padding:'8px 18px', fontSize:12.5, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, cursor:'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', whiteSpace:'nowrap' as const, transition:'opacity 0.1s', letterSpacing:'-0.01em' }}>
-                      {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
-                    </button>
+
+                  {/* Features */}
+                  <div style={{ padding:'0 20px 16px', borderTop:'0.5px solid var(--border)' }}>
+                    <ul style={{ listStyle:'none', margin:'12px 0 0', padding:0, display:'grid', gridTemplateColumns: p.key==='free' ? '1fr 1fr' : '1fr', gap:'5px 16px' }}>
+                      {p.features.map(f => (
+                        <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>
+                          <Chk/>{f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* CTA */}
+                  {!isCurrent && p.key !== 'free' && (
+                    <div style={{ padding:'0 20px 16px' }}>
+                      <button
+                        className="_pm-btn"
+                        onClick={() => handleBuy(p.key as 'pro'|'premium')}
+                        disabled={!!buying}
+                        style={{ width:'100%', padding:'11px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===p.key?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'opacity 0.15s' }}
+                      >
+                        {buying===p.key ? 'Loading…' : p.key==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
+                      </button>
+                    </div>
+                  )}
+                  {p.key === 'free' && !isCurrent && (
+                    <div style={{ padding:'0 20px 16px' }}>
+                      <span style={{ display:'block', textAlign:'center' as const, fontSize:12, color:'var(--text-tertiary)' }}>1 free scan included</span>
+                    </div>
                   )}
                 </div>
+              )
+            })}
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding:'16px 28px 22px', borderTop:'0.5px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', gap:20, flexWrap:'wrap' as const }}>
+            {[
+              { icon: <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>, text:'Stripe · secure' },
+              { icon: <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, text:'Instant access' },
+              { icon: <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>, text:'Cancel anytime (Premium)' },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ display:'flex', alignItems:'center', gap:5, fontSize:11.5, color:'var(--text-tertiary)' }}>
+                {icon}{text}
               </div>
-            )
-          })}
+            ))}
+          </div>
         </div>
-        <p style={{ fontSize:11, color:'var(--text-tertiary)', textAlign:'center' as const, margin:0 }}>Secure checkout via Stripe · No subscription on Pro</p>
       </div>
-    </div>
+    </>
   )
 }
+
 
 // ─── ResultContent ────────────────────────────────────────────────────────────
 function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
