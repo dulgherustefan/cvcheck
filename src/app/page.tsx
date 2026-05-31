@@ -1377,6 +1377,7 @@ const LOADING_STEPS = [
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const router = useRouter()
   const { user, session, loading: authLoading, signOut } = useAuth()
   const { tier } = useTier(user?.id)
 
