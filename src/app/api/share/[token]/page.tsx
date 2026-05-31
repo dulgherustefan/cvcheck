@@ -4,9 +4,11 @@
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+export const fetchCache = 'force-no-store'
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { unstable_noStore as noStore } from 'next/cache'
 import Link from 'next/link'
 import { RATING_LABELS, RATING_COLORS, SCORE_DIMENSIONS } from '@/lib/constants'
 import type { Rating } from '@/lib/types'
@@ -141,6 +143,7 @@ function DimBar({ label, score, max }: { label: string; score: number; max: numb
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function SharePage({ params }: SharePageProps) {
+  noStore()
   const { token } = await params
   const roast = await getRoast(token)
   if (!roast) notFound()
