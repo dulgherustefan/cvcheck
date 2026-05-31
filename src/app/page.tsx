@@ -683,7 +683,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
         style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'20px 16px', animation:'_pmBg 0.18s ease' }}
         onClick={e => e.target===e.currentTarget && onClose()}
       >
-        <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:14, width:'100%', maxWidth:560, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)', animation:'_pmIn 0.22s cubic-bezier(0.16,1,0.3,1)', display:'flex', flexDirection:'column' }}>
+        <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:14, width:'100%', maxWidth:820, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)', animation:'_pmIn 0.22s cubic-bezier(0.16,1,0.3,1)', display:'flex', flexDirection:'column' }}>
 
           {/* Header */}
           <div style={{ padding:'26px 28px 22px', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
@@ -701,7 +701,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
           </div>
 
           {/* Plan cards */}
-          <div style={{ padding:'20px 28px', display:'flex', flexDirection:'column', gap:10 }}>
+          <div style={{ padding:'20px 28px', display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, alignItems:'start' }}>
             {plans.map(p => {
               const isCurrent = tier === p.key
               const isFeatured = p.featured
@@ -715,6 +715,8 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                     background: isFeatured ? 'var(--bg-subtle)' : 'var(--bg)',
                     overflow: 'hidden',
                     transition: 'border-color 0.15s',
+                    marginTop: isFeatured ? -8 : 0,
+                    marginBottom: isFeatured ? -8 : 0,
                   }}
                 >
                   {/* Plan top row */}
@@ -745,7 +747,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
                   {/* Features */}
                   <div style={{ padding:'0 20px 16px', borderTop:'0.5px solid var(--border)' }}>
-                    <ul style={{ listStyle:'none', margin:'12px 0 0', padding:0, display:'grid', gridTemplateColumns: p.key==='free' ? '1fr 1fr' : '1fr', gap:'5px 16px' }}>
+                    <ul style={{ listStyle:'none', margin:'12px 0 0', padding:0, display:'grid', gridTemplateColumns: '1fr', gap:'5px 16px' }}>
                       {p.features.map(f => (
                         <li key={f} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>
                           <Chk/>{f}
