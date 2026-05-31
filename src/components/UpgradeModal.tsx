@@ -190,47 +190,44 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 </p>
               </div>
 
-              {/* Plans grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              {/* Plans — Pro featured, Premium compact row */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
 
-                {/* Pro */}
+                {/* Pro — featured */}
                 <div
                   className="um-plan"
                   style={{
                     background: 'var(--bg-elevated)',
                     border: '1.5px solid var(--border-strong)',
                     borderRadius: 'var(--radius-lg)',
-                    padding: 22, position: 'relative',
-                    display: 'flex', flexDirection: 'column', gap: 16,
-                    transition: 'all 0.2s',
+                    padding: '20px 22px',
+                    display: 'flex', flexDirection: 'column', gap: 14,
+                    transition: 'border-color 0.2s',
                     cursor: 'default',
                   }}
                 >
-                  <div style={{
-                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                    background: 'var(--text-primary)', color: 'var(--bg)',
-                    fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                    padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap',
-                  }}>
-                    Most popular
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {PLANS.pro.name}
                       </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>This analysis, fully unlocked</p>
+                      <span style={{
+                        fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                        background: 'var(--text-primary)', color: 'var(--bg)',
+                        padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap',
+                      }}>
+                        Most popular
+                      </span>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexShrink: 0 }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
                         {PLANS.pro.price}
                       </span>
-                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>one-time</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>one-time</span>
                     </div>
                   </div>
 
-                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
                     {PLANS.pro.features.map(f => <FeatureItem key={f} text={f}/>)}
                   </ul>
 
@@ -239,7 +236,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     onClick={() => checkout('pro')}
                     disabled={loading !== null}
                     style={{
-                      width: '100%', padding: '13px 16px',
+                      width: '100%', padding: '12px 16px',
                       fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
                       color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
                       borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
@@ -258,49 +255,47 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   </button>
                 </div>
 
-                {/* Premium */}
+                {/* Premium — compact row */}
                 <div
                   className="um-plan"
                   style={{
                     background: 'var(--bg)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-lg)',
-                    padding: 22, position: 'relative',
-                    display: 'flex', flexDirection: 'column', gap: 16,
-                    transition: 'all 0.2s', cursor: 'default',
+                    padding: '16px 22px',
+                    display: 'flex', alignItems: 'center', gap: 16,
+                    transition: 'border-color 0.2s', cursor: 'default',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         {PLANS.premium.name}
                       </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>Unlimited analyses</p>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                        <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
+                          {PLANS.premium.price}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>/mo</span>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
-                        {PLANS.premium.price}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>/month</span>
-                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>
+                      Everything in Pro · unlimited analyses · cancel anytime
+                    </p>
                   </div>
-
-                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
-                    {PLANS.premium.features.map(f => <FeatureItem key={f} text={f}/>)}
-                  </ul>
-
                   <button
                     className="um-cta-dark"
                     onClick={() => checkout('premium')}
                     disabled={loading !== null}
                     style={{
-                      width: '100%', padding: '13px 16px',
-                      fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
+                      padding: '10px 18px', flexShrink: 0,
+                      fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
                       color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
                       borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
                       opacity: loading && loading !== 'premium' ? 0.5 : 1,
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {loading === 'premium' ? <Spinner light/> : PLANS.premium.cta}
