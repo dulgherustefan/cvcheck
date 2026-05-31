@@ -14,7 +14,7 @@ interface SharePageProps {
 }
 
 async function getRoast(token: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cvcheck.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cvcheck.app'
   const res = await fetch(`${baseUrl}/api/share?token=${token}`, {
     next: { revalidate: 3600 },
   })
@@ -122,7 +122,7 @@ export default async function SharePage({ params }: SharePageProps) {
   const domain   = roast.detected_domain ?? 'Professional'
   const level    = roast.detected_level  ?? ''
   const scores   = (roast.scores as Record<string, number>) ?? {}
-  const fi       = roast.first_impression as { verdict?: string; summary?: string } | null
+  const fi       = roast.first_impression as { what_recruiter_sees?: string; passes_7_second_test?: boolean } | null
   const redFlags = (roast.red_flags as Array<{ severity: string }>) ?? []
   const highFlags = redFlags.filter(f => f.severity === 'high').length
   const midFlags  = redFlags.filter(f => f.severity === 'medium').length
@@ -199,19 +199,19 @@ export default async function SharePage({ params }: SharePageProps) {
           <div style={{ height: '0.5px', background: 'var(--border)', marginBottom: 28 }}/>
 
           {/* First impression */}
-          {fi?.summary && (
+          {fi?.what_recruiter_sees && (
             <div style={{ marginBottom: 28 }}>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--text-tertiary)', marginBottom: 10 }}>
                 7-Second Test
               </p>
-              {fi.verdict && (
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, letterSpacing: '-0.2px' }}>
-                  {fi.verdict}
+              <div style={{ padding: '12px 16px', borderRadius: 6, border: `0.5px solid ${fi.passes_7_second_test ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}`, background: fi.passes_7_second_test ? 'rgba(22,163,74,0.04)' : 'rgba(220,38,38,0.04)', marginBottom: 8 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.09em', color: fi.passes_7_second_test ? 'var(--score-high)' : 'var(--score-low)', marginBottom: 6 }}>
+                  {fi.passes_7_second_test ? '✓ Passes 7-second test' : '✗ Fails 7-second test'}
                 </p>
-              )}
-              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0 }}>
-                {fi.summary}
-              </p>
+                <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, fontStyle: 'italic' }}>
+                  &ldquo;{fi.what_recruiter_sees}&rdquo;
+                </p>
+              </div>
             </div>
           )}
 
