@@ -114,6 +114,7 @@ export interface GatedAnalysisResult extends AnalysisResult {
   gaps_locked: boolean           // career_story.gaps_or_transitions hidden
   missing_signals_locked: boolean // credibility.signals_missing hidden
   actions_locked: boolean        // top_3_actions[].how + example hidden
+  job_matching_locked: boolean   // job matching — Premium only
 }
 
 export interface AnalysisError {
