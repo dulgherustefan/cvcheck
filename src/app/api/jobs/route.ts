@@ -193,6 +193,7 @@ const anthropic = new Anthropic()
 async function analyzeJobFit(
   job: JobListing,
   cvMeta: JobsRequest,
+  isPro: boolean,
 ): Promise<JobFitAnalysis> {
   const prompt = `You are a senior recruiter. Given a candidate profile and a job listing, return ONLY a JSON object — no explanation, no markdown fences.
 
@@ -211,15 +212,17 @@ Return this exact JSON shape:
 {
   "fit_score": <0-100 integer>,
   "fit_label": <"strong"|"good"|"partial"|"stretch">,
+  "strengths": [<string>, <string>],
   "gaps": [<string>, <string>, <string>]
 }
 
 fit_label rules: 80-100=strong, 60-79=good, 40-59=partial, 0-39=stretch
-gaps: exactly 3 short strings (max 10 words each) — specific skills or experience missing from the candidate's profile for THIS role. Be concrete, not generic.`
+strengths: exactly 2 short strings (max 10 words) — what the candidate already has that matches this role.
+gaps: exactly 3 short strings (max 10 words) — specific skills or experience missing. Be concrete.`
 
   const response = await anthropic.messages.create({
-    model:      'claude-sonnet-4-20250514',
-    max_tokens: 256,
+    model:      'claude-haiku-4-5-20251001',
+    max_tokens: 300,
     messages:   [{ role: 'user', content: prompt }],
   })
 
@@ -231,6 +234,8 @@ gaps: exactly 3 short strings (max 10 words each) — specific skills or experie
     .trim()
 
   const parsed = JSON.parse(text) as JobFitAnalysis
+  // Free users: hide gaps
+  if (!isPro) parsed.gaps = []
   return parsed
 }
 
@@ -252,61 +257,62 @@ export async function POST(req: NextRequest) {
     // Auth + tier
     const userId    = await getUserIdFromRequest(req)
     const tier      = await getTierForUser(userId)
-    const isPremium = tier === 'premium'
-    const fitLocked = !isPremium
+    const isPro     = tier === 'pro' || tier === 'premium'
+    const fitLocked = !isPro  // free = gaps locked, strengths always visible
+
+    // Detect country from IP if not provided
+    const detectedCountry = country
+      ?? req.headers.get('x-vercel-ip-country')?.toLowerCase()
+      ?? req.headers.get('cf-ipcountry')?.toLowerCase()
+      ?? 'gb'
+
+    console.log('[jobs] Country:', detectedCountry, '(provided:', country, ')')
 
     // Build query + fetch jobs — with fallback to simpler query if 0 results
     const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
-    let listings = await fetchAdzunaJobs(query, country)
+    let listings = await fetchAdzunaJobs(query, detectedCountry)
     let queryUsed = query
 
     if (listings.length === 0) {
       const fallback = buildFallbackQuery(detected_domain)
       if (fallback !== query) {
         console.log('[jobs] 0 results, trying fallback query:', fallback)
-        listings = await fetchAdzunaJobs(fallback, country)
+        listings = await fetchAdzunaJobs(fallback, detectedCountry)
         queryUsed = fallback
       }
     }
 
     if (listings.length === 0) {
       return NextResponse.json<JobsResponse>({
-        jobs:        [],
-        fit_locked:  fitLocked,
-        query_used:  queryUsed,
+        jobs:             [],
+        fit_locked:       fitLocked,
+        query_used:       queryUsed,
+        detected_country: detectedCountry,
       })
     }
 
-    // For Pro/Premium: analyze fit for each job in parallel (capped at 6)
-    const toAnalyze = listings.slice(0, 6)
+    // Analyze fit for ALL tiers — free gets strengths only, pro+ gets gaps too
+    const toAnalyze = listings.slice(0, 8)
 
-    let jobs: JobMatch[]
+    const fitResults = await Promise.allSettled(
+      toAnalyze.map((listing) => analyzeJobFit(listing, body, isPro)),
+    )
 
-    if (isPremium) {
-      const fitResults = await Promise.allSettled(
-        toAnalyze.map((listing) => analyzeJobFit(listing, body)),
-      )
+    let jobs: JobMatch[] = toAnalyze.map((listing, i) => {
+      const result = fitResults[i]
+      const fit: JobFitAnalysis | null =
+        result.status === 'fulfilled' ? result.value : null
+      return { listing, fit }
+    })
 
-      jobs = toAnalyze.map((listing, i) => {
-        const result = fitResults[i]
-        const fit: JobFitAnalysis | null =
-          result.status === 'fulfilled' ? result.value : null
-        return { listing, fit }
-      })
-    } else {
-      // Free / Pro: return listings without fit analysis
-      jobs = toAnalyze.map((listing) => ({ listing, fit: null }))
-    }
-
-    // Sort Premium results by fit_score descending
-    if (isPremium) {
-      jobs.sort((a, b) => (b.fit?.fit_score ?? 0) - (a.fit?.fit_score ?? 0))
-    }
+    // Sort by fit_score descending
+    jobs.sort((a, b) => (b.fit?.fit_score ?? 0) - (a.fit?.fit_score ?? 0))
 
     return NextResponse.json<JobsResponse>({
       jobs,
-      fit_locked: fitLocked,
-      query_used: queryUsed,
+      fit_locked:       fitLocked,
+      query_used:       queryUsed,
+      detected_country: detectedCountry,
     })
   } catch (err) {
     console.error('[jobs] Error:', err)

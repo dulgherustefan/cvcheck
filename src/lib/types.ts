@@ -139,13 +139,16 @@ export interface JobListing {
   salary_min?: number
   salary_max?: number
   created: string              // ISO date
+  remote?: boolean             // detected from description/title
+  country_code?: string        // 2-letter ISO
 }
 
-/** Per-job fit analysis from Claude — Pro+ only */
+/** Per-job fit analysis from Claude — all tiers get basic, Pro+ gets full */
 export interface JobFitAnalysis {
   fit_score: number            // 0-100
   fit_label: 'strong' | 'good' | 'partial' | 'stretch'
-  gaps: string[]               // 3 specific things missing from CV for this role
+  gaps: string[]               // 3 specific things missing — Pro+ only
+  strengths: string[]          // 2-3 things that match well — all tiers
 }
 
 /** Combined job card shown to user */
@@ -160,14 +163,25 @@ export interface JobsRequest {
   detected_level: string
   trajectory: string           // career_story.trajectory_detected
   keywords: string[]           // ats keywords already present in CV (not missing ones)
-  country?: string             // ISO 2-letter, default 'gb'
+  country?: string             // ISO 2-letter, detected from IP
+}
+
+/** Applied/saved job stored in localStorage */
+export interface SavedJob {
+  id: string
+  title: string
+  company: string
+  url: string
+  savedAt: string              // ISO date
+  status: 'saved' | 'applied'
 }
 
 /** Response from /api/jobs */
 export interface JobsResponse {
   jobs: JobMatch[]
-  fit_locked: boolean          // true = free tier, fit+gaps hidden
+  fit_locked: boolean          // true = gaps hidden (free), strengths always visible
   query_used: string           // the Adzuna search query, for transparency
+  detected_country?: string    // country detected from IP
 }
 
 // ── Legacy aliases ────────────────────────────────────────────────────────────

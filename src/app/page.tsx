@@ -739,67 +739,123 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
 // ─── JobMatchesSection ────────────────────────────────────────────────────────
 
+const FIT_COLORS: Record<string, string> = {
+  strong:  'var(--score-high)',
+  good:    '#65A30D',
+  partial: 'var(--score-mid)',
+  stretch: 'var(--score-low)',
+}
+
 function FitBadge({ label, score }: { label: string; score: number }) {
-  const colors: Record<string, string> = {
-    strong:  'var(--score-high)',
-    good:    'var(--score-high)',
-    partial: 'var(--score-mid)',
-    stretch: 'var(--score-low)',
-  }
+  const color = FIT_COLORS[label] ?? 'var(--text-secondary)'
   return (
-    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, color: colors[label] ?? 'var(--text-secondary)' }}>
-      <span style={{ width:6, height:6, borderRadius:'50%', background: colors[label] ?? 'var(--text-secondary)', flexShrink:0 }} />
-      {score}% {label}
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, letterSpacing:'0.05em', textTransform:'uppercase' as const, color, background:`${color}15`, border:`0.5px solid ${color}40`, borderRadius:3, padding:'2px 8px' }}>
+      {score}% · {label}
     </span>
   )
 }
 
-function JobCard({ job, fitLocked, onUnlock }: { job: JobMatchType; fitLocked: boolean; onUnlock: () => void }) {
+function JobCard({ job, fitLocked, onUnlock, blurred }: { job: JobMatchType; fitLocked: boolean; onUnlock: () => void; blurred?: boolean }) {
   const { listing, fit } = job
+  const [saved, setSaved] = useState<'none'|'saved'|'applied'>('none')
+  const [expanded, setExpanded] = useState(false)
+
   const salary = listing.salary_min
-    ? `€${Math.round(listing.salary_min / 1000)}k${listing.salary_max ? `–${Math.round(listing.salary_max / 1000)}k` : '+'}`
+    ? `${Math.round(listing.salary_min / 1000)}k${listing.salary_max ? `–${Math.round(listing.salary_max / 1000)}k` : '+'}`
     : null
 
+  useEffect(() => {
+    try {
+      const s = localStorage.getItem(`job-${listing.id}`)
+      if (s === 'saved' || s === 'applied') setSaved(s)
+    } catch {}
+  }, [listing.id])
+
+  function handleSave(status: 'saved'|'applied') {
+    const next = saved === status ? 'none' : status
+    setSaved(next)
+    try {
+      if (next === 'none') localStorage.removeItem(`job-${listing.id}`)
+      else localStorage.setItem(`job-${listing.id}`, next)
+    } catch {}
+  }
+
   return (
-    <div style={{ border:'0.5px solid var(--border)', borderRadius:8, padding:'18px 20px', background:'var(--bg2)', display:'flex', flexDirection:'column' as const, gap:10 }}>
+    <div style={{ position:'relative' as const, border:`0.5px solid ${fit?.fit_label === 'strong' ? 'rgba(22,163,74,0.3)' : 'var(--border)'}`, borderRadius:8, padding:'18px 20px', background:'var(--bg2)', display:'flex', flexDirection:'column' as const, gap:10, filter: blurred ? 'blur(4px)' : 'none', userSelect: blurred ? 'none' as const : 'auto' as const }}>
+
+      {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
         <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.3 }}>{listing.title}</div>
-          <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:2 }}>
-            {listing.company}{listing.location ? ` · ${listing.location}` : ''}{salary ? ` · ${salary}` : ''}
+          <div style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', lineHeight:1.3, letterSpacing:'-0.2px' }}>{listing.title}</div>
+          <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:3, display:'flex', gap:6, flexWrap:'wrap' as const, alignItems:'center' }}>
+            <span>{listing.company}</span>
+            {listing.location && <><span style={{ color:'var(--border-strong)' }}>·</span><span>{listing.location}</span></>}
+            {salary && <><span style={{ color:'var(--border-strong)' }}>·</span><span style={{ color:'var(--text-primary)', fontWeight:600 }}>{salary}</span></>}
           </div>
         </div>
-        {fitLocked ? (
-          <button onClick={onUnlock} style={{ flexShrink:0, fontSize:11, fontWeight:600, color:'var(--accent)', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'3px 9px', cursor:'pointer', whiteSpace:'nowrap' as const, fontFamily:'var(--font-sans)' }}>
-            See fit score ↑
-          </button>
-        ) : fit ? (
-          <FitBadge label={fit.fit_label} score={fit.fit_score} />
-        ) : null}
+        {fit ? <FitBadge label={fit.fit_label} score={fit.fit_score} /> : null}
       </div>
 
-      <p style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.55, margin:0, display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical' as const, overflow:'hidden' }}>
+      {/* Description */}
+      <p style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.6, margin:0, display:'-webkit-box' as const, WebkitLineClamp: expanded ? undefined : 3, WebkitBoxOrient:'vertical' as const, overflow: expanded ? 'visible' : 'hidden' }}>
         {listing.description}
       </p>
+      {listing.description.length > 200 && (
+        <button onClick={() => setExpanded(e => !e)} style={{ alignSelf:'flex-start', fontSize:11, color:'var(--text-tertiary)', background:'none', border:'none', cursor:'pointer', padding:0, fontFamily:'var(--font-sans)' }}>
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
 
-      {!fitLocked && fit && fit.gaps.length > 0 && (
+      {/* Why you're a good fit — strengths, always visible */}
+      {fit && fit.strengths && fit.strengths.length > 0 && (
         <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10, display:'flex', flexDirection:'column' as const, gap:5 }}>
-          <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text-tertiary)' }}>What you&apos;re missing</div>
-          {fit.gaps.map((gap, i) => (
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--score-high)' }}>Why you're a good fit</div>
+          {fit.strengths.map((s, i) => (
             <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}>
-              <span style={{ color:'var(--score-low)', flexShrink:0, marginTop:1 }}>✕</span>
-              {gap}
+              <span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}
             </div>
           ))}
         </div>
       )}
 
-      <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" style={{ alignSelf:'flex-start', fontSize:12, fontWeight:600, color:'var(--text-primary)', background:'var(--bg-muted)', border:'0.5px solid var(--border-strong)', borderRadius:4, padding:'5px 12px', textDecoration:'none', marginTop:2 }}>
-        View job →
-      </a>
+      {/* Gaps — Pro+ only */}
+      {fit && fit.gaps && fit.gaps.length > 0 && (
+        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10, display:'flex', flexDirection:'column' as const, gap:5 }}>
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text-tertiary)' }}>What you're missing</div>
+          {fit.gaps.map((gap, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}>
+              <span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{gap}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Gaps locked CTA */}
+      {fitLocked && fit && (
+        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10 }}>
+          <button onClick={onUnlock} style={{ fontSize:12, fontWeight:600, color:'var(--accent)', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'5px 12px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+            Unlock skill gaps & full analysis ↑
+          </button>
+        </div>
+      )}
+
+      {/* Footer: apply tracking + view */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:2 }}>
+        <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" style={{ flex:1, textAlign:'center' as const, fontSize:12, fontWeight:600, color:'var(--text-primary)', background:'var(--bg-muted)', border:'0.5px solid var(--border-strong)', borderRadius:4, padding:'6px 12px', textDecoration:'none' }}>
+          View job →
+        </a>
+        <button onClick={() => handleSave('saved')} title="Save job" style={{ fontSize:13, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background: saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color: saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+          {saved==='saved'?'★':'☆'}
+        </button>
+        <button onClick={() => handleSave('applied')} title="Mark as applied" style={{ fontSize:11, fontWeight:600, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background: saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color: saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>
+          {saved==='applied'?'✓ Applied':'Applied?'}
+        </button>
+      </div>
     </div>
   )
 }
+
+type FilterType = 'all' | 'strong' | 'good' | 'partial'
 
 function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   result: GatedAnalysisResult
@@ -807,9 +863,10 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   isPremium: boolean
   onUnlock: () => void
 }) {
-  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  const [data, setData]   = useState<JobsResponse | null>(null)
+  const [state, setState]   = useState<'idle'|'loading'|'done'|'error'>('idle')
+  const [data, setData]     = useState<JobsResponse | null>(null)
   const [errMsg, setErrMsg] = useState('')
+  const [filter, setFilter] = useState<FilterType>('all')
 
   async function fetchJobs() {
     setState('loading')
@@ -825,7 +882,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
           detected_level:  result.detected_level,
           trajectory:      result.career_story.trajectory_detected,
           keywords:        result.ats.missing_keywords ?? [],
-          country:         'gb',
+          // no country — backend detects from IP via x-vercel-ip-country
         }),
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Unknown error') }
@@ -837,29 +894,50 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
     }
   }
 
-  // Auto-fetch for premium users when component mounts
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (isPremium && state === 'idle') {
-      fetchJobs()
-    }
-  }, [isPremium])
+    if (state === 'idle') fetchJobs()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const filteredJobs = data?.jobs.filter(j => {
+    if (filter === 'all') return true
+    return j.fit?.fit_label === filter
+  }) ?? []
+
+  // Free: show first 2 full, rest blurred
+  const FREE_LIMIT = 2
 
   return (
     <div style={{ marginTop:48 }}>
-      <div style={{ marginBottom:20 }}>
-        <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', marginBottom:6 }}>Job Matches</div>
-        <h2 style={{ fontSize:'clamp(20px, 3vw, 26px)', fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.5px' }}>Roles that fit your profile</h2>
-        <p style={{ fontSize:13, color:'var(--text-secondary)', marginTop:6, marginBottom:0 }}>
-          Real listings matched to your domain, level, and skills.{data && !data.fit_locked && ' Sorted by fit score.'}
-        </p>
+      <div style={{ marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'flex-end', flexWrap:'wrap' as const, gap:12 }}>
+        <div>
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', marginBottom:5 }}>Job Matches</div>
+          <h2 style={{ fontSize:'clamp(18px, 2.5vw, 24px)', fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.5px' }}>
+            Roles that fit your profile
+          </h2>
+          {data?.detected_country && (
+            <p style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4, marginBottom:0 }}>
+              Showing jobs near you · {data.detected_country.toUpperCase()}
+            </p>
+          )}
+        </div>
+
+        {/* Filters */}
+        {data && data.jobs.length > 0 && (
+          <div style={{ display:'flex', gap:6 }}>
+            {(['all', 'strong', 'good', 'partial'] as FilterType[]).map(f => (
+              <button key={f} onClick={() => setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--text-primary)':'var(--border)'}`, background: filter===f?'var(--text-primary)':'transparent', color: filter===f?'var(--bg)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s' }}>
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Loading state */}
       {state === 'loading' && (
-        <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0', display:'flex', alignItems:'center', gap:8 }}>
+        <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'16px 0', display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:14, height:14, borderRadius:'50%', border:'1.5px solid var(--border)', borderTopColor:'var(--text-primary)', animation:'spin 0.7s linear infinite' }}/>
-          Finding matching jobs…
+          Finding matching jobs near you…
         </div>
       )}
 
@@ -872,13 +950,35 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
 
       {state === 'done' && data && (
         <>
-          {data.jobs.length === 0 ? (
-            <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
+          {filteredJobs.length === 0 ? (
+            <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No {filter !== 'all' ? filter : ''} matches found. Try a different filter.</div>
           ) : (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
-              {data.jobs.map((job) => (
-                <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
-              ))}
+            <div style={{ position:'relative' as const }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
+                {filteredJobs.map((job, idx) => (
+                  <JobCard
+                    key={job.listing.id}
+                    job={job}
+                    fitLocked={data.fit_locked}
+                    onUnlock={onUnlock}
+                    blurred={!isPremium && idx >= FREE_LIMIT}
+                  />
+                ))}
+              </div>
+
+              {/* Blur overlay CTA for free users */}
+              {!isPremium && filteredJobs.length > FREE_LIMIT && (
+                <div style={{ position:'absolute' as const, bottom:0, left:0, right:0, height:'60%', background:'linear-gradient(to bottom, transparent, var(--bg) 70%)', display:'flex', flexDirection:'column' as const, alignItems:'center', justifyContent:'flex-end', paddingBottom:24 }}>
+                  <div style={{ textAlign:'center' as const, maxWidth:320 }}>
+                    <p style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', marginBottom:8, letterSpacing:'-0.2px' }}>
+                      {filteredJobs.length - FREE_LIMIT} more matching jobs + skill gaps analysis
+                    </p>
+                    <button onClick={onUnlock} style={{ fontSize:13, fontWeight:700, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'9px 20px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>
+                      Unlock with Pro — €1.99
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </>
@@ -1316,10 +1416,8 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
         onUnlock={() => setShowPlansModal(true)}
       />
 
-      {/* ── Job Matches — Premium only, auto-loads ── */}
-      {result.tier === 'premium' && (
-        <JobMatchesSection result={result} token={token} isPremium={true} onUnlock={() => setShowPlansModal(true)} />
-      )}
+      {/* ── Job Matches — all tiers, free sees 2 jobs + blur ── */}
+      <JobMatchesSection result={result} token={token} isPremium={result.tier === 'premium' || result.tier === 'pro'} onUnlock={() => setShowPlansModal(true)} />
 
       {/* ── Sign-in nudge — logged out ── */}
       {!user && (
