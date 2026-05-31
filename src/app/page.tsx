@@ -322,8 +322,8 @@ function RedFlagCard({ flag, index, howToFixLocked, onUnlock }: {
       </div>
       {howToFixLocked ? (
         <div onClick={onUnlock} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
-          <span style={{ fontSize:12, color:'var(--text-secondary)', filter:'blur(4px)', userSelect:'none', flex:1 }}>
-            {flag.how_to_fix}
+          <span style={{ fontSize:12, color:'var(--text-secondary)', filter:'blur(4px)', userSelect:'none', flex:1, pointerEvents:'none' }}>
+            Replace your email with a professional address and update all application materials to reflect the change consistently.
           </span>
           <span style={{ color:'var(--text-tertiary)', flexShrink:0 }}><LockIcon size={10}/></span>
         </div>
@@ -448,7 +448,6 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
   return (
     <div ref={ref} style={{ position:'relative' }}>
-      <style>{`@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}.dd-row:hover{background:var(--bg-subtle)!important;color:var(--text-primary)!important}.dd-danger:hover{background:rgba(239,68,68,0.07)!important;color:#ef4444!important}`}</style>
       <button onClick={() => setOpen(v => !v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 5px', background:open?'var(--bg-subtle)':'transparent', border:'0.5px solid var(--border)', borderRadius:40, cursor:'pointer', transition:'all 0.1s', fontFamily:'var(--font-sans)' }}>
         <span style={{ width:25, height:25, borderRadius:'50%', background:'var(--text-primary)', color:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, flexShrink:0 }}>{initials}</span>
         <span style={{ maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontSize:12.5, fontWeight:500, color:'var(--text-secondary)', letterSpacing:'-0.01em' }}>{user.email?.split('@')[0]}</span>
@@ -952,14 +951,13 @@ const SAMPLE_OBS = [
 ]
 
 const DIMS_LIST = [
-  { name:'First impression',    desc:'What a recruiter sees in the first 6 seconds of scanning' },
-  { name:'Positioning',         desc:'Does it immediately communicate who you are and why you matter?' },
-  { name:'Experience proof',    desc:'Results and impact, not just a list of responsibilities' },
-  { name:'Skills relevance',    desc:'Are the right skills prominent for the roles you\'re targeting?' },
-  { name:'Credibility signals', desc:'Education, recognitions, publications, social proof' },
-  { name:'Structure',           desc:'Scannable layout, visual hierarchy, section ordering' },
-  { name:'Language',            desc:'Clarity, action verbs, appropriate tone, no filler phrases' },
-  { name:'Contact clarity',     desc:'Can a recruiter reach you without hunting for contact info?' },
+  { name:'First Impression',     desc:'What a recruiter understands in the first 7 seconds — title, summary, top section' },
+  { name:'Impact & Achievements',desc:'Quantified results, strong action verbs, bullet quality across every role' },
+  { name:'ATS Compatibility',    desc:'Keywords, searchable job title, parser-friendly formatting' },
+  { name:'Red Flags',            desc:'Absence of dealbreakers, unexplained gaps, inconsistencies, and polish issues' },
+  { name:'Career Story',         desc:'Clear trajectory, role progression, seniority match' },
+  { name:'Format & Scannability',desc:'Length, density, section ordering, visual consistency' },
+  { name:'Credibility',          desc:'Portfolio links, recognizable brands, certifications, proof points' },
 ]
 
 const LOADING_STEPS = [
@@ -987,6 +985,8 @@ export default function Home() {
   const [result,     setResult]     = useState<GatedAnalysisResult | null>(null)
   const [error,      setError]      = useState('')
   const [copied,     setCopied]     = useState(false)
+  // UI-only counter — used to show "Used your free scan" message in freeNote.
+  // Security enforcement is server-side via free_scans table, not this counter.
   const [analysisCount, setAnalysisCount] = useState(0)
   const [loadingStep,   setLoadingStep]   = useState(0)
   const [pendingSave,   setPendingSave]   = useState<GatedAnalysisResult | null>(null)
@@ -996,7 +996,10 @@ export default function Home() {
 
   useEffect(() => {
     if (appState !== 'loading') { setLoadingStep(0); return }
-    const timers = LOADING_STEPS.map((_,i) => setTimeout(() => setLoadingStep(i), i * 4000))
+    // Advance through first 3 steps on a timer; last step stays active until response
+    const timers = LOADING_STEPS.slice(0, -1).map((_,i) =>
+      setTimeout(() => setLoadingStep(i + 1), (i + 1) * 5000)
+    )
     return () => timers.forEach(clearTimeout)
   }, [appState])
 
@@ -1038,7 +1041,8 @@ export default function Home() {
   const submit = async () => {
     if (mode === 'url' && !url.trim()) return
     if (mode === 'pdf' && !file) return
-    if (tier === 'free' && analysisCount >= 1) { setShowUpgradeModal(true); return }
+    // Note: free scan limit is enforced server-side via free_scans table.
+    // Client-side check was bypassable with page refresh — removed.
 
     setAppState('loading'); setError(''); setResult(null)
     try {
@@ -1060,8 +1064,14 @@ export default function Home() {
         throw new Error(data.error || 'Analysis failed')
       }
       setResult(data); setAppState('result'); setAnalysisCount(c => c+1)
-      if (!user) setPendingSave(data)
-      else setSavedToHistory(true)
+      // Server saves automatically for logged-in users (route.ts handles it).
+      // pendingSave is only for anonymous users who sign in AFTER scanning.
+      if (!user) {
+        setPendingSave(data)
+      } else {
+        // Server already saved — just reflect that in UI
+        setSavedToHistory(true)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setAppState('error')
@@ -1071,8 +1081,7 @@ export default function Home() {
   const reset     = () => { setAppState('idle'); setResult(null); setError(''); setUrl(''); setFile(null); setPendingSave(null); setSavedToHistory(false) }
   const copyShare = async () => {
     if (!result) return
-    const shareUrl = `https://cvcheck.app/?ref=share`
-    const shareText = `My CV scored ${result.total_score}/100 (${RATING_LABELS[result.rating]}) on CVCheck — check yours: ${shareUrl}`
+    const shareText = `My CV scored ${result.total_score}/100 (${RATING_LABELS[result.rating]}) on CVCheck. Check yours free: https://cvcheck.app`
     await navigator.clipboard.writeText(shareText)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
@@ -1342,7 +1351,7 @@ export default function Home() {
               <div className={styles.sectionWrap}>
                 <div className={styles.sHead}>
                   <p className={styles.sEyebrow}>What we score</p>
-                  <h2 className={styles.sTitle}>8 dimensions, not just a vibe check.</h2>
+                  <h2 className={styles.sTitle}>7 dimensions, not just a vibe check.</h2>
                   <p className={styles.sSub}>Each weighted by how much recruiters actually care — not what's easiest to measure.</p>
                 </div>
                 <div className={styles.dimsGrid}>

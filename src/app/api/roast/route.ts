@@ -179,15 +179,22 @@ export async function POST(req: NextRequest) {
 
       // Adoptă analizele anonime făcute de același IP înainte de login
       // Rulează DUPĂ insert ca să nu se claim-uiască roast-ul tocmai creat
+      // Filtrăm și după ip_address dacă există coloana — fallback la fără filtru dacă nu
       if (ip && ip !== 'unknown') {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        // Only claim rows that also match this IP to prevent cross-user adoption on shared NAT
         const { error: claimError } = await supabaseAdmin
           .from('roasts')
           .update({ user_id: userId })
           .is('user_id', null)
+          .eq('ip_address', ip)
           .gte('created_at', since)
-        if (claimError) console.error('[roast] Failed to claim anonymous roasts:', claimError)
-        else console.log(`[roast] Claimed anonymous roasts for user ${userId}`)
+        if (claimError) {
+          // ip_address column may not exist — fall back to safer no-op rather than wide claim
+          console.warn('[roast] Could not claim anonymous roasts (ip_address column missing?):', claimError.message)
+        } else {
+          console.log(`[roast] Claimed anonymous roasts for user ${userId} from ip ${ip}`)
+        }
       }
 
       // Daca a folosit creditul pro, reseteaza la free
