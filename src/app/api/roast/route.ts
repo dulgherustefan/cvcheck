@@ -2,43 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getRoast } from '@/lib/claude'
 import { gateResult } from '@/lib/tiers'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { checkRateLimit, makeIdentifier } from '@/lib/ratelimit'
 import type { Tier } from '@/lib/types'
-
-
-// ── Rate limiting ─────────────────────────────────────────────────────────────
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
-const RATE_LIMIT_ANON      = 10
-const RATE_LIMIT_AUTHED    = 30
-
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
-
-function checkRateLimit(key: string, limit: number): { allowed: boolean; remaining: number; resetAt: number } {
-  const now = Date.now()
-  const entry = rateLimitStore.get(key)
-
-  if (!entry || now > entry.resetAt) {
-    const resetAt = now + RATE_LIMIT_WINDOW_MS
-    rateLimitStore.set(key, { count: 1, resetAt })
-    return { allowed: true, remaining: limit - 1, resetAt }
-  }
-
-  if (entry.count >= limit) {
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt }
-  }
-
-  entry.count++
-  return { allowed: true, remaining: limit - entry.count, resetAt: entry.resetAt }
-}
-
-// Cleanup old entries every hour to prevent memory leak
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [key, entry] of rateLimitStore.entries()) {
-      if (now > entry.resetAt) rateLimitStore.delete(key)
-    }
-  }, RATE_LIMIT_WINDOW_MS)
-}
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -114,14 +79,14 @@ export async function POST(req: NextRequest) {
     const userId = await getUserIdFromRequest(req)
     const tier = await getTierForUser(userId)
 
-    // Rate limiting
     const ip = (() => {
       const fwd = req.headers.get('x-forwarded-for')
       return fwd ? fwd.split(',')[0].trim() : 'unknown'
     })()
-    const rlKey   = userId ? `user:${userId}` : `ip:${ip}`
-    const rlLimit = userId ? RATE_LIMIT_AUTHED : RATE_LIMIT_ANON
-    const rl      = checkRateLimit(rlKey, rlLimit)
+
+    // Rate limiting — shared across all Vercel workers via Redis
+    const rlKey = makeIdentifier(userId, ip)
+    const rl    = await checkRateLimit(rlKey, !!userId)
 
     if (!rl.allowed) {
       const retryAfterSec = Math.ceil((rl.resetAt - Date.now()) / 1000)
@@ -130,10 +95,10 @@ export async function POST(req: NextRequest) {
         {
           status: 429,
           headers: {
-            'Retry-After': String(retryAfterSec),
-            'X-RateLimit-Limit': String(rlLimit),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': String(Math.ceil(rl.resetAt / 1000)),
+            'Retry-After':          String(retryAfterSec),
+            'X-RateLimit-Limit':    String(rl.limit),
+            'X-RateLimit-Remaining':'0',
+            'X-RateLimit-Reset':    String(Math.ceil(rl.resetAt / 1000)),
           },
         }
       )
@@ -214,11 +179,7 @@ export async function POST(req: NextRequest) {
 
       // Adoptă analizele anonime făcute de același IP înainte de login
       // Rulează DUPĂ insert ca să nu se claim-uiască roast-ul tocmai creat
-      const ip = (() => {
-        const fwd = req.headers.get('x-forwarded-for')
-        return fwd ? fwd.split(',')[0].trim() : null
-      })()
-      if (ip) {
+      if (ip && ip !== 'unknown') {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         const { error: claimError } = await supabaseAdmin
           .from('roasts')

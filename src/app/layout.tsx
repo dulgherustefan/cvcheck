@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CVCheck — Honest AI Feedback on Your CV',
     description: 'Score your CV out of 100 in seconds. See exactly what to fix.',
-    images: ['/api/og?score=72&rating=good'],
+    images: ['/og-image.png'],
   },
 }
 
@@ -73,7 +73,7 @@ const schemaOrg = {
       name: 'Pro',
       price: '2',
       priceCurrency: 'EUR',
-      description: 'Full analysis with 8 dimensions, all observations and improvement tips',
+      description: 'Full analysis with 7 dimensions, bullet rewrites, red flag fixes, and priority actions',
     },
     {
       '@type': 'Offer',
@@ -91,9 +91,11 @@ const schemaOrg = {
   ],
   featureList: [
     'CV score out of 100',
-    '8 detailed scoring dimensions',
-    'Strength and weakness observations',
-    'Improvement tips with rewrites',
+    '7 detailed scoring dimensions',
+    'Bullet rewrites on your actual text',
+    'How to fix every red flag',
+    'Missing ATS keywords for your domain',
+    'Top 3 priority actions with how-to steps',
     'Portfolio and LinkedIn URL analysis',
     'PDF upload support',
   ],

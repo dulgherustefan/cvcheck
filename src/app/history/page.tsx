@@ -51,6 +51,17 @@ const RATING_COLORS: Record<Rating, string> = {
   excellent: '#0891B2',
 }
 
+// Only the columns needed for list + drawer — excludes legacy fields
+// and heavy JSONB columns not rendered in the list view
+const LIST_SELECT = [
+  'id', 'created_at', 'source', 'total_score', 'rating',
+  'detected_domain', 'detected_level', 'summary', 'scores',
+  'first_impression', 'impact', 'ats', 'red_flags',
+  'career_story', 'format', 'credibility', 'top_3_actions', 'tier',
+].join(', ')
+
+const PAGE_SIZE = 20
+
 function scoreColor(score: number): string {
   if (score >= 66) return 'var(--score-high)'
   if (score >= 40) return 'var(--score-mid)'
@@ -466,26 +477,46 @@ function EmptyState() {
 export default function HistoryPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [entries, setEntries] = useState<HistoryEntry[]>([])
-  const [loading, setLoading] = useState(true)
+  const [entries,  setEntries]  = useState<HistoryEntry[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore,  setHasMore]  = useState(false)
+  const [page,     setPage]     = useState(0)
   const [selected, setSelected] = useState<HistoryEntry | null>(null)
+
+  const fetchPage = async (pageIndex: number, userId: string, append = false) => {
+    const supabase = createSupabaseBrowser()
+    const from = pageIndex * PAGE_SIZE
+    const to   = from + PAGE_SIZE - 1
+
+    const { data, error } = await supabase
+      .from('roasts')
+      .select(LIST_SELECT)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(from, to)
+
+    if (!error && data) {
+      setEntries(prev => append ? [...prev, ...data as HistoryEntry[]] : data as HistoryEntry[])
+      setHasMore(data.length === PAGE_SIZE)
+    }
+  }
 
   useEffect(() => {
     if (authLoading) return
     if (!user) { setLoading(false); router.replace('/'); return }
 
-    const supabase = createSupabaseBrowser()
-
-    supabase
-      .from('roasts')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) setEntries(data as HistoryEntry[])
-        setLoading(false)
-      })
+    fetchPage(0, user.id).finally(() => setLoading(false))
   }, [user, authLoading, router])
+
+  const loadMore = async () => {
+    if (!user || loadingMore) return
+    setLoadingMore(true)
+    const next = page + 1
+    await fetchPage(next, user.id, true)
+    setPage(next)
+    setLoadingMore(false)
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -572,6 +603,37 @@ export default function HistoryPage() {
             {entries.map(entry => (
               <HistoryCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
             ))}
+            {hasMore && (
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{
+                  marginTop: 8,
+                  padding: '11px 20px',
+                  background: 'transparent',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-secondary)',
+                  fontSize: 13, fontWeight: 500,
+                  cursor: loadingMore ? 'default' : 'pointer',
+                  opacity: loadingMore ? 0.5 : 1,
+                  transition: 'border-color 0.15s, color 0.15s',
+                  fontFamily: 'var(--font-sans)',
+                }}
+                onMouseEnter={e => {
+                  if (!loadingMore) {
+                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
+                    ;(e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'
+                  }
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
+                  ;(e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'
+                }}
+              >
+                {loadingMore ? 'Loading…' : 'Load more'}
+              </button>
+            )}
           </div>
         )}
 
