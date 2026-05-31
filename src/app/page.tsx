@@ -1379,6 +1379,7 @@ const LOADING_STEPS = [
 export default function Home() {
   const { user, session, loading: authLoading, signOut } = useAuth()
   const { tier } = useTier(user?.id)
+  const router = useRouter()
 
   const [showAuthModal,    setShowAuthModal]    = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
