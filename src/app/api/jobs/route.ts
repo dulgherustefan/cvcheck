@@ -111,45 +111,79 @@ function buildFallbackQuery(domain: string): string {
   return buildAdzunaQuery(domain, 'unclear', '')
 }
 
-async function fetchAdzunaJobs(
+// Countries to search across — covers most job markets
+const ADZUNA_COUNTRIES = ['gb', 'us', 'ca', 'au', 'de', 'nl', 'sg', 'at', 'be', 'br', 'in', 'nz', 'pl', 'za']
+
+async function fetchAdzunaJobsFromCountry(
   query: string,
-  country: string = 'gb',
+  country: string,
+  perPage: number = 3,
 ): Promise<JobListing[]> {
   const params = new URLSearchParams({
-    app_id:          ADZUNA_APP_ID,
-    app_key:         ADZUNA_APP_KEY,
-    results_per_page:'8',
-    what:            query,
-    sort_by:         'relevance',
+    app_id:           ADZUNA_APP_ID,
+    app_key:          ADZUNA_APP_KEY,
+    results_per_page: String(perPage),
+    what:             query,
+    sort_by:          'relevance',
   })
 
   const url = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params}`
-  console.log('[jobs] Adzuna request:', url.replace(ADZUNA_APP_KEY, '***'))
 
-  const res = await fetch(url, { headers: { Accept: 'application/json' } })
-
-  if (!res.ok) {
-    const text = await res.text()
-    console.error('[jobs] Adzuna error:', res.status, text)
-    throw new Error(`Adzuna API error ${res.status}: ${text}`)
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return []
+    const data = await res.json()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = data?.results ?? []
+    return results.map((r) => ({
+      id:           r.id ? `${country}-${r.id}` : String(Math.random()),
+      title:        r.title ?? 'Untitled',
+      company:      r.company?.display_name ?? 'Unknown company',
+      location:     r.location?.display_name ?? country.toUpperCase(),
+      description:  (r.description ?? '').slice(0, 320).replace(/\s+/g, ' ').trim(),
+      redirect_url: r.redirect_url ?? '',
+      salary_min:   r.salary_min,
+      salary_max:   r.salary_max,
+      created:      r.created ?? new Date().toISOString(),
+    }))
+  } catch {
+    return []
   }
+}
 
-  const data = await res.json()
-  console.log('[jobs] Adzuna results count:', data?.results?.length ?? 0)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: any[] = data?.results ?? []
+async function fetchAdzunaJobs(
+  query: string,
+  preferredCountry?: string,
+): Promise<JobListing[]> {
+  // Build country list: preferred first, then rest
+  const countries = preferredCountry && ADZUNA_COUNTRIES.includes(preferredCountry)
+    ? [preferredCountry, ...ADZUNA_COUNTRIES.filter(c => c !== preferredCountry)]
+    : ADZUNA_COUNTRIES
 
-  return results.map((r) => ({
-    id:          r.id ?? String(Math.random()),
-    title:       r.title ?? 'Untitled',
-    company:     r.company?.display_name ?? 'Unknown company',
-    location:    r.location?.display_name ?? '',
-    description: (r.description ?? '').slice(0, 320).replace(/\s+/g, ' ').trim(),
-    redirect_url: r.redirect_url ?? '',
-    salary_min:  r.salary_min,
-    salary_max:  r.salary_max,
-    created:     r.created ?? new Date().toISOString(),
-  }))
+  // Fetch top 4 countries in parallel (3 results each = up to 12 total)
+  const topCountries = countries.slice(0, 4)
+  console.log('[jobs] Fetching from countries:', topCountries.join(', '), '| query:', query)
+
+  const results = await Promise.allSettled(
+    topCountries.map(c => fetchAdzunaJobsFromCountry(query, c, 3))
+  )
+
+  const listings: JobListing[] = []
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') {
+      console.log(`[jobs] ${topCountries[i]}: ${r.value.length} results`)
+      listings.push(...r.value)
+    }
+  })
+
+  // Deduplicate by title+company
+  const seen = new Set<string>()
+  return listings.filter(j => {
+    const key = `${j.title.toLowerCase()}-${j.company.toLowerCase()}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 // ── Claude fit analysis ───────────────────────────────────────────────────────
@@ -223,14 +257,14 @@ export async function POST(req: NextRequest) {
 
     // Build query + fetch jobs — with fallback to simpler query if 0 results
     const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
-    let listings = await fetchAdzunaJobs(query, country ?? 'gb')
+    let listings = await fetchAdzunaJobs(query, country)
     let queryUsed = query
 
     if (listings.length === 0) {
       const fallback = buildFallbackQuery(detected_domain)
       if (fallback !== query) {
         console.log('[jobs] 0 results, trying fallback query:', fallback)
-        listings = await fetchAdzunaJobs(fallback, country ?? 'gb')
+        listings = await fetchAdzunaJobs(fallback, country)
         queryUsed = fallback
       }
     }
