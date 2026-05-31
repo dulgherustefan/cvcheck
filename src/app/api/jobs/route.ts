@@ -216,10 +216,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Auth + tier
-    const userId = await getUserIdFromRequest(req)
-    const tier   = await getTierForUser(userId)
-    const isPro  = tier === 'pro' || tier === 'premium'
-    const fitLocked = !isPro
+    const userId    = await getUserIdFromRequest(req)
+    const tier      = await getTierForUser(userId)
+    const isPremium = tier === 'premium'
+    const fitLocked = !isPremium
 
     // Build query + fetch jobs — with fallback to simpler query if 0 results
     const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
 
     let jobs: JobMatch[]
 
-    if (isPro) {
+    if (isPremium) {
       const fitResults = await Promise.allSettled(
         toAnalyze.map((listing) => analyzeJobFit(listing, body)),
       )
@@ -260,12 +260,12 @@ export async function POST(req: NextRequest) {
         return { listing, fit }
       })
     } else {
-      // Free: return listings without fit analysis
+      // Free / Pro: return listings without fit analysis
       jobs = toAnalyze.map((listing) => ({ listing, fit: null }))
     }
 
-    // Sort Pro results by fit_score descending
-    if (isPro) {
+    // Sort Premium results by fit_score descending
+    if (isPremium) {
       jobs.sort((a, b) => (b.fit?.fit_score ?? 0) - (a.fit?.fit_score ?? 0))
     }
 

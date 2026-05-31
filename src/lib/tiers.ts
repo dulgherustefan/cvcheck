@@ -12,19 +12,21 @@ import type { Tier, GatedAnalysisResult, AnalysisResult } from './types'
 // PREMIUM — same as Pro, unlimited scans + history for all plans
 
 export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisResult {
-  const isPro = tier === 'pro' || tier === 'premium'
+  const isPro     = tier === 'pro' || tier === 'premium'
+  const isPremium = tier === 'premium'
 
   return {
     ...result,
     tier,
 
     // These flags drive UI rendering — all false for pro/premium
-    rewrites_locked:        !isPro,   // impact.rewrites
-    how_to_fix_locked:      !isPro,   // red_flags[].how_to_fix
-    keywords_locked:        !isPro,   // ats.missing_keywords + formatting_issues
-    gaps_locked:            !isPro,   // career_story.gaps_or_transitions
-    missing_signals_locked: !isPro,   // credibility.signals_missing
-    actions_locked:         !isPro,   // top_3_actions[].how + example
+    rewrites_locked:        !isPro,     // impact.rewrites
+    how_to_fix_locked:      !isPro,     // red_flags[].how_to_fix
+    keywords_locked:        !isPro,     // ats.missing_keywords + formatting_issues
+    gaps_locked:            !isPro,     // career_story.gaps_or_transitions
+    missing_signals_locked: !isPro,     // credibility.signals_missing
+    actions_locked:         !isPro,     // top_3_actions[].how + example
+    job_matching_locked:    !isPremium, // job matching — Premium only
   }
 }
 
@@ -54,6 +56,7 @@ export const PLANS = {
     features: [
       'Everything in Pro',
       'Unlimited analyses',
+      'Job matching — live listings matched to your profile',
       'Full history on all scans',
       'Track CV progress over time',
     ],

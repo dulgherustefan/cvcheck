@@ -614,6 +614,7 @@ const PLAN_DEFS = {
     features:[
       'Everything in Pro',
       'Unlimited analyses',
+      'Job matching — live listings matched to your profile',
     ],
   },
 }
@@ -799,9 +800,10 @@ function JobCard({ job, fitLocked, onUnlock }: { job: JobMatchType; fitLocked: b
   )
 }
 
-function JobMatchesSection({ result, token, onUnlock }: {
+function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   result: GatedAnalysisResult
   token: string | null
+  isPremium: boolean
   onUnlock: () => void
 }) {
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
@@ -844,44 +846,66 @@ function JobMatchesSection({ result, token, onUnlock }: {
         </p>
       </div>
 
-      {state === 'idle' && (
-        <button onClick={fetchJobs} style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:14, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'10px 20px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-          Find matching jobs <span>→</span>
-        </button>
-      )}
-
-      {state === 'loading' && (
-        <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0' }}>Searching live listings…</div>
-      )}
-
-      {state === 'error' && (
-        <div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>
-          {errMsg}
-          <button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button>
+      {/* Locked state — Free and Pro users */}
+      {!isPremium ? (
+        <div style={{ padding:'28px 24px', borderRadius:10, border:'0.5px dashed var(--accent-border)', background:'var(--accent-subtle)', display:'flex', flexDirection:'column' as const, gap:14 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div style={{ width:32, height:32, borderRadius:6, background:'var(--bg-muted)', border:'0.5px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <LockIcon size={13}/>
+            </div>
+            <div>
+              <div style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Job matching — Premium only</div>
+              <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:2 }}>Live listings matched to your profile, with fit scores and skill gaps per role.</div>
+            </div>
+          </div>
+          <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column' as const, gap:5 }}>
+            {[
+              'Real job listings from your domain',
+              'Fit score 0–100 for every role',
+              '3 specific skill gaps holding you back per job',
+              'Sorted by how well you match',
+            ].map(f => (
+              <li key={f} style={{ display:'flex', alignItems:'center', gap:8, fontSize:12.5, color:'var(--text-secondary)' }}>
+                <svg width="11" height="11" fill="none" stroke="var(--accent)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, opacity:0.7 }}><polyline points="20 6 9 17 4 12"/></svg>
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button onClick={onUnlock} style={{ alignSelf:'flex-start', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--accent)', border:'none', borderRadius:4, padding:'9px 18px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+            Get Premium — €5.99/mo
+          </button>
         </div>
-      )}
-
-      {state === 'done' && data && (
+      ) : (
         <>
-          {data.jobs.length === 0 ? (
-            <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
-          ) : (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
-              {data.jobs.map((job) => (
-                <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
-              ))}
+          {state === 'idle' && (
+            <button onClick={fetchJobs} style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:14, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'10px 20px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+              Find matching jobs <span>→</span>
+            </button>
+          )}
+
+          {state === 'loading' && (
+            <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0' }}>Searching live listings…</div>
+          )}
+
+          {state === 'error' && (
+            <div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>
+              {errMsg}
+              <button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button>
             </div>
           )}
-          {data.fit_locked && (
-            <div style={{ marginTop:16, padding:'14px 18px', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' as const }}>
-              <div>
-                <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)' }}>Unlock fit scores &amp; skill gaps</div>
-                <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:3 }}>See exactly how well you match each role and what&apos;s holding you back.</div>
-              </div>
-              <button onClick={onUnlock} style={{ fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--accent)', border:'none', borderRadius:4, padding:'8px 16px', cursor:'pointer', whiteSpace:'nowrap' as const, fontFamily:'var(--font-sans)' }}>
-                Unlock — €1.99
-              </button>
-            </div>
+
+          {state === 'done' && data && (
+            <>
+              {data.jobs.length === 0 ? (
+                <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
+              ) : (
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
+                  {data.jobs.map((job) => (
+                    <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </>
       )}
@@ -1213,7 +1237,7 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
       )}
 
       {/* ── Job Matches ── */}
-      <JobMatchesSection result={result} token={token} onUnlock={unlock} />
+      <JobMatchesSection result={result} token={token} isPremium={tier === 'premium'} onUnlock={() => setShowPlansModal(true)} />
 
       {/* ── Sign-in nudge — logged out ── */}
       {!user && (
