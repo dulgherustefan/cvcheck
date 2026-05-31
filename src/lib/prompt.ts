@@ -111,22 +111,20 @@ Severity guide:
   warning (-4):     job-hopping (3+ jobs in under 2 years with no explanation), zero quantified results across entire CV, objective statement that contradicts the target role
   minor (-1):       inconsistent date formats, mixed tenses across sections, buzzwords with no substance ("team player", "hard worker", "passionate"), typos
 
-how_to_fix: One specific, actionable sentence tailored to this exact flag. Not generic advice.
+how_to_fix: One sentence, max 20 words, specific to this CV. No generic advice.
   BAD: "Add more details to your work history."
-  GOOD: "Add a one-line note after the 8-month gap in 2022, e.g. 'Career break — freelance projects and upskilling in React.'"
+  GOOD: "Add a note after the 2022 gap: 'Career break — freelance React projects.'"
 
 red_flags_score calculation: Start at 20. Subtract per flag found. Minimum 0. Return final number only.
 
 ─────────────────────────────────────────────
 DIMENSION 5 — CAREER STORY  [0–10 pts]
 ─────────────────────────────────────────────
-trajectory_detected: Describe the actual path using job titles and companies from the CV. E.g. "Junior Developer at Agency X (2019) → Mid-level at Startup Y (2021) → Senior at Corp Z (2023)."
+trajectory_detected: One line, max 20 words. Use arrows. E.g. "Junior Dev at Agency X (2019) → Senior at Corp Z (2023)."
 
 progression_clear: true if each move shows growth in title, scope, team size, or responsibility. false if lateral moves or unclear progression.
 
-gaps_or_transitions:
-  Describe any gap over 3 months or domain switch visible in the CV. Be specific about dates if shown.
-  If none → "No significant gaps or transitions detected."
+gaps_or_transitions: One sentence max. Name the gap/switch and dates only. E.g. "8-month gap mid-2022, unexplained." If none → "None detected."
 
 seniority_match:
   "matches"        — experience level aligns with detected role/title
@@ -196,27 +194,26 @@ Score strictly:
 ══════════════════════════════════════════════
 SUMMARY
 ══════════════════════════════════════════════
-2–3 sentences, max 60 words total.
-  Sentence 1: What is genuinely strongest about this CV (specific).
-  Sentence 2: The single biggest problem holding it back (specific, name the actual issue).
-  Sentence 3 (optional): The highest-ROI action they could take this week.
-Never write generic sentences like "Overall this is a decent CV." Reference actual content.
+2 sentences max, 40 words total.
+  Sentence 1: The single biggest strength (specific, reference actual content).
+  Sentence 2: The single biggest problem (name it directly, no softening).
+No generic filler. No "Overall this is a decent CV."
 
 ══════════════════════════════════════════════
 TOP 3 PRIORITY ACTIONS
 ══════════════════════════════════════════════
 Order by hiring impact — highest ROI first.
 
-action: A specific task. Name the actual section/bullet/element to change.
+action: Max 15 words. Name the specific section/bullet to change.
   BAD: "Improve your bullet points."
   GOOD: "Rewrite the 3 responsibility bullets under [Company X] to show results."
 
-why_it_matters: One sentence on the concrete hiring impact of fixing this.
+why_it_matters: One sentence, max 20 words. Concrete hiring impact only.
 
-how: Step-by-step instruction for THIS person. Reference their actual CV content.
-  E.g. "Take your bullet 'Managed social media accounts' and add: (1) which platforms, (2) follower count or growth %, (3) a campaign result."
+how: Max 3 steps, each max 15 words. Reference their actual CV content.
+  E.g. "1. Take 'Managed social media'. 2. Add: platforms + growth %. 3. Add one campaign result."
 
-example: Show a before → after using actual text from their CV.
+example: One before/after only. Max 20 words per side.
   Format: "Before: [their exact text] → After: [improved version]"
 
 ══════════════════════════════════════════════
@@ -368,15 +365,14 @@ signals_missing: [] (not included in free tier)
 notes: One sentence on credibility for their claimed level.
 
 ══════════════════════════════════════════════
-SUMMARY — 2–3 sentences, max 60 words.
-  1. What is genuinely strongest (specific, reference actual content).
-  2. The single biggest problem (name it directly).
-  3. Optional: highest-ROI action this week.
+SUMMARY — 2 sentences, max 40 words.
+  1. Biggest strength (specific, reference actual content).
+  2. Single biggest problem (name it directly).
 No generic filler. No "overall this is a decent CV."
 
 TOP 3 PRIORITY ACTIONS:
-action: Specific — name the section/bullet/element to change.
-why_it_matters: One sentence, concrete hiring impact.
+action: Max 15 words. Name the specific section/bullet to change.
+why_it_matters: One sentence, max 20 words. Concrete hiring impact only.
 how: "" (not included in free tier)
 example: "" (not included in free tier)
 

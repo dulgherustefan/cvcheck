@@ -402,35 +402,35 @@ function RedFlagCard({ flag, index, howToFixLocked, onUnlock }: {
 
   return (
     <div style={{
-      padding:'14px 18px', borderRadius:6,
+      padding:'12px 16px', borderRadius:6,
       background:`${color}05`,
       border:`0.5px solid ${color}25`,
-      display:'flex', flexDirection:'column', gap:8,
+      display:'flex', flexDirection:'column', gap:6,
     }}>
-      <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+      <div style={{ display:'flex', alignItems:'flex-start', gap:9 }}>
         <span style={{
           fontSize:9, fontWeight:700, textTransform:'uppercase' as const,
           letterSpacing:'0.09em', padding:'2px 7px', borderRadius:2,
           color, background:`${color}12`, border:`0.5px solid ${color}30`,
-          flexShrink:0,
+          flexShrink:0, marginTop:1,
         }}>{label}</span>
-        <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>
+        <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', letterSpacing:'-0.02em', lineHeight:1.4 }}>
           {flag.flag}
         </span>
       </div>
       {howToFixLocked ? (
-        <div onClick={onUnlock} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
+        <div onClick={onUnlock} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer', paddingLeft:2 }}>
           <span style={{ fontSize:12, color:'var(--text-secondary)', filter:'blur(4px)', userSelect:'none', flex:1, pointerEvents:'none' }}>
-            Replace your email with a professional address and update all application materials to reflect the change consistently.
+            Add a one-line note explaining the gap in your timeline.
           </span>
           <span style={{ color:'var(--text-tertiary)', flexShrink:0 }}><LockIcon size={10}/></span>
         </div>
-      ) : (
-        <p style={{ fontSize:12.5, color:'var(--text-secondary)', margin:0, lineHeight:1.65 }}>
-          <span style={{ fontWeight:600, color:'var(--text-primary)' }}>Fix: </span>
+      ) : flag.how_to_fix ? (
+        <p style={{ fontSize:12, color:'var(--text-secondary)', margin:0, lineHeight:1.55, paddingLeft:2 }}>
+          <span style={{ fontWeight:600, color:'var(--text-tertiary)', textTransform:'uppercase' as const, fontSize:9, letterSpacing:'0.08em' }}>Fix · </span>
           {flag.how_to_fix}
         </p>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -440,18 +440,20 @@ function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
   return (
     <div style={{
       borderRadius:6, border:'0.5px solid var(--border)',
-      overflow:'hidden', fontSize:12.5, lineHeight:1.65,
+      overflow:'hidden', fontSize:12.5,
     }}>
-      <div style={{ padding:'12px 16px', background:'rgba(220,38,38,0.04)', borderBottom:'0.5px solid var(--border)' }}>
-        <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-low)', marginBottom:6 }}>Before</div>
-        <p style={{ margin:0, color:'var(--text-secondary)' }}>{rewrite.original}</p>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
+        <div style={{ padding:'10px 14px', background:'rgba(220,38,38,0.04)', borderRight:'0.5px solid var(--border)' }}>
+          <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-low)', marginBottom:5 }}>Before</div>
+          <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.55 }}>{rewrite.original}</p>
+        </div>
+        <div style={{ padding:'10px 14px', background:'rgba(22,163,74,0.04)' }}>
+          <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-high)', marginBottom:5 }}>After</div>
+          <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500, lineHeight:1.55 }}>{rewrite.rewritten}</p>
+        </div>
       </div>
-      <div style={{ padding:'12px 16px', background:'rgba(22,163,74,0.04)', borderBottom:'0.5px solid var(--border)' }}>
-        <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-high)', marginBottom:6 }}>After</div>
-        <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500 }}>{rewrite.rewritten}</p>
-      </div>
-      <div style={{ padding:'10px 16px', background:'var(--bg-subtle)' }}>
-        <p style={{ margin:0, fontSize:11.5, color:'var(--text-tertiary)' }}>
+      <div style={{ padding:'8px 14px', background:'var(--bg-subtle)', borderTop:'0.5px solid var(--border)' }}>
+        <p style={{ margin:0, fontSize:11.5, color:'var(--text-tertiary)', lineHeight:1.5 }}>
           <span style={{ fontWeight:600, color:'var(--text-secondary)' }}>Why: </span>
           {rewrite.why}
         </p>
@@ -466,47 +468,46 @@ function ActionCard({ action, index, detailsLocked, onUnlock }: {
 }) {
   return (
     <div style={{
-      padding:'18px 20px', borderRadius:6,
+      padding:'16px 18px', borderRadius:6,
       border:'0.5px solid var(--border)',
       background:'var(--bg-elevated)',
-      display:'flex', flexDirection:'column', gap:10,
+      display:'flex', flexDirection:'column', gap:8,
     }}>
-      <div style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
+      <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
         <span style={{
-          fontSize:11, fontWeight:800, color:'var(--text-primary)',
-          background:'var(--bg-subtle)', border:'0.5px solid var(--border)',
-          borderRadius:4, padding:'2px 8px', flexShrink:0, letterSpacing:'-0.01em',
+          fontSize:10, fontWeight:800, color:'var(--text-tertiary)',
+          flexShrink:0, marginTop:1, letterSpacing:'0.04em',
+          fontFamily:'var(--font-mono)',
         }}>{String(index + 1).padStart(2, '0')}</span>
         <div style={{ flex:1 }}>
-          <p style={{ margin:0, fontSize:13.5, fontWeight:600, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>
+          <p style={{ margin:0, fontSize:13.5, fontWeight:600, color:'var(--text-primary)', letterSpacing:'-0.02em', lineHeight:1.35 }}>
             {action.action}
           </p>
-          <p style={{ margin:'5px 0 0', fontSize:12, color:'var(--text-secondary)', lineHeight:1.6 }}>
+          <p style={{ margin:'4px 0 0', fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>
             {action.why_it_matters}
           </p>
         </div>
       </div>
       {detailsLocked ? (
         <div onClick={onUnlock} style={{
-          padding:'10px 14px', borderRadius:5, border:'0.5px dashed var(--border)',
+          padding:'8px 12px', borderRadius:5, border:'0.5px dashed var(--border)',
           background:'var(--bg-subtle)', cursor:'pointer', display:'flex',
-          alignItems:'center', gap:8, transition:'background 0.1s',
-        }}
-        onMouseOver={e => (e.currentTarget.style.background='var(--bg-muted)')}
-        onMouseOut={e  => (e.currentTarget.style.background='var(--bg-subtle)')}>
+          alignItems:'center', gap:8,
+        }}>
           <LockIcon size={10}/>
-          <span style={{ fontSize:12, color:'var(--text-tertiary)' }}>Unlock how-to + example — Pro</span>
+          <span style={{ fontSize:12, color:'var(--text-tertiary)' }}>Unlock steps + example — Pro</span>
         </div>
       ) : (
-        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-          <div style={{ padding:'10px 14px', borderRadius:5, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)' }}>
-            <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--accent)', marginBottom:5 }}>How</div>
-            <p style={{ margin:0, fontSize:12.5, color:'var(--text-primary)', lineHeight:1.65 }}>{action.how}</p>
-          </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:6, paddingLeft:20 }}>
+          {action.how && (
+            <p style={{ margin:0, fontSize:12.5, color:'var(--text-primary)', lineHeight:1.6, borderLeft:'2px solid var(--accent-border)', paddingLeft:10 }}>
+              {action.how}
+            </p>
+          )}
           {action.example && (
-            <div style={{ padding:'10px 14px', borderRadius:5, background:'var(--bg-subtle)', border:'0.5px solid var(--border)', fontFamily:'monospace', fontSize:12, color:'var(--text-secondary)', lineHeight:1.65 }}>
+            <p style={{ margin:0, fontSize:12, color:'var(--text-tertiary)', lineHeight:1.55, fontStyle:'italic' }}>
               {action.example}
-            </div>
+            </p>
           )}
         </div>
       )}
