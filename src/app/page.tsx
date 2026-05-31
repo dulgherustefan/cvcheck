@@ -739,6 +739,11 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
 // ─── JobMatchesSection ────────────────────────────────────────────────────────
 
+// Countries where Adzuna has local listings — others get "Remote & global jobs"
+const ADZUNA_UI_SUPPORTED = new Set([
+  'gb','us','ca','au','de','nl','sg','at','be','br','in','nz','pl','za','fr','it','es','ru','mx','ar',
+])
+
 const FIT_COLORS: Record<string, string> = {
   strong:  'var(--score-high)',
   good:    '#65A30D',
@@ -855,7 +860,7 @@ function JobCard({ job, fitLocked, onUnlock, blurred }: { job: JobMatchType; fit
   )
 }
 
-type FilterType = 'all' | 'strong' | 'good' | 'partial'
+type FilterType = 'all' | 'strong' | 'good' | 'partial' | 'stretch'
 
 function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   result: GatedAnalysisResult
@@ -863,10 +868,27 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   isPremium: boolean
   onUnlock: () => void
 }) {
+  // Cache key per analysis — survives page refresh within the same session
+  const CACHE_KEY = `jobs-cache-${result.analysis_id}`
+
   const [state, setState]   = useState<'idle'|'loading'|'done'|'error'>('idle')
   const [data, setData]     = useState<JobsResponse | null>(null)
   const [errMsg, setErrMsg] = useState('')
   const [filter, setFilter] = useState<FilterType>('all')
+
+  // On mount: try sessionStorage first, fetch only if no cache
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY)
+      if (cached) {
+        setData(JSON.parse(cached) as JobsResponse)
+        setState('done')
+        return
+      }
+    } catch {}
+    fetchJobs()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function fetchJobs() {
     setState('loading')
@@ -882,22 +904,18 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
           detected_level:  result.detected_level,
           trajectory:      result.career_story.trajectory_detected,
           keywords:        result.ats.missing_keywords ?? [],
-          // no country — backend detects from IP via x-vercel-ip-country
         }),
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Unknown error') }
-      setData(await res.json())
+      const json = await res.json() as JobsResponse
+      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(json)) } catch {}
+      setData(json)
       setState('done')
     } catch (e: unknown) {
       setErrMsg(e instanceof Error ? e.message : 'Something went wrong')
       setState('error')
     }
   }
-
-  useEffect(() => {
-    if (state === 'idle') fetchJobs()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const filteredJobs = data?.jobs.filter(j => {
     if (filter === 'all') return true
@@ -917,7 +935,9 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
           </h2>
           {data?.detected_country && (
             <p style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4, marginBottom:0 }}>
-              Showing jobs near you · {data.detected_country.toUpperCase()}
+              {ADZUNA_UI_SUPPORTED.has(data.detected_country)
+                ? `Jobs near you · ${data.detected_country.toUpperCase()}`
+                : 'Remote & global jobs matched to your profile'}
             </p>
           )}
         </div>
@@ -925,7 +945,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
         {/* Filters */}
         {data && data.jobs.length > 0 && (
           <div style={{ display:'flex', gap:6 }}>
-            {(['all', 'strong', 'good', 'partial'] as FilterType[]).map(f => (
+            {(['all', 'strong', 'good', 'partial', 'stretch'] as FilterType[]).map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--text-primary)':'var(--border)'}`, background: filter===f?'var(--text-primary)':'transparent', color: filter===f?'var(--bg)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s' }}>
                 {f}
               </button>
@@ -934,10 +954,22 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
         )}
       </div>
 
+      {state === 'done' && data && (
+        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:8 }}>
+          <button
+            onClick={() => { try { sessionStorage.removeItem(CACHE_KEY) } catch {}; fetchJobs() }}
+            style={{ fontSize:11, color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'3px 10px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'color 0.1s, border-color 0.1s' }}
+            onMouseOver={e => { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.borderColor='var(--border-strong)' }}
+            onMouseOut={e  => { e.currentTarget.style.color='var(--text-tertiary)';  e.currentTarget.style.borderColor='var(--border)' }}
+          >
+            ↻ Refresh jobs
+          </button>
+        </div>
+      )}
       {state === 'loading' && (
         <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'16px 0', display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:14, height:14, borderRadius:'50%', border:'1.5px solid var(--border)', borderTopColor:'var(--text-primary)', animation:'spin 0.7s linear infinite' }}/>
-          Finding matching jobs near you…
+          Finding matching jobs…
         </div>
       )}
 
