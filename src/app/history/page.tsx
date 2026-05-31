@@ -497,7 +497,7 @@ export default function HistoryPage() {
       .range(from, to)
 
     if (!error && data) {
-      setEntries(prev => append ? [...prev, ...data as HistoryEntry[]] : data as HistoryEntry[])
+      setEntries(prev => append ? [...prev, ...(data as unknown as HistoryEntry[])] : (data as unknown as HistoryEntry[]))
       setHasMore(data.length === PAGE_SIZE)
     }
   }
