@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
+import type React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -23,6 +24,80 @@ import styles from './page.module.css'
 
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
+
+// ─── useScrollReveal — wires up IntersectionObserver on a container ───────────
+function useScrollReveal(options?: IntersectionObserverInit) {
+  const ref = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const children = Array.from(el.querySelectorAll<HTMLElement>('[data-reveal]'))
+    if (!children.length) return
+    // set initial hidden state
+    children.forEach(c => c.classList.add(styles.revealHidden))
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target as HTMLElement
+          const delay = el.dataset.revealDelay ?? '0'
+          el.style.transitionDelay = `${delay}ms`
+          el.classList.remove(styles.revealHidden)
+          el.classList.add(styles.revealVisible)
+          obs.unobserve(el)
+        }
+      })
+    }, { threshold: 0.12, ...options })
+    children.forEach(c => obs.observe(c))
+    return () => obs.disconnect()
+  }, [])
+  return ref
+}
+
+// ─── useAnimatedBars — triggers bar fill animation when section enters view ───
+function useAnimatedBars() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const container = ref.current
+    if (!container) return
+    const fills = Array.from(container.querySelectorAll<HTMLElement>('[data-bar-pct]'))
+    fills.forEach(el => { el.style.width = '0' })
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          fills.forEach((el, i) => {
+            const pct = el.dataset.barPct ?? '0'
+            setTimeout(() => { el.style.width = `${pct}%` }, i * 60)
+          })
+          obs.disconnect()
+        }
+      })
+    }, { threshold: 0.2 })
+    if (container) obs.observe(container)
+    return () => obs.disconnect()
+  }, [])
+  return ref
+}
+
+// ─── useCountUp — animates a number from 0 to target ─────────────────────────
+function useCountUp(target: number, duration = 1200, delay = 0) {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    let raf: number
+    const start = performance.now() + delay
+    const step = (now: number) => {
+      if (now < start) { raf = requestAnimationFrame(step); return }
+      const elapsed = now - start
+      const progress = Math.min(elapsed / duration, 1)
+      // ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setValue(Math.round(eased * target))
+      if (progress < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration, delay])
+  return value
+}
 
 // ─── Particle Canvas — Ramp-style, cursor-reactive ───────────────────────────
 function ParticleCanvas() {
@@ -212,18 +287,37 @@ function ParticleCanvas() {
 // ─── ScoreRing ────────────────────────────────────────────────────────────────
 function ScoreRing({ score }: { score: number }) {
   const r = 54, circ = 2 * Math.PI * r
-  const dash = (score / 100) * circ
   const color = score >= 66 ? 'var(--score-high)' : score >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
+
+  // Animate ring fill from 0 → target
+  const [animPct, setAnimPct] = useState(0)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      setTimeout(() => setAnimPct(score), 80)
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [score])
+  const dash = (animPct / 100) * circ
+
+  // Animated counter
+  const displayScore = useCountUp(score, 1100, 120)
+
   return (
     <div className={styles.scoreRing}>
       <svg width="136" height="136" viewBox="0 0 136 136">
+        {/* Track */}
         <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
+        {/* Background glow ring */}
+        <circle cx="68" cy="68" r={r} fill="none"
+          stroke={color} strokeWidth="5" opacity="0.08"
+          strokeDasharray={`${circ} 0`} transform="rotate(-90 68 68)"/>
+        {/* Animated fill */}
         <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5"
           strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)"
-          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.4,0,0.2,1)' }}/>
+          style={{ transition: 'stroke-dasharray 1.1s cubic-bezier(0.22, 1, 0.36, 1)' }}/>
       </svg>
       <div className={styles.scoreRingInner}>
-        <span className={styles.scoreNumber} style={{ color }}>{score}</span>
+        <span className={styles.scoreNumber} style={{ color }}>{displayScore}</span>
         <span className={styles.scoreMax}>/100</span>
       </div>
     </div>
@@ -288,7 +382,10 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: {
         </span>
       </div>
       <div className={styles.barTrack}>
-        <div className={styles.barFill} style={{ width:`${pct}%`, background:color, transition:'width 1s cubic-bezier(0.4,0,0.2,1)' }}/>
+        {/* data-bar-pct triggers JS animation via useAnimatedBars */}
+        <div className={styles.barFill}
+          data-bar-pct={pct}
+          style={{ background: color }}/>
       </div>
     </div>
   )
@@ -603,6 +700,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
   setShowAuthModal: (v: boolean) => void
 }) {
   const unlock = () => setShowUpgradeModal(true)
+  const barsRef = useAnimatedBars()
 
   return (
     <>
@@ -626,7 +724,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       </div>
 
       {/* ── First Impression ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.12s' }}>
         <h2 className={styles.sectionTitle}>First Impression</h2>
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
           {/* 7-second test verdict */}
@@ -670,9 +768,9 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       </div>
 
       {/* ── Score Breakdown ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.18s' }}>
         <h2 className={styles.sectionTitle}>Score Breakdown</h2>
-        <div className={styles.categoryBars}>
+        <div className={styles.categoryBars} ref={barsRef}>
           {SCORE_DIMENSIONS.map(({ key, label, max, desc }) => (
             <DimensionBar key={key} label={label}
               score={(result.scores as unknown as Record<string, number>)[key] ?? 0}
@@ -684,7 +782,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       </div>
 
       {/* ── Impact & Achievements ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.24s' }}>
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Impact & Achievements</h2>
           {result.rewrites_locked && (
@@ -747,7 +845,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       </div>
 
       {/* ── ATS Compatibility ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.30s' }}>
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>ATS Compatibility</h2>
           {result.keywords_locked && (
@@ -814,7 +912,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
 
       {/* ── Red Flags ── */}
       {result.red_flags.length > 0 && (
-        <div className={styles.section}>
+        <div className={styles.section} style={{ animationDelay: '0.34s' }}>
           <div className={styles.sectionTitleRow}>
             <h2 className={styles.sectionTitle}>Red Flags</h2>
             <div style={{ display:'flex', gap:6 }}>
@@ -840,7 +938,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       )}
 
       {/* ── Career Story ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.38s' }}>
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Career Story</h2>
           {result.gaps_locked && (
@@ -881,7 +979,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
       </div>
 
       {/* ── Top 3 Priority Actions ── */}
-      <div className={styles.section}>
+      <div className={styles.section} style={{ animationDelay: '0.44s' }}>
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Top 3 Actions</h2>
           {result.actions_locked && (
@@ -1088,6 +1186,15 @@ export default function Home() {
   const isPro = result?.tier === 'pro' || result?.tier === 'premium'
   const scrollToTop = () => window.scrollTo({ top:0, behavior:'smooth' })
 
+  // Scroll-reveal for each landing section
+  const howRef     = useScrollReveal() as React.RefObject<HTMLElement>
+  const sampleRef  = useScrollReveal() as React.RefObject<HTMLElement>
+  const dimsRef    = useScrollReveal() as React.RefObject<HTMLElement>
+  const pricingRef = useScrollReveal() as React.RefObject<HTMLElement>
+  const statsRef   = useScrollReveal() as React.RefObject<HTMLElement>
+  // Animated bars for sample section
+  const sampleBarsRef = useAnimatedBars()
+
   return (
     <div className={styles.page}>
 
@@ -1256,14 +1363,14 @@ export default function Home() {
             </div>
 
             {/* ── Stats strip ── */}
-            <div className={styles.statsStrip}>
+            <div className={styles.statsStrip} ref={statsRef as React.RefObject<HTMLDivElement>}>
               {[
                 { num:'8',    label:'dimensions scored per CV' },
                 { num:'~30s', label:'average analysis time' },
                 { num:'€2',   label:'one-time Pro — not a subscription' },
                 { num:'0',    label:'vague "consider improving" feedback' },
-              ].map(s => (
-                <div key={s.num} className={styles.statItem}>
+              ].map((s, i) => (
+                <div key={s.num} className={styles.statItem} data-reveal data-reveal-delay={i * 70}>
                   <span className={styles.statNum}>{s.num}</span>
                   <span className={styles.statLabel}>{s.label}</span>
                 </div>
@@ -1271,16 +1378,16 @@ export default function Home() {
             </div>
 
             {/* ── How it works ── */}
-            <section id="how" className={styles.howSection}>
+            <section id="how" className={styles.howSection} ref={howRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
-                <div className={styles.sHead}>
+                <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>How it works</p>
                   <h2 className={styles.sTitle}>Three steps, thirty seconds.</h2>
                   <p className={styles.sSub}>No account needed for your first scan.</p>
                 </div>
                 <div className={styles.howSteps}>
-                  {HOW_STEPS.map(s => (
-                    <div key={s.n} className={styles.howStep}>
+                  {HOW_STEPS.map((s, i) => (
+                    <div key={s.n} className={styles.howStep} data-reveal data-reveal-delay={i * 80}>
                       <span className={styles.howStepNum}>{s.n}</span>
                       <p className={styles.howStepTitle}>{s.title}</p>
                       <p className={styles.howStepDesc}>{s.desc}</p>
@@ -1291,14 +1398,14 @@ export default function Home() {
             </section>
 
             {/* ── Sample result ── */}
-            <section className={styles.sampleSection}>
+            <section className={styles.sampleSection} ref={sampleRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
-                <div className={styles.sHead}>
+                <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>What you get</p>
                   <h2 className={styles.sTitle}>A real score, not a pep talk.</h2>
                   <p className={styles.sSub}>Free gives you the score and a preview. Pro unlocks the full picture — all 8 dimensions, observations, and fixes with rewritten examples.</p>
                 </div>
-                <div className={styles.sampleCard}>
+                <div className={styles.sampleCard} data-reveal data-reveal-delay="80">
                   <div className={styles.sampleTop}>
                     <div className={styles.sampleRing}>
                       <svg width="92" height="92" viewBox="0 0 92 92">
@@ -1316,7 +1423,7 @@ export default function Home() {
                       <p className={styles.sampleSummary}>Solid structure and clear contact info. The experience section reads like a job description rather than a track record — adding numbers would move this from Good to Strong quickly.</p>
                     </div>
                   </div>
-                  <div className={styles.sampleBars}>
+                  <div className={styles.sampleBars} ref={sampleBarsRef}>
                     {SAMPLE_DIMS.map(d => (
                       <div key={d.label} className={styles.sampleBar}>
                         <div className={styles.sampleBarHeader}>
@@ -1324,7 +1431,7 @@ export default function Home() {
                           <span className={styles.sampleBarScore}>{d.pct}%</span>
                         </div>
                         <div className={styles.sampleBarTrack}>
-                          <div className={styles.sampleBarFill} style={{ width:`${d.pct}%` }}/>
+                          <div className={styles.sampleBarFill} data-bar-pct={d.pct}/>
                         </div>
                       </div>
                     ))}
@@ -1347,16 +1454,16 @@ export default function Home() {
             </section>
 
             {/* ── 8 Dimensions ── */}
-            <section id="dims" className={styles.dimsSection}>
+            <section id="dims" className={styles.dimsSection} ref={dimsRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
-                <div className={styles.sHead}>
+                <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>What we score</p>
                   <h2 className={styles.sTitle}>7 dimensions, not just a vibe check.</h2>
                   <p className={styles.sSub}>Each weighted by how much recruiters actually care — not what's easiest to measure.</p>
                 </div>
                 <div className={styles.dimsGrid}>
                   {DIMS_LIST.map((d, i) => (
-                    <div key={d.name} className={styles.dimCard}>
+                    <div key={d.name} className={styles.dimCard} data-reveal data-reveal-delay={i * 55}>
                       <div className={styles.dimIcon}>
                         <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, fontWeight:600, color:'var(--text-tertiary)', letterSpacing:'0.06em' }}>
                           {String(i+1).padStart(2,'0')}
@@ -1371,14 +1478,14 @@ export default function Home() {
             </section>
 
             {/* ── Pricing ── */}
-            <section id="pricing" className={styles.pricingSection}>
+            <section id="pricing" className={styles.pricingSection} ref={pricingRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
-                <div className={styles.sHead}>
+                <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>Pricing</p>
                   <h2 className={styles.sTitle}>No tricks, no "contact us for pricing."</h2>
                   <p className={styles.sSub}>One free scan to see your score. Pro unlocks the full breakdown for €2 — once. Premium for unlimited.</p>
                 </div>
-                <div className={styles.pricingCards}>
+                <div className={styles.pricingCards} data-reveal data-reveal-delay="80">
                   {(['free','pro','premium'] as const).map(pk => {
                     const p = PLAN_DEFS[pk]
                     const isFeatured = pk === 'pro'
