@@ -13,6 +13,7 @@ import { useTier } from '@/hooks/useTier'
 import type {
   GatedAnalysisResult, Rating,
   RedFlagSeverity, BulletRewrite, PriorityAction, RedFlag,
+  JobsResponse, JobMatch as JobMatchType,
 } from '@/lib/types'
 import {
   SCORE_DIMENSIONS, RATING_LABELS, RATING_COLORS,
@@ -734,12 +735,167 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 }
 
 
+// ─── JobMatchesSection ────────────────────────────────────────────────────────
+
+function FitBadge({ label, score }: { label: string; score: number }) {
+  const colors: Record<string, string> = {
+    strong:  'var(--score-high)',
+    good:    'var(--score-high)',
+    partial: 'var(--score-mid)',
+    stretch: 'var(--score-low)',
+  }
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, color: colors[label] ?? 'var(--text-secondary)' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background: colors[label] ?? 'var(--text-secondary)', flexShrink:0 }} />
+      {score}% {label}
+    </span>
+  )
+}
+
+function JobCard({ job, fitLocked, onUnlock }: { job: JobMatchType; fitLocked: boolean; onUnlock: () => void }) {
+  const { listing, fit } = job
+  const salary = listing.salary_min
+    ? `€${Math.round(listing.salary_min / 1000)}k${listing.salary_max ? `–${Math.round(listing.salary_max / 1000)}k` : '+'}`
+    : null
+
+  return (
+    <div style={{ border:'0.5px solid var(--border)', borderRadius:8, padding:'18px 20px', background:'var(--bg2)', display:'flex', flexDirection:'column' as const, gap:10 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.3 }}>{listing.title}</div>
+          <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:2 }}>
+            {listing.company}{listing.location ? ` · ${listing.location}` : ''}{salary ? ` · ${salary}` : ''}
+          </div>
+        </div>
+        {fitLocked ? (
+          <button onClick={onUnlock} style={{ flexShrink:0, fontSize:11, fontWeight:600, color:'var(--accent)', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'3px 9px', cursor:'pointer', whiteSpace:'nowrap' as const, fontFamily:'var(--font-sans)' }}>
+            See fit score ↑
+          </button>
+        ) : fit ? (
+          <FitBadge label={fit.fit_label} score={fit.fit_score} />
+        ) : null}
+      </div>
+
+      <p style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.55, margin:0, display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical' as const, overflow:'hidden' }}>
+        {listing.description}
+      </p>
+
+      {!fitLocked && fit && fit.gaps.length > 0 && (
+        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10, display:'flex', flexDirection:'column' as const, gap:5 }}>
+          <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text-tertiary)' }}>What you&apos;re missing</div>
+          {fit.gaps.map((gap, i) => (
+            <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}>
+              <span style={{ color:'var(--score-low)', flexShrink:0, marginTop:1 }}>✕</span>
+              {gap}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" style={{ alignSelf:'flex-start', fontSize:12, fontWeight:600, color:'var(--text-primary)', background:'var(--bg-muted)', border:'0.5px solid var(--border-strong)', borderRadius:4, padding:'5px 12px', textDecoration:'none', marginTop:2 }}>
+        View job →
+      </a>
+    </div>
+  )
+}
+
+function JobMatchesSection({ result, token, onUnlock }: {
+  result: GatedAnalysisResult
+  token: string | null
+  onUnlock: () => void
+}) {
+  const [state, setState] = React.useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [data, setData]   = React.useState<JobsResponse | null>(null)
+  const [errMsg, setErrMsg] = React.useState('')
+
+  async function fetchJobs() {
+    setState('loading')
+    setErrMsg('')
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      const res = await fetch('/api/jobs', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          detected_domain: result.detected_domain,
+          detected_level:  result.detected_level,
+          trajectory:      result.career_story.trajectory_detected,
+          keywords:        result.ats.missing_keywords ?? [],
+          country:         'gb',
+        }),
+      })
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Unknown error') }
+      setData(await res.json())
+      setState('done')
+    } catch (e: unknown) {
+      setErrMsg(e instanceof Error ? e.message : 'Something went wrong')
+      setState('error')
+    }
+  }
+
+  return (
+    <div style={{ marginTop:48 }}>
+      <div style={{ marginBottom:20 }}>
+        <div style={{ fontSize:10, fontWeight:600, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', marginBottom:6 }}>Job Matches</div>
+        <h2 style={{ fontSize:'clamp(20px, 3vw, 26px)', fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.5px' }}>Roles that fit your profile</h2>
+        <p style={{ fontSize:13, color:'var(--text-secondary)', marginTop:6, marginBottom:0 }}>
+          Real listings matched to your domain, level, and skills.{data && !data.fit_locked && ' Sorted by fit score.'}
+        </p>
+      </div>
+
+      {state === 'idle' && (
+        <button onClick={fetchJobs} style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:14, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'10px 20px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+          Find matching jobs <span>→</span>
+        </button>
+      )}
+
+      {state === 'loading' && (
+        <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0' }}>Searching live listings…</div>
+      )}
+
+      {state === 'error' && (
+        <div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>
+          {errMsg}
+          <button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button>
+        </div>
+      )}
+
+      {state === 'done' && data && (
+        <>
+          {data.jobs.length === 0 ? (
+            <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
+              {data.jobs.map((job) => (
+                <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
+              ))}
+            </div>
+          )}
+          {data.fit_locked && (
+            <div style={{ marginTop:16, padding:'14px 18px', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap' as const }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)' }}>Unlock fit scores &amp; skill gaps</div>
+                <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:3 }}>See exactly how well you match each role and what&apos;s holding you back.</div>
+              </div>
+              <button onClick={onUnlock} style={{ fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--accent)', border:'none', borderRadius:4, padding:'8px 16px', cursor:'pointer', whiteSpace:'nowrap' as const, fontFamily:'var(--font-sans)' }}>
+                Unlock — €1.99
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── ResultContent ────────────────────────────────────────────────────────────
-function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
+function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
   result: GatedAnalysisResult
   isPro: boolean
   user: { email?: string } | null
   savedToHistory: boolean
+  token: string | null
   setShowUpgradeModal: (v: boolean) => void
   setShowPlansModal: (v: boolean) => void
   setShowAuthModal: (v: boolean) => void
@@ -1055,6 +1211,9 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
           </div>
         </div>
       )}
+
+      {/* ── Job Matches ── */}
+      <JobMatchesSection result={result} token={token} onUnlock={unlock} />
 
       {/* ── Sign-in nudge — logged out ── */}
       {!user && (
@@ -1629,6 +1788,7 @@ export default function Home() {
               isPro={isPro}
               user={user}
               savedToHistory={savedToHistory}
+              token={session?.access_token ?? null}
               setShowUpgradeModal={setShowUpgradeModal}
               setShowPlansModal={setShowPlansModal}
               setShowAuthModal={setShowAuthModal}

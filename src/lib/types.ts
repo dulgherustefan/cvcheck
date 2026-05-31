@@ -120,6 +120,50 @@ export interface AnalysisError {
   error: string
 }
 
+// ── Job Matching ──────────────────────────────────────────────────────────────
+
+/** A single job listing returned by Adzuna */
+export interface JobListing {
+  id: string
+  title: string
+  company: string
+  location: string
+  description: string          // trimmed to ~300 chars for display
+  redirect_url: string
+  salary_min?: number
+  salary_max?: number
+  created: string              // ISO date
+}
+
+/** Per-job fit analysis from Claude — Pro+ only */
+export interface JobFitAnalysis {
+  fit_score: number            // 0-100
+  fit_label: 'strong' | 'good' | 'partial' | 'stretch'
+  gaps: string[]               // 3 specific things missing from CV for this role
+}
+
+/** Combined job card shown to user */
+export interface JobMatch {
+  listing: JobListing
+  fit: JobFitAnalysis | null   // null = locked (free tier)
+}
+
+/** Request body for /api/jobs */
+export interface JobsRequest {
+  detected_domain: string
+  detected_level: string
+  trajectory: string           // career_story.trajectory_detected
+  keywords: string[]           // ats keywords already present in CV (not missing ones)
+  country?: string             // ISO 2-letter, default 'gb'
+}
+
+/** Response from /api/jobs */
+export interface JobsResponse {
+  jobs: JobMatch[]
+  fit_locked: boolean          // true = free tier, fit+gaps hidden
+  query_used: string           // the Adzuna search query, for transparency
+}
+
 // ── Legacy aliases ────────────────────────────────────────────────────────────
 /** @deprecated use AnalysisResult */
 export type RoastResult = AnalysisResult
