@@ -645,7 +645,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
       label: 'Free',
       price: '€0',
       period: '',
-      desc: 'See what's holding you back',
+      desc: "See what's holding you back",
       features: PLAN_DEFS.free.features,
       color: 'var(--text-tertiary)',
     },
