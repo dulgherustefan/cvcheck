@@ -20,8 +20,11 @@ export interface BulletRewrite {
 export interface ImpactAnalysis {
   bullets_with_metrics: number
   bullets_without_metrics: number
+  metrics_ratio_verdict: 'below_bar' | 'at_bar' | 'above_bar'  // benchmarked vs seniority
   dominant_pattern: string           // "Lists responsibilities, not results"
   action_verb_quality: 'strong' | 'mixed' | 'weak'
+  specificity_score: number          // 1–5
+  top_weak_bullets: string[]         // verbatim bullets, preview for upsell
   rewrites: BulletRewrite[]          // 2-3 items — Pro only
 }
 
@@ -90,6 +93,7 @@ export interface AnalysisResult {
   detected_domain: string      // "Software Engineering", "Marketing", etc.
   detected_level: 'student/junior' | 'mid-level' | 'senior' | 'executive' | 'unclear'
   summary: string
+  quick_win?: string           // single highest-impact action, always visible
 
   scores: CVScores
 
@@ -97,6 +101,7 @@ export interface AnalysisResult {
   impact: ImpactAnalysis
   ats: ATSAnalysis
   red_flags: RedFlag[]
+  buzzwords_detected: { word: string; location: string }[]  // visible in free
   career_story: CareerStory
   format: FormatAnalysis
   credibility: CredibilityAnalysis

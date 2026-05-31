@@ -837,6 +837,14 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
     }
   }
 
+  // Auto-fetch for premium users when component mounts
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (isPremium && state === 'idle') {
+      fetchJobs()
+    }
+  }, [isPremium])
+
   return (
     <div style={{ marginTop:48 }}>
       <div style={{ marginBottom:20 }}>
@@ -847,69 +855,139 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
         </p>
       </div>
 
-      {/* Locked state — Free and Pro users */}
-      {!isPremium ? (
-        <div style={{ padding:'28px 24px', borderRadius:10, border:'0.5px dashed var(--accent-border)', background:'var(--accent-subtle)', display:'flex', flexDirection:'column' as const, gap:14 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:32, height:32, borderRadius:6, background:'var(--bg-muted)', border:'0.5px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <LockIcon size={13}/>
-            </div>
-            <div>
-              <div style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Job matching — Premium only</div>
-              <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:2 }}>Live listings matched to your profile, with fit scores and skill gaps per role.</div>
-            </div>
-          </div>
-          <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column' as const, gap:5 }}>
-            {[
-              'Real job listings from your domain',
-              'Fit score 0–100 for every role',
-              '3 specific skill gaps holding you back per job',
-              'Sorted by how well you match',
-            ].map(f => (
-              <li key={f} style={{ display:'flex', alignItems:'center', gap:8, fontSize:12.5, color:'var(--text-secondary)' }}>
-                <svg width="11" height="11" fill="none" stroke="var(--accent)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, opacity:0.7 }}><polyline points="20 6 9 17 4 12"/></svg>
-                {f}
-              </li>
-            ))}
-          </ul>
-          <button onClick={onUnlock} style={{ alignSelf:'flex-start', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--accent)', border:'none', borderRadius:4, padding:'9px 18px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-            Get Premium — €5.99/mo
-          </button>
+      {/* Loading state */}
+      {state === 'loading' && (
+        <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0', display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ width:14, height:14, borderRadius:'50%', border:'1.5px solid var(--border)', borderTopColor:'var(--text-primary)', animation:'spin 0.7s linear infinite' }}/>
+          Finding matching jobs…
         </div>
-      ) : (
+      )}
+
+      {state === 'error' && (
+        <div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>
+          {errMsg}
+          <button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button>
+        </div>
+      )}
+
+      {state === 'done' && data && (
         <>
-          {state === 'idle' && (
-            <button onClick={fetchJobs} style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:14, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'10px 20px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-              Find matching jobs <span>→</span>
-            </button>
-          )}
-
-          {state === 'loading' && (
-            <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'12px 0' }}>Searching live listings…</div>
-          )}
-
-          {state === 'error' && (
-            <div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>
-              {errMsg}
-              <button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button>
+          {data.jobs.length === 0 ? (
+            <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
+          ) : (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
+              {data.jobs.map((job) => (
+                <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
+              ))}
             </div>
-          )}
-
-          {state === 'done' && data && (
-            <>
-              {data.jobs.length === 0 ? (
-                <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No listings found right now. Try again later.</div>
-              ) : (
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
-                  {data.jobs.map((job) => (
-                    <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} />
-                  ))}
-                </div>
-              )}
-            </>
           )}
         </>
       )}
+    </div>
+  )
+}
+
+// ─── QuickWinBanner — most important single action, always visible ────────────
+function QuickWinBanner({ text, onUnlock, isPro }: { text?: string; onUnlock: () => void; isPro: boolean }) {
+  if (!text) return null
+  return (
+    <div style={{
+      padding: '18px 22px',
+      borderRadius: 8,
+      background: 'linear-gradient(135deg, rgba(127,119,221,0.07) 0%, rgba(127,119,221,0.03) 100%)',
+      border: '0.5px solid var(--accent-border)',
+      display: 'flex', alignItems: 'flex-start', gap: 14,
+      animation: 'fadeUp 0.45s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both',
+    }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: 6,
+        background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1,
+      }}>
+        <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2.2" viewBox="0 0 24 24">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.11em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: 5 }}>
+          Quick win · Do this first
+        </div>
+        <p style={{ margin: 0, fontSize: 13.5, color: 'var(--text-primary)', lineHeight: 1.65, fontWeight: 500 }}>
+          {text}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── LockedPreview — shows count + teaser before paywall ─────────────────────
+function LockedPreview({ count, label, sublabel, onUnlock }: {
+  count?: number | string; label: string; sublabel: string; onUnlock: () => void
+}) {
+  return (
+    <div
+      onClick={onUnlock}
+      style={{
+        padding: '14px 18px', borderRadius: 6,
+        border: '0.5px solid var(--border)',
+        background: 'var(--bg-subtle)', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        transition: 'border-color 0.15s, background 0.15s',
+      }}
+      onMouseOver={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--accent-border)'; (e.currentTarget as HTMLDivElement).style.background = 'var(--accent-subtle)' }}
+      onMouseOut={e  => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-subtle)' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {count !== undefined && (
+          <span style={{
+            fontSize: 20, fontWeight: 800, color: 'var(--text-primary)',
+            letterSpacing: '-1px', fontFamily: 'var(--font-serif)', lineHeight: 1,
+          }}>{count}</span>
+        )}
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{label}</div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)' }}>{sublabel}</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, fontSize: 11.5, fontWeight: 600, color: 'var(--accent)', background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)', borderRadius: 4, padding: '4px 10px', whiteSpace: 'nowrap' as const }}>
+        Unlock — €1.99
+        <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  )
+}
+
+// ─── JobTeaser — auto-shows after analysis for Premium upsell ─────────────────
+function JobTeaser({ domain, level, isPremium, onUnlock }: {
+  domain: string; level: string; isPremium: boolean; onUnlock: () => void
+}) {
+  if (isPremium) return null
+  const domainShort = domain.split('/')[0].trim()
+  return (
+    <div style={{
+      padding: '16px 20px', borderRadius: 8,
+      border: '0.5px solid var(--border)',
+      background: 'var(--bg-elevated)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 6, background: 'var(--bg-muted)', border: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="14" height="14" fill="none" stroke="var(--text-secondary)" strokeWidth="1.8" viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          </svg>
+        </div>
+        <div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+            See live {domainShort} jobs matched to your profile
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)' }}>
+            Fit score + skill gaps for every role — Premium only
+          </div>
+        </div>
+      </div>
+      <button onClick={onUnlock} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: 'var(--bg)', background: 'var(--text-primary)', border: 'none', borderRadius: 4, padding: '7px 14px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
+        Get Premium →
+      </button>
     </div>
   )
 }
@@ -927,6 +1005,9 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
 }) {
   const unlock = () => setShowUpgradeModal(true)
   const barsRef = useAnimatedBars()
+
+  // Cast to access quick_win which may not be in older type yet
+  const quickWin = (result as GatedAnalysisResult & { quick_win?: string }).quick_win
 
   return (
     <>
@@ -948,6 +1029,9 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
           {result.source && <p className={styles.sourceLabel}>{result.source}</p>}
         </div>
       </div>
+
+      {/* ── Quick Win — always visible, do this first ── */}
+      <QuickWinBanner text={quickWin} onUnlock={unlock} isPro={isPro} />
 
       {/* ── First Impression ── */}
       <div className={styles.section} style={{ animationDelay: '0.12s' }}>
@@ -1043,24 +1127,12 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
         </div>
         {/* Rewrites */}
         {result.rewrites_locked ? (
-          <div onClick={unlock} style={{
-            padding:'16px 20px', borderRadius:6, border:'0.5px dashed var(--border)',
-            background:'var(--bg-subtle)', cursor:'pointer', display:'flex',
-            alignItems:'center', justifyContent:'space-between',
-            transition:'background 0.1s',
-          }}
-          onMouseOver={e => (e.currentTarget.style.background='var(--bg-muted)')}
-          onMouseOut={e  => (e.currentTarget.style.background='var(--bg-subtle)')}>
-            <div>
-              <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', marginBottom:4 }}>
-                {result.impact.rewrites.length || 2}–3 bullet rewrites available
-              </div>
-              <div style={{ fontSize:12, color:'var(--text-secondary)' }}>
-                Your exact bullets rewritten with Action + Context + Quantified Result
-              </div>
-            </div>
-            <LockIcon size={13}/>
-          </div>
+          <LockedPreview
+            count={result.impact.bullets_without_metrics > 0 ? Math.min(result.impact.bullets_without_metrics, 3) : 2}
+            label={`bullet rewrite${result.impact.bullets_without_metrics !== 1 ? 's' : ''} ready`}
+            sublabel="Your weakest bullets rewritten with Action + Result + Numbers"
+            onUnlock={unlock}
+          />
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
             {result.impact.rewrites.map((rw, i) => (
@@ -1099,14 +1171,12 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
           )}
           {/* Locked: keywords + formatting issues */}
           {result.keywords_locked ? (
-            <div onClick={unlock} style={{
-              padding:'12px 16px', borderRadius:5, border:'0.5px dashed var(--border)',
-              background:'var(--bg-subtle)', cursor:'pointer', fontSize:12,
-              color:'var(--text-tertiary)', display:'flex', alignItems:'center', gap:8,
-            }}>
-              <LockIcon size={10}/>
-              Missing keywords for your domain + formatting issues — unlock with Pro
-            </div>
+            <LockedPreview
+              count="5"
+              label="missing ATS keywords for your domain"
+              sublabel="The exact terms recruiters search that aren't in your CV"
+              onUnlock={unlock}
+            />
           ) : (
             <>
               {result.ats.missing_keywords.length > 0 && (
@@ -1191,10 +1261,11 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
             </div>
           </div>
           {result.gaps_locked ? (
-            <div onClick={unlock} style={{ padding:'12px 16px', borderRadius:5, border:'0.5px dashed var(--border)', background:'var(--bg-subtle)', cursor:'pointer', fontSize:12, color:'var(--text-tertiary)', display:'flex', alignItems:'center', gap:8 }}>
-              <LockIcon size={10}/>
-              Gaps, transitions & seniority detail — unlock with Pro
-            </div>
+            <LockedPreview
+              label="Career gaps & seniority analysis"
+              sublabel="Specific dates, transitions, and how to address them on your CV"
+              onUnlock={unlock}
+            />
           ) : result.career_story.gaps_or_transitions ? (
             <div style={{ padding:'12px 16px', borderRadius:5, background:'rgba(202,138,4,0.05)', border:'0.5px solid rgba(202,138,4,0.25)', fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.65 }}>
               <span style={{ fontWeight:600, color:'var(--score-mid)' }}>Gaps / Transitions: </span>
@@ -1237,8 +1308,18 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
         </div>
       )}
 
-      {/* ── Job Matches ── */}
-      <JobMatchesSection result={result} token={token} isPremium={result.tier === 'premium'} onUnlock={() => setShowPlansModal(true)} />
+      {/* ── Job teaser for non-premium — contextual, auto-shown ── */}
+      <JobTeaser
+        domain={result.detected_domain}
+        level={result.detected_level}
+        isPremium={result.tier === 'premium'}
+        onUnlock={() => setShowPlansModal(true)}
+      />
+
+      {/* ── Job Matches — Premium only, auto-loads ── */}
+      {result.tier === 'premium' && (
+        <JobMatchesSection result={result} token={token} isPremium={true} onUnlock={() => setShowPlansModal(true)} />
+      )}
 
       {/* ── Sign-in nudge — logged out ── */}
       {!user && (
@@ -1788,17 +1869,17 @@ export default function Home() {
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                 New analysis
               </button>
+              {user && savedToHistory && (
+                <button onClick={() => router.push('/history')} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--score-high)', background:'rgba(22,163,74,0.06)', border:'0.5px solid rgba(22,163,74,0.2)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s', letterSpacing:'-0.01em' }}>
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  Saved · View history
+                </button>
+              )}
               {!user && (
                 <button onClick={() => setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s', letterSpacing:'-0.01em' }}>
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
                   Sign in to save
                 </button>
-              )}
-              {user && savedToHistory && (
-                <span style={{ fontSize:11.5, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}>
-                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                  Saved to history
-                </span>
               )}
               <button className={styles.shareBtn} onClick={copyShare}>
                 {copied
