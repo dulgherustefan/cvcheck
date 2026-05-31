@@ -598,7 +598,7 @@ const PLAN_DEFS = {
     ],
   },
   pro: {
-    label:'Pro', color:'var(--text-primary)', price:'€2', period:'one-time',
+    label:'Pro', color:'var(--text-primary)', price:'€1.99', period:'one-time',
     features:[
       'Everything in Free',
       'Bullet rewrites on your actual text',
@@ -609,7 +609,7 @@ const PLAN_DEFS = {
     ],
   },
   premium: {
-    label:'Premium', color:'var(--score-high)', price:'€7.99', period:'/month',
+    label:'Premium', color:'var(--score-high)', price:'€5.99', period:'/month',
     features:[
       'Everything in Pro',
       'Unlimited analyses',
@@ -650,7 +650,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
     {
       key: 'pro' as const,
       label: 'Pro',
-      price: '€2',
+      price: '€1.99',
       period: 'one-time',
       desc: 'Full breakdown, once',
       features: PLAN_DEFS.pro.features,
@@ -660,7 +660,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
     {
       key: 'premium' as const,
       label: 'Premium',
-      price: '€7.99',
+      price: '€5.99',
       period: '/mo',
       desc: 'Unlimited analyses',
       features: PLAN_DEFS.premium.features,
@@ -763,7 +763,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
                         disabled={!!buying}
                         style={{ width:'100%', padding:'11px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===p.key?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'opacity 0.15s' }}
                       >
-                        {buying===p.key ? 'Loading…' : p.key==='pro' ? 'Get Pro — €2' : 'Get Premium — €7.99/mo'}
+                        {buying===p.key ? 'Loading…' : p.key==='pro' ? 'Get Pro — €1.99' : 'Get Premium — €5.99/mo'}
                       </button>
                     </div>
                   )}
@@ -893,7 +893,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Impact & Achievements</h2>
           {result.rewrites_locked && (
-            <UnlockBtn label="Unlock rewrites — €2" onClick={unlock}/>
+            <UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>
           )}
         </div>
         {/* Stats bar */}
@@ -956,7 +956,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>ATS Compatibility</h2>
           {result.keywords_locked && (
-            <UnlockBtn label="See missing keywords — €2" onClick={unlock}/>
+            <UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>
           )}
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -1049,7 +1049,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Career Story</h2>
           {result.gaps_locked && (
-            <UnlockBtn label="See full analysis — €2" onClick={unlock}/>
+            <UnlockBtn label="See full analysis — €1.99" onClick={unlock}/>
           )}
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
@@ -1090,7 +1090,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
         <div className={styles.sectionTitleRow}>
           <h2 className={styles.sectionTitle}>Top 3 Actions</h2>
           {result.actions_locked && (
-            <UnlockBtn label="Unlock how-to + examples — €2" onClick={unlock}/>
+            <UnlockBtn label="Unlock how-to + examples — €1.99" onClick={unlock}/>
           )}
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -1108,11 +1108,11 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
           <div className={styles.upgradeBannerContent}>
             <p className={styles.upgradeBannerTitle}>Unlock the full picture</p>
             <p className={styles.upgradeBannerSub}>
-              Pro unlocks your bullet rewrites, how to fix every red flag, missing ATS keywords, career gap analysis, and full how-to steps for all 3 priority actions. €2, one-time.
+              Pro unlocks your bullet rewrites, how to fix every red flag, missing ATS keywords, career gap analysis, and full how-to steps for all 3 priority actions. €1.99, one-time.
             </p>
           </div>
           <div className={styles.upgradeBannerActions}>
-            <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock Pro — €2</button>
+            <button className={styles.upgradeBannerPro} onClick={() => setShowUpgradeModal(true)}>Unlock Pro — €1.99</button>
             <button className={styles.upgradeBannerPremium} onClick={() => setShowPlansModal(true)}>See all plans</button>
           </div>
         </div>
@@ -1134,7 +1134,7 @@ function ResultContent({ result, isPro, user, savedToHistory, setShowUpgradeModa
 const HOW_STEPS = [
   { n:'01', title:'Paste a link or drop your PDF', desc:'Portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
   { n:'02', title:'We read it like a recruiter would', desc:'CVCheck checks 7 things that actually determine whether your CV passes or fails — ATS, red flags, impact, story, and more.' },
-  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the score, first impression, impact stats, and red flag count. Pro unlocks rewrites, fixes, and priority actions — €2 one-time.' },
+  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the score, first impression, impact stats, and red flag count. Pro unlocks rewrites, fixes, and priority actions — €1.99 one-time.' },
 ]
 
 const SAMPLE_DIMS = [
@@ -1462,7 +1462,7 @@ export default function Home() {
                 </div>
                 <div className={styles.freeNote}>
                   {tier === 'free' && analysisCount >= 1
-                    ? <>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={() => setShowUpgradeModal(true)}>Unlock Pro for €2</button> to analyze again</>
+                    ? <>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={() => setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
                     : '1 free analysis · No account required'
                   }
                 </div>
@@ -1474,7 +1474,7 @@ export default function Home() {
               {[
                 { num:'8',    label:'dimensions scored per CV' },
                 { num:'~30s', label:'average analysis time' },
-                { num:'€2',   label:'one-time Pro — not a subscription' },
+                { num:'€1.99',   label:'one-time Pro — not a subscription' },
                 { num:'0',    label:'vague "consider improving" feedback' },
               ].map((s, i) => (
                 <div key={s.num} className={styles.statItem} data-reveal data-reveal-delay={i * 70}>
@@ -1590,7 +1590,7 @@ export default function Home() {
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>Pricing</p>
                   <h2 className={styles.sTitle}>No tricks, no "contact us for pricing."</h2>
-                  <p className={styles.sSub}>One free scan to see your score. Pro unlocks the full breakdown for €2 — once. Premium for unlimited.</p>
+                  <p className={styles.sSub}>One free scan to see your score. Pro unlocks the full breakdown for €1.99 — once. Premium for unlimited.</p>
                 </div>
                 <div className={styles.pricingCards} data-reveal data-reveal-delay="80">
                   {(['free','pro','premium'] as const).map(pk => {
@@ -1620,9 +1620,9 @@ export default function Home() {
                         ) : pk==='free' ? (
                           <button className={styles.pricingCtaGhost} onClick={scrollToTop}>Try free — 1 scan ↑</button>
                         ) : pk==='pro' ? (
-                          <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>Get Pro — €2</button>
+                          <button className={styles.pricingCtaAccent} onClick={() => setShowUpgradeModal(true)}>Get Pro — €1.99</button>
                         ) : (
-                          <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium — €7.99/mo</button>
+                          <button className={styles.pricingCtaDark} onClick={() => setShowUpgradeModal(true)}>Get Premium — €5.99/mo</button>
                         )}
                       </div>
                     )

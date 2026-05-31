@@ -7,7 +7,7 @@ import type { Tier, GatedAnalysisResult, AnalysisResult } from './types'
 //         Locked: rewrites, how_to_fix, missing keywords, gaps detail,
 //         missing credibility signals, top 3 actions (how+example).
 //
-// PRO   — everything unlocked for that one scan (€2 one-time)
+// PRO   — everything unlocked for that one scan (€1.99 one-time)
 //
 // PREMIUM — same as Pro, unlimited scans + history for all plans
 
@@ -32,7 +32,7 @@ export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisRes
 export const PLANS = {
   pro: {
     name: 'Pro Analysis',
-    price: '€2',
+    price: '€1.99',
     period: 'one-time',
     description: 'Full breakdown for this CV',
     features: [
@@ -43,12 +43,12 @@ export const PLANS = {
       'Top 3 priority actions with examples',
       'Saved to history',
     ],
-    cta: 'Unlock Full Analysis — €2',
+    cta: 'Unlock Full Analysis — €1.99',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PRO_PRICE_ID',
   },
   premium: {
     name: 'Premium',
-    price: '€7.99',
+    price: '€5.99',
     period: 'month',
     description: 'Unlimited full analyses',
     features: [
@@ -57,7 +57,7 @@ export const PLANS = {
       'Full history on all scans',
       'Track CV progress over time',
     ],
-    cta: 'Start Premium — €7.99/mo',
+    cta: 'Start Premium — €5.99/mo',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
   },
 } as const
