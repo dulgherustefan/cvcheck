@@ -62,7 +62,6 @@
 .navCenter {
   display: flex; gap: 0;
   position: absolute; left: 50%; transform: translateX(-50%);
-  animation: fadeUp 0.5s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .navLink {
@@ -73,7 +72,11 @@
   font-family: var(--font-sans); letter-spacing: -0.01em;
   text-decoration: none; display: block;
   position: relative;
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.navLink:nth-child(1) { animation-delay: 0.12s; }
+.navLink:nth-child(2) { animation-delay: 0.18s; }
+.navLink:nth-child(3) { animation-delay: 0.24s; }
 .navLink::after {
   content: ''; position: absolute; bottom: 0; left: 50%; right: 50%;
   height: 0.5px; background: var(--text-primary);
@@ -425,7 +428,11 @@
 .sHead {
   margin-bottom: 56px;
   display: flex; flex-direction: column; gap: 14px;
-  max-width: 520px;
+  max-width: 580px;
+  text-align: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sEyebrow {
@@ -445,7 +452,8 @@
 .sSub {
   font-size: 15.5px; color: var(--text-secondary);
   margin: 0; line-height: 1.65;
-  letter-spacing: -0.01em; max-width: 420px;
+  letter-spacing: -0.01em; max-width: 460px;
+  text-align: center;
 }
 
 /* ─── How it works ────────────────────────────────────────────── */
@@ -1200,7 +1208,6 @@
   .statsStrip { flex-wrap: wrap; }
   .statItem { min-width: 50%; border-bottom: 0.5px solid var(--border); }
   .navCenter { display: none; }
-  .sHead { text-align: center; align-items: center; }
   .statNum { font-size: 36px; }
 }
 
