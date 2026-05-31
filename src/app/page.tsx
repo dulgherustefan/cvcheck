@@ -804,9 +804,9 @@ function JobMatchesSection({ result, token, onUnlock }: {
   token: string | null
   onUnlock: () => void
 }) {
-  const [state, setState] = React.useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  const [data, setData]   = React.useState<JobsResponse | null>(null)
-  const [errMsg, setErrMsg] = React.useState('')
+  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [data, setData]   = useState<JobsResponse | null>(null)
+  const [errMsg, setErrMsg] = useState('')
 
   async function fetchJobs() {
     setState('loading')
