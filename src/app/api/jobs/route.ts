@@ -93,19 +93,22 @@ async function fetchAdzunaJobs(
     app_key:         ADZUNA_APP_KEY,
     results_per_page:'8',
     what:            query,
-    content_type:    'application/json',
     sort_by:         'relevance',
   })
 
   const url = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params}`
-  const res = await fetch(url)
+  console.log('[jobs] Adzuna request:', url.replace(ADZUNA_APP_KEY, '***'))
+
+  const res = await fetch(url, { headers: { Accept: 'application/json' } })
 
   if (!res.ok) {
     const text = await res.text()
+    console.error('[jobs] Adzuna error:', res.status, text)
     throw new Error(`Adzuna API error ${res.status}: ${text}`)
   }
 
   const data = await res.json()
+  console.log('[jobs] Adzuna results count:', data?.results?.length ?? 0)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: any[] = data?.results ?? []
 
