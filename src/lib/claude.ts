@@ -114,5 +114,21 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
   parsed.rating = toRating(parsed.total_score)
   parsed.analysis_id = randomUUID()
 
+  // Defensive fallbacks — AI occasionally omits arrays
+  parsed.red_flags                     = Array.isArray(parsed.red_flags)                          ? parsed.red_flags                     : []
+  parsed.top_3_actions                 = Array.isArray(parsed.top_3_actions)                      ? parsed.top_3_actions                 : []
+  parsed.impact                        = parsed.impact                                             ?? {}
+  parsed.impact.rewrites               = Array.isArray(parsed.impact?.rewrites)                   ? parsed.impact.rewrites               : []
+  parsed.ats                           = parsed.ats                                                ?? {}
+  parsed.ats.formatting_issues         = Array.isArray(parsed.ats?.formatting_issues)             ? parsed.ats.formatting_issues         : []
+  parsed.ats.missing_keywords          = Array.isArray(parsed.ats?.missing_keywords)              ? parsed.ats.missing_keywords          : []
+  parsed.format                        = parsed.format                                             ?? {}
+  parsed.format.issues                 = Array.isArray(parsed.format?.issues)                     ? parsed.format.issues                 : []
+  parsed.credibility                   = parsed.credibility                                        ?? {}
+  parsed.credibility.signals_present   = Array.isArray(parsed.credibility?.signals_present)       ? parsed.credibility.signals_present   : []
+  parsed.credibility.signals_missing   = Array.isArray(parsed.credibility?.signals_missing)       ? parsed.credibility.signals_missing   : []
+  parsed.career_story                  = parsed.career_story                                       ?? {}
+  parsed.career_story.gaps_or_transitions = parsed.career_story?.gaps_or_transitions              ?? ''
+
   return parsed
 }
