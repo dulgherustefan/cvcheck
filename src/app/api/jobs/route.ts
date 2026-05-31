@@ -54,34 +54,61 @@ const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY!
 function buildAdzunaQuery(
   domain: string,
   level: string,
-  trajectory: string,
+  _trajectory: string,
 ): string {
-  // Map detected_level to a term Adzuna understands
   const levelMap: Record<string, string> = {
     'student/junior': 'junior',
-    'mid-level':      '',         // omit — too generic, hurts results
+    'mid-level':      '',
     'senior':         'senior',
-    'executive':      'head of',
+    'executive':      'director',
     'unclear':        '',
   }
   const levelTerm = levelMap[level] ?? ''
 
-  // Extract the core role from trajectory (e.g. "Junior Dev → Senior Dev" → "developer")
-  // Fall back to domain if trajectory is vague
-  const domainShort = domain
-    .replace('Software Engineering', 'software engineer')
-    .replace('Frontend Development', 'frontend developer')
-    .replace('Backend Development', 'backend developer')
-    .replace('Data Science', 'data scientist')
-    .replace('Product Management', 'product manager')
-    .replace('Marketing', 'marketing')
-    .replace('Design', 'designer')
-    .replace('DevOps', 'devops engineer')
-    .replace('Finance', 'finance')
-    .replace('Sales', 'sales')
-    .toLowerCase()
+  // Normalize domain to a short searchable role — case-insensitive
+  const d = domain.toLowerCase()
+  let role = d  // fallback: use domain as-is
 
-  return [levelTerm, domainShort].filter(Boolean).join(' ').trim()
+  if (d.includes('software') || d.includes('engineer') || d.includes('developer') || d.includes('full-stack') || d.includes('fullstack')) {
+    role = 'software engineer'
+  } else if (d.includes('frontend') || d.includes('front-end') || d.includes('react') || d.includes('vue')) {
+    role = 'frontend developer'
+  } else if (d.includes('backend') || d.includes('back-end')) {
+    role = 'backend developer'
+  } else if (d.includes('data science') || d.includes('machine learning') || d.includes('ml engineer')) {
+    role = 'data scientist'
+  } else if (d.includes('data analyst') || d.includes('analytics')) {
+    role = 'data analyst'
+  } else if (d.includes('devops') || d.includes('platform engineer') || d.includes('sre')) {
+    role = 'devops engineer'
+  } else if (d.includes('product manager') || d.includes('product management')) {
+    role = 'product manager'
+  } else if (d.includes('design') || d.includes('ux') || d.includes('ui')) {
+    role = 'ux designer'
+  } else if (d.includes('marketing')) {
+    role = 'marketing manager'
+  } else if (d.includes('sales')) {
+    role = 'sales manager'
+  } else if (d.includes('finance') || d.includes('accounting')) {
+    role = 'finance manager'
+  } else if (d.includes('hr') || d.includes('human resources') || d.includes('recruiter')) {
+    role = 'hr manager'
+  } else if (d.includes('project manager') || d.includes('project management')) {
+    role = 'project manager'
+  } else if (d.includes('cybersecurity') || d.includes('security engineer')) {
+    role = 'security engineer'
+  } else if (d.includes('mobile') || d.includes('ios') || d.includes('android')) {
+    role = 'mobile developer'
+  } else if (d.includes('content') || d.includes('copywriter')) {
+    role = 'content writer'
+  }
+
+  return [levelTerm, role].filter(Boolean).join(' ').trim()
+}
+
+/** Fallback query — just the role without level prefix */
+function buildFallbackQuery(domain: string): string {
+  return buildAdzunaQuery(domain, 'unclear', '')
 }
 
 async function fetchAdzunaJobs(
@@ -194,15 +221,25 @@ export async function POST(req: NextRequest) {
     const isPro  = tier === 'pro' || tier === 'premium'
     const fitLocked = !isPro
 
-    // Build query + fetch jobs
+    // Build query + fetch jobs — with fallback to simpler query if 0 results
     const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
-    const listings = await fetchAdzunaJobs(query, country ?? 'gb')
+    let listings = await fetchAdzunaJobs(query, country ?? 'gb')
+    let queryUsed = query
+
+    if (listings.length === 0) {
+      const fallback = buildFallbackQuery(detected_domain)
+      if (fallback !== query) {
+        console.log('[jobs] 0 results, trying fallback query:', fallback)
+        listings = await fetchAdzunaJobs(fallback, country ?? 'gb')
+        queryUsed = fallback
+      }
+    }
 
     if (listings.length === 0) {
       return NextResponse.json<JobsResponse>({
         jobs:        [],
         fit_locked:  fitLocked,
-        query_used:  query,
+        query_used:  queryUsed,
       })
     }
 
@@ -235,7 +272,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json<JobsResponse>({
       jobs,
       fit_locked: fitLocked,
-      query_used: query,
+      query_used: queryUsed,
     })
   } catch (err) {
     console.error('[jobs] Error:', err)
