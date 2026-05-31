@@ -149,3 +149,12 @@ input, textarea { font-family: var(--font-sans); }
 /* AccountDropdown row hover states */
 .dd-row:hover  { background: var(--bg-subtle) !important; color: var(--text-primary) !important; }
 .dd-danger:hover { background: rgba(239,68,68,0.07) !important; color: #ef4444 !important; }
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
