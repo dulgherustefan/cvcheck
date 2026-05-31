@@ -1,12 +1,17 @@
 // src/app/api/share/route.ts
 // POST /api/share — generates (or returns existing) share_token for a roast
-// Body: { roast_id: string }
-// Auth: optional — but roast must belong to the user if user is logged in,
-//       OR roast must have no user_id (anonymous scan)
+// GET  /api/share?token=... — fetch public data for share page
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseAdmin } from '@/lib/supabase-admin'
-import { createSupabaseBrowser } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+function getAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  )
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing roast_id' }, { status: 400 })
     }
 
-    const admin = createSupabaseAdmin()
+    const admin = getAdmin()
 
     // Fetch the roast
     const { data: roast, error: fetchError } = await admin
@@ -53,14 +58,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/share?token=... — fetch public data for a share page
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
   if (!token) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 })
   }
 
-  const admin = createSupabaseAdmin()
+  const admin = getAdmin()
 
   const { data: roast, error } = await admin
     .from('roasts')

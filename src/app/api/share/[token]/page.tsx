@@ -1,6 +1,6 @@
 // src/app/share/[token]/page.tsx
 // Public share page — no auth required
-// Shows: score ring, dimension bars, first impression, red flag count, CTA
+// Next.js 15: params must be awaited (Promise<{ token: string }>)
 
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -10,13 +10,13 @@ import type { Rating } from '@/lib/types'
 import { ThemeScript } from '@/components/ThemeScript'
 
 interface SharePageProps {
-  params: { token: string }
+  params: Promise<{ token: string }>
 }
 
 async function getRoast(token: string) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cvcheck.app'
   const res = await fetch(`${baseUrl}/api/share?token=${token}`, {
-    next: { revalidate: 3600 }, // cache 1h, share pages don't change often
+    next: { revalidate: 3600 },
   })
   if (!res.ok) return null
   const data = await res.json()
@@ -24,7 +24,8 @@ async function getRoast(token: string) {
 }
 
 export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
-  const roast = await getRoast(params.token)
+  const { token } = await params
+  const roast = await getRoast(token)
   if (!roast) return { title: 'CVCheck' }
 
   const rating = RATING_LABELS[roast.rating as Rating] ?? roast.rating
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     openGraph: {
       title: `CV Score: ${roast.total_score}/100 — ${rating}`,
       description: `${domain}${level ? ` · ${level}` : ''} · See the full AI analysis and check yours free on CVCheck.`,
-      url: `https://cvcheck.app/share/${params.token}`,
+      url: `https://cvcheck.app/share/${token}`,
       siteName: 'CVCheck',
       type: 'website',
     },
@@ -49,7 +50,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
   }
 }
 
-// ─── Score ring (pure SVG, no client hooks needed) ───────────────────────────
+// ─── Score ring (pure SVG, no client hooks) ───────────────────────────────────
 function ScoreRingStatic({ score, rating }: { score: number; rating: Rating }) {
   const R = 54
   const C = 2 * Math.PI * R
@@ -61,18 +62,14 @@ function ScoreRingStatic({ score, rating }: { score: number; rating: Rating }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <svg width="140" height="140" viewBox="0 0 140 140" style={{ overflow: 'visible' }}>
-        {/* Track */}
         <circle cx="70" cy="70" r={R} fill="none" stroke="var(--border)" strokeWidth="7"/>
-        {/* Progress */}
         <circle
           cx="70" cy="70" r={R} fill="none"
           stroke={color} strokeWidth="7"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${C}`}
           transform="rotate(-90 70 70)"
-          style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.22,1,0.36,1)' }}
         />
-        {/* Score number */}
         <text x="70" y="67" textAnchor="middle" dominantBaseline="middle"
           style={{ fontSize: 28, fontWeight: 800, fill: 'var(--text-primary)', fontFamily: 'DM Serif Display, serif', letterSpacing: '-1px' }}>
           {score}
@@ -103,10 +100,12 @@ function DimBar({ label, score, max }: { label: string; score: number; max: numb
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{score}<span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 400 }}>/{max}</span></span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>
+          {score}<span style={{ fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 400 }}>/{max}</span>
+        </span>
       </div>
       <div style={{ height: 5, borderRadius: 3, background: 'var(--bg-muted)', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 3, background: color, transition: 'width 0.8s cubic-bezier(0.22,1,0.36,1)' }}/>
+        <div style={{ height: '100%', width: `${pct}%`, borderRadius: 3, background: color }}/>
       </div>
     </div>
   )
@@ -114,18 +113,20 @@ function DimBar({ label, score, max }: { label: string; score: number; max: numb
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function SharePage({ params }: SharePageProps) {
-  const roast = await getRoast(params.token)
+  const { token } = await params
+  const roast = await getRoast(token)
   if (!roast) notFound()
 
-  const rating    = roast.rating as Rating
-  const score     = roast.total_score as number
-  const domain    = roast.detected_domain ?? 'Professional'
-  const level     = roast.detected_level  ?? ''
-  const scores    = roast.scores  as Record<string, number> ?? {}
-  const fi        = roast.first_impression as { verdict?: string; summary?: string } | null
-  const redFlags  = (roast.red_flags as Array<{ severity: string }>) ?? []
+  const rating   = roast.rating as Rating
+  const score    = roast.total_score as number
+  const domain   = roast.detected_domain ?? 'Professional'
+  const level    = roast.detected_level  ?? ''
+  const scores   = (roast.scores as Record<string, number>) ?? {}
+  const fi       = roast.first_impression as { verdict?: string; summary?: string } | null
+  const redFlags = (roast.red_flags as Array<{ severity: string }>) ?? []
   const highFlags = redFlags.filter(f => f.severity === 'high').length
   const midFlags  = redFlags.filter(f => f.severity === 'medium').length
+  const lowFlags  = redFlags.length - highFlags - midFlags
 
   return (
     <>
@@ -139,13 +140,12 @@ export default async function SharePage({ params }: SharePageProps) {
         flexDirection: 'column',
       }}>
 
-        {/* ── Header ── */}
+        {/* Header */}
         <header style={{
           borderBottom: '0.5px solid var(--border)',
           padding: '0 24px',
           height: 52,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          maxWidth: 1280, margin: '0 auto', width: '100%',
         }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--text-primary)' }}>
             <div style={{ width: 26, height: 26, borderRadius: 5, background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -158,56 +158,50 @@ export default async function SharePage({ params }: SharePageProps) {
           <Link href="/" style={{
             fontSize: 12, fontWeight: 600,
             color: 'var(--bg)', background: 'var(--text-primary)',
-            border: 'none', borderRadius: 4, padding: '6px 14px',
+            borderRadius: 4, padding: '6px 14px',
             textDecoration: 'none', letterSpacing: '-0.01em',
-            transition: 'opacity 0.1s',
           }}>
             Check your CV free →
           </Link>
         </header>
 
-        {/* ── Main ── */}
+        {/* Main */}
         <main style={{ flex: 1, padding: '48px 24px 80px', maxWidth: 640, margin: '0 auto', width: '100%' }}>
 
-          {/* Eyebrow */}
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 24 }}>
             CV Analysis · Shared Result
           </p>
 
-          {/* Domain + level pill */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
+          {/* Domain + level pills */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 32, flexWrap: 'wrap' as const }}>
             {domain && (
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 3, background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)', color: 'var(--accent)' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 3, background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)', color: 'var(--accent)' }}>
                 {domain}
               </span>
             )}
             {level && (
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 3, background: 'var(--bg-subtle)', border: '0.5px solid var(--border)', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 3, background: 'var(--bg-subtle)', border: '0.5px solid var(--border)', color: 'var(--text-secondary)' }}>
                 {level}
               </span>
             )}
           </div>
 
-          {/* Score ring + dimensions — side by side on desktop */}
-          <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap' }}>
+          {/* Score ring + dimension bars */}
+          <div style={{ display: 'flex', gap: 40, alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap' as const }}>
             <ScoreRingStatic score={score} rating={rating}/>
-
-            {/* Dimension bars */}
-            <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {SCORE_DIMENSIONS.map(dim => {
-                const val = scores[dim.key] ?? 0
-                return <DimBar key={dim.key} label={dim.label} score={val} max={dim.max}/>
-              })}
+            <div style={{ flex: 1, minWidth: 220, display: 'flex', flexDirection: 'column' as const, gap: 12 }}>
+              {SCORE_DIMENSIONS.map(dim => (
+                <DimBar key={dim.key} label={dim.label} score={scores[dim.key] ?? 0} max={dim.max}/>
+              ))}
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ height: '0.5px', background: 'var(--border)', marginBottom: 28 }}/>
 
           {/* First impression */}
           {fi?.summary && (
             <div style={{ marginBottom: 28 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 10 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--text-tertiary)', marginBottom: 10 }}>
                 7-Second Test
               </p>
               {fi.verdict && (
@@ -221,15 +215,15 @@ export default async function SharePage({ params }: SharePageProps) {
             </div>
           )}
 
-          {/* Red flags summary */}
+          {/* Red flags */}
           {redFlags.length > 0 && (
             <>
               <div style={{ height: '0.5px', background: 'var(--border)', marginBottom: 28 }}/>
               <div style={{ marginBottom: 28 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 10 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--text-tertiary)', marginBottom: 10 }}>
                   Red Flags Found
                 </p>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
                   {highFlags > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 5, background: 'rgba(220,38,38,0.06)', border: '0.5px solid rgba(220,38,38,0.2)' }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--score-low)', flexShrink: 0 }}/>
@@ -242,10 +236,10 @@ export default async function SharePage({ params }: SharePageProps) {
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--score-mid)' }}>{midFlags} medium severity</span>
                     </div>
                   )}
-                  {(redFlags.length - highFlags - midFlags) > 0 && (
+                  {lowFlags > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 5, background: 'var(--bg-subtle)', border: '0.5px solid var(--border)' }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--text-tertiary)', flexShrink: 0 }}/>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{redFlags.length - highFlags - midFlags} low severity</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{lowFlags} low severity</span>
                     </div>
                   )}
                 </div>
@@ -256,19 +250,18 @@ export default async function SharePage({ params }: SharePageProps) {
             </>
           )}
 
-          {/* Divider */}
           <div style={{ height: '0.5px', background: 'var(--border)', marginBottom: 32 }}/>
 
           {/* CTA */}
           <div style={{
-            padding: '28px 28px',
+            padding: '28px',
             borderRadius: 8,
             border: '0.5px solid var(--accent-border)',
             background: 'var(--accent-subtle)',
-            display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'flex-start',
+            display: 'flex', flexDirection: 'column' as const, gap: 14, alignItems: 'flex-start',
           }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: 6 }}>
                 Free · No credit card
               </p>
               <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.8px', margin: 0, color: 'var(--text-primary)', lineHeight: 1.25 }}>
@@ -294,12 +287,11 @@ export default async function SharePage({ params }: SharePageProps) {
 
         </main>
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <footer style={{
           borderTop: '0.5px solid var(--border)',
           padding: '16px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          maxWidth: 1280, margin: '0 auto', width: '100%',
         }}>
           <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>CVCheck © 2026</span>
           <div style={{ display: 'flex', gap: 16 }}>
