@@ -48,6 +48,73 @@ const ADZUNA_APP_ID  = process.env.ADZUNA_APP_ID!
 const ADZUNA_APP_KEY = process.env.ADZUNA_APP_KEY!
 
 /**
+ * Countries officially supported by Adzuna API.
+ * Full list: https://developer.adzuna.com/
+ */
+const ADZUNA_SUPPORTED = new Set([
+  'gb', 'us', 'ca', 'au', 'de', 'nl', 'sg', 'at', 'be', 'br', 'in', 'nz', 'pl', 'za',
+  'fr', 'it', 'es', 'ru', 'mx', 'ar',
+])
+
+/**
+ * For countries not supported by Adzuna, map to the most relevant
+ * nearby/similar markets. Remote-friendly EU markets are best for RO, etc.
+ */
+const COUNTRY_FALLBACK_MAP: Record<string, string[]> = {
+  // Eastern Europe → EU remote-friendly markets
+  ro: ['gb', 'nl', 'de', 'pl'],
+  ua: ['pl', 'de', 'gb', 'nl'],
+  md: ['ro', 'gb', 'de', 'nl'],
+  bg: ['gb', 'de', 'nl', 'pl'],
+  rs: ['de', 'gb', 'nl', 'at'],
+  hr: ['de', 'at', 'gb', 'nl'],
+  sk: ['de', 'at', 'pl', 'gb'],
+  cz: ['de', 'gb', 'nl', 'at'],
+  hu: ['de', 'at', 'gb', 'nl'],
+  // Nordics (not directly supported)
+  se: ['gb', 'de', 'nl', 'us'],
+  dk: ['gb', 'de', 'nl', 'us'],
+  no: ['gb', 'de', 'nl', 'us'],
+  fi: ['gb', 'de', 'nl', 'us'],
+  // Other EU
+  pt: ['gb', 'es', 'de', 'nl'],
+  gr: ['gb', 'de', 'nl', 'at'],
+  // Asia/Pacific not covered
+  jp: ['sg', 'au', 'gb', 'us'],
+  kr: ['sg', 'au', 'gb', 'us'],
+  // Middle East
+  ae: ['gb', 'sg', 'us', 'in'],
+  il: ['gb', 'us', 'de', 'nl'],
+  // Africa
+  ng: ['za', 'gb', 'us', 'in'],
+  ke: ['za', 'gb', 'us', 'in'],
+  // Latin America
+  co: ['us', 'br', 'ar', 'mx'],
+  cl: ['ar', 'br', 'us', 'mx'],
+  pe: ['ar', 'br', 'us', 'mx'],
+}
+
+/**
+ * Resolve a user's country to a list of Adzuna-supported countries to search.
+ * - If supported: search that country first, then diversify with others
+ * - If unsupported: use regional fallback, add remote-first markets
+ */
+function resolveSearchCountries(userCountry: string): string[] {
+  const c = userCountry.toLowerCase()
+
+  if (ADZUNA_SUPPORTED.has(c)) {
+    // Supported — prioritize user's country, then diversify
+    const others = ['gb', 'us', 'nl', 'de', 'ca'].filter(x => x !== c)
+    return [c, ...others]
+  }
+
+  // Not supported — use fallback map or default EU remote markets
+  const fallback = COUNTRY_FALLBACK_MAP[c] ?? ['gb', 'nl', 'de', 'us']
+  console.log(`[jobs] Country '${c}' not supported by Adzuna, using fallback: ${fallback.join(', ')}`)
+  return fallback
+}
+
+/**
  * Build a clean, focused Adzuna search query from CV metadata.
  * We keep it short (2-4 words) so results are relevant.
  */
@@ -65,9 +132,8 @@ function buildAdzunaQuery(
   }
   const levelTerm = levelMap[level] ?? ''
 
-  // Normalize domain to a short searchable role — case-insensitive
   const d = domain.toLowerCase()
-  let role = d  // fallback: use domain as-is
+  let role = d
 
   if (d.includes('software') || d.includes('engineer') || d.includes('developer') || d.includes('full-stack') || d.includes('fullstack')) {
     role = 'software engineer'
@@ -111,13 +177,11 @@ function buildFallbackQuery(domain: string): string {
   return buildAdzunaQuery(domain, 'unclear', '')
 }
 
-// Countries to search across — covers most job markets
-const ADZUNA_COUNTRIES = ['gb', 'us', 'ca', 'au', 'de', 'nl', 'sg', 'at', 'be', 'br', 'in', 'nz', 'pl', 'za']
-
 async function fetchAdzunaJobsFromCountry(
   query: string,
   country: string,
-  perPage: number = 3,
+  perPage: number = 2,
+  remoteOnly: boolean = false,
 ): Promise<JobListing[]> {
   const params = new URLSearchParams({
     app_id:           ADZUNA_APP_ID,
@@ -126,6 +190,11 @@ async function fetchAdzunaJobsFromCountry(
     what:             query,
     sort_by:          'relevance',
   })
+
+  // For remote-only pass — filter to remote jobs
+  if (remoteOnly) {
+    params.set('what_and', 'remote')
+  }
 
   const url = `https://api.adzuna.com/v1/api/jobs/${country}/search/1?${params}`
 
@@ -145,6 +214,8 @@ async function fetchAdzunaJobsFromCountry(
       salary_min:   r.salary_min,
       salary_max:   r.salary_max,
       created:      r.created ?? new Date().toISOString(),
+      country_code: country,
+      remote:       remoteOnly || /remote/i.test(r.title ?? '') || /remote/i.test(r.description ?? ''),
     }))
   } catch {
     return []
@@ -153,25 +224,31 @@ async function fetchAdzunaJobsFromCountry(
 
 async function fetchAdzunaJobs(
   query: string,
-  preferredCountry?: string,
+  userCountry: string,
 ): Promise<JobListing[]> {
-  // Build country list: preferred first, then rest
-  const countries = preferredCountry && ADZUNA_COUNTRIES.includes(preferredCountry)
-    ? [preferredCountry, ...ADZUNA_COUNTRIES.filter(c => c !== preferredCountry)]
-    : ADZUNA_COUNTRIES
+  const isSupported = ADZUNA_SUPPORTED.has(userCountry.toLowerCase())
+  const countries   = resolveSearchCountries(userCountry)
 
-  // Fetch top 4 countries in parallel (3 results each = up to 12 total)
-  const topCountries = countries.slice(0, 4)
+  // Take top 5 countries, 2 results each = up to 10 total (better diversity)
+  const topCountries = countries.slice(0, 5)
   console.log('[jobs] Fetching from countries:', topCountries.join(', '), '| query:', query)
 
-  const results = await Promise.allSettled(
-    topCountries.map(c => fetchAdzunaJobsFromCountry(query, c, 3))
-  )
+  // For unsupported countries, also fetch remote jobs specifically
+  const fetchTasks: Promise<JobListing[]>[] = [
+    ...topCountries.map(c => fetchAdzunaJobsFromCountry(query, c, 2, false)),
+    ...(!isSupported
+      ? [fetchAdzunaJobsFromCountry(query, 'gb', 3, true)]  // extra remote pass from GB
+      : []
+    ),
+  ]
+
+  const results = await Promise.allSettled(fetchTasks)
 
   const listings: JobListing[] = []
   results.forEach((r, i) => {
     if (r.status === 'fulfilled') {
-      console.log(`[jobs] ${topCountries[i]}: ${r.value.length} results`)
+      const label = i < topCountries.length ? topCountries[i] : 'gb-remote'
+      console.log(`[jobs] ${label}: ${r.value.length} results`)
       listings.push(...r.value)
     }
   })
@@ -234,7 +311,6 @@ gaps: exactly 3 short strings (max 10 words) — specific skills or experience m
     .trim()
 
   const parsed = JSON.parse(text) as JobFitAnalysis
-  // Free users: hide gaps
   if (!isPro) parsed.gaps = []
   return parsed
 }
@@ -258,15 +334,17 @@ export async function POST(req: NextRequest) {
     const userId    = await getUserIdFromRequest(req)
     const tier      = await getTierForUser(userId)
     const isPro     = tier === 'pro' || tier === 'premium'
-    const fitLocked = !isPro  // free = gaps locked, strengths always visible
+    const fitLocked = !isPro
 
-    // Detect country from IP if not provided
-    const detectedCountry = country
+    // Detect country from IP if not provided in body
+    const detectedCountry = (
+      country
       ?? req.headers.get('x-vercel-ip-country')?.toLowerCase()
       ?? req.headers.get('cf-ipcountry')?.toLowerCase()
       ?? 'gb'
+    )
 
-    console.log('[jobs] Country:', detectedCountry, '(provided:', country, ')')
+    console.log('[jobs] Country:', detectedCountry, '| supported:', ADZUNA_SUPPORTED.has(detectedCountry))
 
     // Build query + fetch jobs — with fallback to simpler query if 0 results
     const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
@@ -291,7 +369,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Analyze fit for ALL tiers — free gets strengths only, pro+ gets gaps too
+    // Analyze fit for up to 8 listings
     const toAnalyze = listings.slice(0, 8)
 
     const fitResults = await Promise.allSettled(
