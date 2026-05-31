@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract enough content to analyze' }, { status: 422 })
     }
 
-    const result = await getRoast(content)
+    const result = await getRoast(content, tier)
     const gated = gateResult(result, tier)
 
     if (userId) {

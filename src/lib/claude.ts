@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { SYSTEM_PROMPT } from './prompt'
-import type { AnalysisResult, CVScores, Rating } from './types'
+import { SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO } from './prompt'
+import type { AnalysisResult, CVScores, Rating, Tier } from './types'
 import { randomUUID } from 'crypto'
 
 const client = new Anthropic({
@@ -47,13 +47,15 @@ function prepareContent(raw: string): string {
     .slice(0, MAX_CONTENT_CHARS)
 }
 
-export async function getRoast(content: string): Promise<AnalysisResult> {
+export async function getRoast(content: string, tier: Tier): Promise<AnalysisResult> {
   const prepared = prepareContent(content)
+  const isPro = tier === 'pro' || tier === 'premium'
+  const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 6000,
-    system: SYSTEM_PROMPT,
+    max_tokens: isPro ? 6000 : 3000,
+    system: systemPrompt,
     messages: [
       {
         role: 'user',
