@@ -568,6 +568,11 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
               History
             </button>
+            {/* Saved Jobs */}
+            <button className="dd-row" onClick={() => { router.push('/history?tab=saved'); setOpen(false) }} style={ddItem}>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Saved jobs
+            </button>
             <button className="dd-row" onClick={() => { onOpenPlans(); setOpen(false) }} style={ddItem}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
               Plans

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -633,9 +633,12 @@ function EmptySavedJobs() {
 export default function HistoryPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Tab state
-  const [tab, setTab] = useState<'analyses' | 'saved'>('analyses')
+  // Read ?tab=saved from URL (set by AccountDropdown "Saved jobs" link)
+  const [tab, setTab] = useState<'analyses' | 'saved'>(
+    searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
+  )
 
   // Analyses state
   const [entries,     setEntries]     = useState<HistoryEntry[]>([])
