@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -630,7 +630,7 @@ function EmptySavedJobs() {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function HistoryPage() {
+function HistoryContent() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -934,5 +934,13 @@ export default function HistoryPage() {
 
       {selected && <DetailDrawer entry={selected} onClose={() => setSelected(null)} />}
     </div>
+  )
+}
+
+export default function HistoryPage() {
+  return (
+    <Suspense fallback={null}>
+      <HistoryContent />
+    </Suspense>
   )
 }
