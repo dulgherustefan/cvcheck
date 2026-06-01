@@ -760,9 +760,10 @@ function FitBadge({ label, score }: { label: string; score: number }) {
   )
 }
 
-function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus }: {
+function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus, onSaveChange }: {
   job: JobMatchType; fitLocked: boolean; onUnlock: () => void; blurred?: boolean
   token: string | null; initialStatus?: 'none' | 'saved' | 'applied'
+  onSaveChange?: (id: string, status: 'none' | 'saved' | 'applied') => void
 }) {
   const { listing, fit } = job
   const [saved, setSaved]     = useState<'none'|'saved'|'applied'>(initialStatus ?? 'none')
@@ -788,6 +789,7 @@ function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus }: {
 
     // Optimistic update
     setSaved(next)
+    onSaveChange?.(listing.id, next)
 
     if (!token) {
       // Anonymous: localStorage only
@@ -1001,6 +1003,18 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
     }
   }
 
+  // Update local savedStatuses when user saves/unsaves from JobCard
+  function handleSaveChange(id: string, status: 'none' | 'saved' | 'applied') {
+    setSavedStatuses(prev => {
+      if (status === 'none') {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      }
+      return { ...prev, [id]: status }
+    })
+  }
+
   const filteredJobs = data?.jobs.filter(j => {
     if (filter === 'all') return true
     return j.fit?.fit_label === filter
@@ -1113,6 +1127,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                     blurred={!isPremium && idx >= FREE_LIMIT}
                     token={token}
                     initialStatus={savedStatuses[job.listing.id]}
+                    onSaveChange={handleSaveChange}
                   />
                 ))}
               </div>
