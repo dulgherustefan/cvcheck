@@ -263,6 +263,181 @@ async function fetchRemotiveJobs(domain: string, level: string): Promise<JobList
   }
 }
 
+// ── Jobicy fetcher (free, remote-only, no API key) ────────────────────────────
+
+const JOBICY_CATEGORY_MAP: Record<string, string> = {
+  'software engineer':  'engineering',
+  'frontend developer': 'engineering',
+  'backend developer':  'engineering',
+  'mobile developer':   'engineering',
+  'data scientist':     'data-science',
+  'data analyst':       'data-science',
+  'devops engineer':    'devops-sysadmin',
+  'security engineer':  'engineering',
+  'product manager':    'product',
+  'ux designer':        'design',
+  'marketing manager':  'marketing',
+  'content writer':     'copywriting',
+  'sales manager':      'sales',
+  'finance manager':    'finance',
+  'hr manager':         'hr',
+  'project manager':    'project-management',
+}
+
+async function fetchJobicyJobs(domain: string, level: string): Promise<JobListing[]> {
+  try {
+    const role     = buildAdzunaQuery(domain, 'unclear', '')
+    const category = JOBICY_CATEGORY_MAP[role] ?? 'engineering'
+    const levelMap: Record<string, string> = {
+      'student/junior': 'junior',
+      'senior':         'senior',
+      'executive':      'executive',
+    }
+    const tag = levelMap[level] ?? ''
+    const params = new URLSearchParams({ count: '6', category })
+    if (tag) params.set('tag', tag)
+
+    const url = `https://jobicy.com/api/v2/remote-jobs?${params}`
+    const res  = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return []
+    const data = await res.json()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data?.jobs ?? []).slice(0, 6).map((j: any) => ({
+      id:           `jobicy-${j.id}`,
+      title:        j.jobTitle   ?? 'Untitled',
+      company:      j.companyName ?? 'Unknown company',
+      location:     j.jobGeo     || 'Worldwide (Remote)',
+      description:  (j.jobExcerpt ?? j.jobDescription ?? '')
+                      .replace(/<[^>]+>/g, ' ')
+                      .replace(/\s+/g, ' ')
+                      .trim()
+                      .slice(0, 600),
+      redirect_url: j.url        ?? '',
+      salary_min:   j.annualSalaryMin  ? Number(j.annualSalaryMin)  : undefined,
+      salary_max:   j.annualSalaryMax  ? Number(j.annualSalaryMax)  : undefined,
+      created:      j.pubDate          ?? new Date().toISOString(),
+      country_code: 'remote',
+      remote:       true,
+      source:       'jobicy',
+    }))
+  } catch (err) {
+    console.error('[jobicy] Error:', err)
+    return []
+  }
+}
+
+// ── The Muse fetcher (free, no API key required for basic use) ────────────────
+
+const MUSE_CATEGORY_MAP: Record<string, string> = {
+  'software engineer':  'Software Engineer',
+  'frontend developer': 'Front-End Engineer',
+  'backend developer':  'Back-End Engineer',
+  'mobile developer':   'Mobile Developer/Engineer',
+  'data scientist':     'Data Scientist',
+  'data analyst':       'Data Analyst',
+  'devops engineer':    'DevOps/Infrastructure Engineer',
+  'product manager':    'Product Manager',
+  'ux designer':        'UX/UI Designer',
+  'marketing manager':  'Marketing Manager',
+  'content writer':     'Content Writer',
+  'sales manager':      'Account Executive',
+  'project manager':    'Project Manager',
+}
+
+async function fetchMuseJobs(domain: string, level: string): Promise<JobListing[]> {
+  try {
+    const role     = buildAdzunaQuery(domain, 'unclear', '')
+    const category = MUSE_CATEGORY_MAP[role] ?? role
+    const levelMap: Record<string, string> = {
+      'student/junior': 'Entry Level',
+      'mid-level':      'Mid Level',
+      'senior':         'Senior Level',
+      'executive':      'Senior Level',
+    }
+    const museLevel = levelMap[level] ?? ''
+
+    const params = new URLSearchParams({ category, page: '0', page_size: '5' })
+    if (museLevel) params.set('level', museLevel)
+
+    const url = `https://www.themuse.com/api/public/jobs?${params}`
+    const res  = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return []
+    const data = await res.json()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data?.results ?? []).slice(0, 5).map((j: any) => {
+      const loc     = j.locations?.[0]?.name ?? 'Flexible'
+      const isRemote = /remote|flexible/i.test(loc)
+      return {
+        id:           `muse-${j.id}`,
+        title:        j.name            ?? 'Untitled',
+        company:      j.company?.name   ?? 'Unknown company',
+        location:     loc,
+        description:  (j.contents ?? '')
+                        .replace(/<[^>]+>/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .slice(0, 600),
+        redirect_url: j.refs?.landing_page ?? '',
+        salary_min:   undefined,
+        salary_max:   undefined,
+        created:      j.publication_date ?? new Date().toISOString(),
+        country_code: isRemote ? 'remote' : 'us',
+        remote:       isRemote,
+        source:       'themuse',
+      }
+    })
+  } catch (err) {
+    console.error('[themuse] Error:', err)
+    return []
+  }
+}
+
+// ── Arbeitnow fetcher (free, Europe-focused, great for RO + Eastern Europe) ───
+
+async function fetchArbeitnowJobs(domain: string, level: string): Promise<JobListing[]> {
+  try {
+    const role  = buildAdzunaQuery(domain, 'unclear', '')
+    const levelMap: Record<string, string> = {
+      'student/junior': 'junior',
+      'senior':         'senior',
+      'executive':      'lead',
+    }
+    const levelTerm = levelMap[level] ?? ''
+    const q = [levelTerm, role].filter(Boolean).join(' ')
+
+    const params = new URLSearchParams({ q, page: '1' })
+    const url    = `https://www.arbeitnow.com/api/job-board-api?${params}`
+    const res    = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return []
+    const data = await res.json()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data?.data ?? []).slice(0, 6).map((j: any) => ({
+      id:           `arbeitnow-${j.slug ?? Math.random()}`,
+      title:        j.title       ?? 'Untitled',
+      company:      j.company_name ?? 'Unknown company',
+      location:     j.location    ?? 'Europe',
+      description:  (j.description ?? '')
+                      .replace(/<[^>]+>/g, ' ')
+                      .replace(/\s+/g, ' ')
+                      .trim()
+                      .slice(0, 600),
+      redirect_url: j.url         ?? '',
+      salary_min:   undefined,
+      salary_max:   undefined,
+      created:      j.created_at  ? new Date(j.created_at * 1000).toISOString() : new Date().toISOString(),
+      country_code: 'de', // Arbeitnow is mostly DE/EU jobs
+      remote:       j.remote ?? /remote/i.test(j.title ?? ''),
+      source:       'arbeitnow',
+    }))
+  } catch (err) {
+    console.error('[arbeitnow] Error:', err)
+    return []
+  }
+}
+
 // ── Combine + deduplicate ─────────────────────────────────────────────────────
 
 async function fetchAllJobs(
@@ -271,17 +446,29 @@ async function fetchAllJobs(
   level: string,
   userCountry: string,
 ): Promise<JobListing[]> {
-  const [adzunaListings, remotiveListings] = await Promise.allSettled([
+  const [adzunaListings, remotiveListings, jobicyListings, museListings, arbeitnowListings] = await Promise.allSettled([
     fetchAdzunaJobs(query, userCountry),
     fetchRemotiveJobs(domain, level),
+    fetchJobicyJobs(domain, level),
+    fetchMuseJobs(domain, level),
+    fetchArbeitnowJobs(domain, level),
   ])
 
   const all: JobListing[] = [
-    ...(adzunaListings.status === 'fulfilled' ? adzunaListings.value : []),
-    ...(remotiveListings.status === 'fulfilled' ? remotiveListings.value : []),
+    ...(adzunaListings.status    === 'fulfilled' ? adzunaListings.value    : []),
+    ...(remotiveListings.status  === 'fulfilled' ? remotiveListings.value  : []),
+    ...(jobicyListings.status    === 'fulfilled' ? jobicyListings.value    : []),
+    ...(museListings.status      === 'fulfilled' ? museListings.value      : []),
+    ...(arbeitnowListings.status === 'fulfilled' ? arbeitnowListings.value : []),
   ]
 
-  console.log(`[jobs] Total before dedup — adzuna: ${adzunaListings.status === 'fulfilled' ? adzunaListings.value.length : 0}, remotive: ${remotiveListings.status === 'fulfilled' ? remotiveListings.value.length : 0}`)
+  console.log(
+    `[jobs] Total before dedup — adzuna: ${adzunaListings.status === 'fulfilled' ? adzunaListings.value.length : 0}` +
+    `, remotive: ${remotiveListings.status === 'fulfilled' ? remotiveListings.value.length : 0}` +
+    `, jobicy: ${jobicyListings.status === 'fulfilled' ? jobicyListings.value.length : 0}` +
+    `, themuse: ${museListings.status === 'fulfilled' ? museListings.value.length : 0}` +
+    `, arbeitnow: ${arbeitnowListings.status === 'fulfilled' ? arbeitnowListings.value.length : 0}`
+  )
 
   // Deduplicate by normalized title+company (fuzzy: strip level words + punctuation)
   const seen = new Set<string>()
@@ -404,15 +591,15 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Analyze fit for up to 8 listings (best mix: prioritize remote for unsupported countries)
-    let toAnalyze = listings.slice(0, 10)
+    // Analyze fit for up to 12 listings (best mix: prioritize remote for unsupported countries)
+    let toAnalyze = listings.slice(0, 14)
     if (!isSupported) {
       // For unsupported countries, put remote jobs first
       const remote = toAnalyze.filter(j => j.remote)
       const local  = toAnalyze.filter(j => !j.remote)
-      toAnalyze = [...remote, ...local].slice(0, 8)
+      toAnalyze = [...remote, ...local].slice(0, 12)
     } else {
-      toAnalyze = toAnalyze.slice(0, 8)
+      toAnalyze = toAnalyze.slice(0, 12)
     }
 
     const fitResults = await Promise.allSettled(

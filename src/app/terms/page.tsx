@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service',
+  title: 'Terms of Service — CVCheck',
   description: 'Terms and conditions for using CVCheck.',
 }
 
@@ -15,51 +15,61 @@ export default function TermsPage() {
       fontFamily: 'var(--font-sans)',
     }}>
       {/* Header */}
-      <header style={{
-        borderBottom: '1px solid var(--border)',
-        padding: '0 24px',
-        height: 58,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        maxWidth: 820,
-        margin: '0 auto',
-        width: '100%',
-      }}>
-        <Link href="/" style={{
-          display: 'flex', alignItems: 'center', gap: 9,
-          textDecoration: 'none', color: 'inherit',
+      <div style={{ borderBottom: '0.5px solid var(--border)' }}>
+        <header style={{
+          padding: '0 24px',
+          height: 58,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          maxWidth: 820,
+          margin: '0 auto',
+          width: '100%',
+          boxSizing: 'border-box',
         }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 9,
-            background: 'var(--accent)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          <Link href="/" style={{
+            display: 'flex', alignItems: 'center', gap: 9,
+            textDecoration: 'none', color: 'inherit',
           }}>
-            <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+            <div style={{
+              width: 32, height: 32, borderRadius: 9,
+              background: 'var(--accent)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+            </div>
+            <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.025em' }}>CVCheck</span>
+          </Link>
+          <Link href="/" style={{
+            fontSize: 13, color: 'var(--text-secondary)',
+            display: 'flex', alignItems: 'center', gap: 5,
+            textDecoration: 'none',
+          }}>
+            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6"/>
             </svg>
-          </div>
-          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.025em' }}>CVCheck</span>
-        </Link>
-        <Link href="/" style={{
-          fontSize: 13, color: 'var(--text-secondary)',
-          display: 'flex', alignItems: 'center', gap: 5,
-          textDecoration: 'none',
-        }}>
-          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Back to CVCheck
-        </Link>
-      </header>
+            Back to CVCheck
+          </Link>
+        </header>
+      </div>
 
       {/* Content */}
-      <main style={{ maxWidth: 680, margin: '0 auto', padding: '56px 24px 96px' }}>
+      <main style={{ maxWidth: 680, margin: '0 auto', padding: '56px 24px 96px', boxSizing: 'border-box' }}>
         <div style={{ marginBottom: 48 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent-text)', margin: '0 0 10px' }}>
+          <p style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 10px',
+          }}>
             Legal
           </p>
-          <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 12px', lineHeight: 1.1 }}>
+          <h1 style={{
+            fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em',
+            margin: '0 0 12px', lineHeight: 1.1,
+            color: 'var(--text-primary)',
+          }}>
             Terms of Service
           </h1>
           <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: 0 }}>
@@ -69,74 +79,99 @@ export default function TermsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
           <Section title="What CVCheck is">
-            <p>CVCheck is an AI-powered feedback tool that analyzes CVs, portfolios, and personal websites. We use Claude (by Anthropic) to read your content and generate a score, observations, and improvement suggestions.</p>
-            <p>The feedback is generated by AI. It's designed to be useful and honest, but it's not a guarantee of employment outcomes. Different recruiters and companies look for different things — treat the feedback as one perspective, not gospel.</p>
+            <p>CVCheck (cvcheck.app) is an AI-powered tool that analyzes CVs and returns a score, detailed diagnostic, and actionable improvement suggestions. The analysis is generated by Claude, an AI model made by Anthropic.</p>
+            <p>The feedback is intended to be helpful and honest, but it is generated by AI and reflects one perspective. It is not a guarantee of any employment outcome. Different recruiters, companies, and industries have different expectations — treat the analysis as a useful signal, not a definitive verdict.</p>
           </Section>
 
-          <Section title="Using CVCheck">
+          <Section title="Acceptance of terms">
+            <p>By accessing or using CVCheck, you agree to be bound by these Terms of Service. If you do not agree, do not use the service. These terms apply to all users — free, Pro, and Premium.</p>
+          </Section>
+
+          <Section title="Acceptable use">
             <p>By using CVCheck, you agree to:</p>
             <ul>
-              <li>Only submit content you own or have the right to share (your own CV, your own website, etc.).</li>
-              <li>Not attempt to reverse-engineer, scrape, or abuse the service.</li>
-              <li>Not use CVCheck for anything illegal or harmful.</li>
-              <li>Not submit content that contains personal data of other people without their consent.</li>
+              <li>Only submit content you own or have the right to share (your own CV, your own website).</li>
+              <li>Not submit content containing personal data of third parties without their consent.</li>
+              <li>Not attempt to reverse-engineer, scrape, or abuse the service or its APIs.</li>
+              <li>Not create multiple accounts to circumvent the free analysis limit.</li>
+              <li>Not use CVCheck for anything unlawful or harmful.</li>
             </ul>
-            <p>We reserve the right to suspend access for anyone who misuses the service.</p>
+            <p>We reserve the right to suspend or terminate access for anyone who violates these terms, without prior notice.</p>
           </Section>
 
-          <Section title="Free scan">
-            <p>Each person gets one free analysis — tracked by account or IP address. Creating multiple accounts to get more free scans is a violation of these terms. If you need more analyses, the Pro plan is €2 — that's genuinely the price we think is fair.</p>
+          <Section title="Free analysis">
+            <p>Each person is entitled to one free analysis, tracked by account or IP address. Creating multiple accounts or using proxies to obtain additional free analyses is a violation of these terms and may result in account suspension.</p>
           </Section>
 
-          <Section title="Payments and refunds">
-            <p><strong>Pro (€2 one-time):</strong> A single payment that unlocks the full analysis for one CV. This is not a subscription. Once you pay, you have permanent access to that analysis.</p>
-            <p><strong>Premium (€7.99/month):</strong> A recurring subscription. You can cancel at any time from your account settings — your access continues until the end of the billing period.</p>
-            <p><strong>Refunds:</strong> If you're not happy with your purchase, email us within 7 days and we'll refund you, no questions asked. After that, refunds are at our discretion.</p>
+          <Section title="Payments and subscriptions">
+            <p><strong>Pro — €1.99 (one-time):</strong> A single payment that permanently unlocks the full analysis for one CV — including bullet rewrites, red flag fixes, missing ATS keywords, and priority actions. This is not a subscription and does not renew.</p>
+            <p><strong>Premium — €5.99/month:</strong> A recurring monthly subscription that unlocks unlimited analyses and full job matching with fit scores. You can cancel at any time from your account settings. Access continues until the end of the current billing period after cancellation.</p>
+            <p>All payments are processed securely by Stripe. By completing a purchase, you also agree to{' '}
+              <a href="https://stripe.com/legal" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
+                Stripe&apos;s Terms of Service
+              </a>.
+            </p>
           </Section>
 
-          <Section title="What we're responsible for">
-            <p>We do our best to keep CVCheck reliable and useful. That said:</p>
-            <ul>
-              <li>We can't guarantee the AI feedback is always accurate or relevant to your specific industry or role.</li>
-              <li>We're not liable for employment decisions made based on our feedback.</li>
-              <li>We're not liable for downtime, data loss, or service interruptions, though we'll work hard to minimize them.</li>
-            </ul>
-            <p>CVCheck is provided "as is". We're a small team and we're honest about what we can and can't promise.</p>
+          <Section title="Refunds">
+            <p>If you are not satisfied with your purchase, email us at <a href="mailto:hello@cvcheck.app" style={{ color: 'var(--accent)' }}>hello@cvcheck.app</a> within 7 days of payment and we will issue a full refund, no questions asked. After 7 days, refunds are considered on a case-by-case basis.</p>
+            <p>For Premium subscriptions, refunds apply only to the most recent billing period. We do not issue partial refunds for unused time within a billing period.</p>
           </Section>
 
           <Section title="Your content">
-            <p>You own your CV and the content you submit. We don't claim any rights over it. By submitting content, you give us permission to process it through our systems (including Anthropic's API) for the purpose of generating your analysis.</p>
-            <p>We don't use your CV content to train AI models or share it with third parties beyond what's needed to run the service.</p>
+            <p>You retain full ownership of your CV and any content you submit. By submitting content, you grant us a limited, non-exclusive license to process it through our systems (including Anthropic&apos;s API) solely for the purpose of generating your analysis.</p>
+            <p>We do not claim any ownership over your content. We do not use your CV content to train AI models, share it with third parties for commercial purposes, or use it for any purpose beyond running the service.</p>
+          </Section>
+
+          <Section title="Limitation of liability">
+            <p>CVCheck is provided &quot;as is&quot;, without warranties of any kind. To the maximum extent permitted by applicable law:</p>
+            <ul>
+              <li>We are not liable for employment decisions made based on our AI feedback.</li>
+              <li>We are not liable for service interruptions, data loss, or errors in the analysis.</li>
+              <li>Our total liability to you for any claim arising from use of the service shall not exceed the amount you paid us in the 3 months preceding the claim.</li>
+            </ul>
+          </Section>
+
+          <Section title="Intellectual property">
+            <p>The CVCheck name, logo, interface, and underlying technology are owned by the operator of cvcheck.app. You may not reproduce, copy, or redistribute any part of the service without written permission.</p>
+            <p>The analysis output generated for your CV is yours to use freely — share it, act on it, or ignore it as you see fit.</p>
           </Section>
 
           <Section title="Account termination">
-            <p>You can delete your account at any time from settings. When you do, we delete your personal data and analyses within 30 days.</p>
-            <p>We can terminate accounts that violate these terms. If we do, we'll tell you why unless there's a legal reason we can't.</p>
+            <p>You can delete your account at any time from your account settings. Deletion removes your personal data and analyses within 30 days.</p>
+            <p>We may terminate or suspend your account if you violate these terms. Where possible, we will notify you of the reason. Active Premium subscriptions will be canceled and prorated refunds issued if we terminate your account without cause.</p>
           </Section>
 
-          <Section title="Changes">
-            <p>We may update these terms. If the changes are significant, we'll let you know by email. Continuing to use CVCheck after changes means you accept the new terms.</p>
+          <Section title="Governing law">
+            <p>These terms are governed by the laws of Romania. Any disputes shall be subject to the jurisdiction of Romanian courts. If you are a consumer in the EU, you may also be entitled to use the EU Online Dispute Resolution platform at <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>ec.europa.eu/consumers/odr</a>.</p>
+          </Section>
+
+          <Section title="Changes to these terms">
+            <p>We may update these terms from time to time. If the changes are material, we will notify you by email at least 14 days before they take effect. Continued use of CVCheck after the effective date constitutes acceptance of the updated terms.</p>
           </Section>
 
           <Section title="Contact">
-            <p>If you have questions about these terms, email <a href="mailto:hello@cvcheck.app" style={{ color: 'var(--accent-text)' }}>hello@cvcheck.app</a>.</p>
+            <p>Questions about these terms? Email <a href="mailto:hello@cvcheck.app" style={{ color: 'var(--accent)' }}>hello@cvcheck.app</a>. We aim to respond within a few business days.</p>
           </Section>
         </div>
       </main>
 
-      <footer style={{
-        borderTop: '1px solid var(--border)',
-        padding: '20px 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        maxWidth: 820, margin: '0 auto', width: '100%',
-        fontSize: 12, color: 'var(--text-tertiary)', flexWrap: 'wrap', gap: 10,
-      }}>
-        <span>© 2026 CVCheck</span>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <Link href="/" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Home</Link>
-          <Link href="/privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</Link>
-        </div>
-      </footer>
+      {/* Footer */}
+      <div style={{ borderTop: '0.5px solid var(--border)' }}>
+        <footer style={{
+          padding: '20px 24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          maxWidth: 820, margin: '0 auto', width: '100%',
+          boxSizing: 'border-box',
+          fontSize: 12, color: 'var(--text-tertiary)', flexWrap: 'wrap', gap: 10,
+        }}>
+          <span>© 2026 CVCheck</span>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Link href="/" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Home</Link>
+            <Link href="/privacy" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Privacy</Link>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }
@@ -147,7 +182,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 style={{
         fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em',
         color: 'var(--text-primary)', margin: 0,
-        paddingBottom: 12, borderBottom: '1px solid var(--border)',
+        paddingBottom: 12, borderBottom: '0.5px solid var(--border)',
       }}>
         {title}
       </h2>
