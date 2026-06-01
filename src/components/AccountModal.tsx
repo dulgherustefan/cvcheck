@@ -226,6 +226,33 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
 
           <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
 
+          {/* Saved jobs quick link */}
+          <a
+            href="/history#saved"
+            onClick={onClose}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '9px 10px', borderRadius: 'var(--radius-md)',
+              color: 'var(--text-primary)', textDecoration: 'none',
+              fontSize: 14, fontWeight: 500,
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-subtle)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'none'}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Saved jobs
+            </span>
+            <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+
+          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
+
           {/* Sign out */}
           <button
             className="_acc-signout"

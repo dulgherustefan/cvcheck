@@ -31,6 +31,22 @@ interface HistoryEntry {
   tier?: 'free' | 'pro' | 'premium'
 }
 
+interface SavedJobEntry {
+  id: string
+  job_id: string
+  title: string
+  company: string
+  location: string | null
+  redirect_url: string
+  salary_min: number | null
+  salary_max: number | null
+  remote: boolean
+  country_code: string | null
+  status: 'saved' | 'applied'
+  saved_at: string
+  applied_at: string | null
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const RATING_LABELS: Record<Rating, string> = {
@@ -436,6 +452,113 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
   )
 }
 
+// ── Saved Job Card ────────────────────────────────────────────────────────────
+
+function SavedJobCard({ job, token, onStatusChange }: {
+  job: SavedJobEntry
+  token: string | null
+  onStatusChange: (id: string, status: 'saved' | 'applied' | 'removed') => void
+}) {
+  const [loading, setLoading] = useState(false)
+
+  const salary = job.salary_min
+    ? `${Math.round(job.salary_min / 1000)}k${job.salary_max ? `–${Math.round(job.salary_max / 1000)}k` : '+'}`
+    : null
+
+  async function handleAction(action: 'apply' | 'unapply' | 'unsave') {
+    setLoading(true)
+    try {
+      await fetch('/api/jobs/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ action, listing: { id: job.job_id, title: job.title, company: job.company, location: job.location, redirect_url: job.redirect_url, salary_min: job.salary_min, salary_max: job.salary_max, remote: job.remote, country_code: job.country_code } }),
+      })
+      if (action === 'unsave') onStatusChange(job.job_id, 'removed')
+      else if (action === 'apply') onStatusChange(job.job_id, 'applied')
+      else if (action === 'unapply') onStatusChange(job.job_id, 'saved')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 16,
+      padding: '16px 20px',
+      background: 'var(--bg-elevated)',
+      border: `1px solid ${job.status === 'applied' ? 'rgba(22,163,74,0.25)' : 'var(--border)'}`,
+      borderRadius: 'var(--radius-lg)',
+      transition: 'border-color 0.15s',
+    }}>
+      {/* Status indicator */}
+      <div style={{
+        width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 5,
+        background: job.status === 'applied' ? 'var(--score-high)' : 'var(--accent)',
+      }} />
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>
+              {job.title}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3, display: 'flex', gap: 6, flexWrap: 'wrap' as const, alignItems: 'center' }}>
+              <span>{job.company}</span>
+              {job.location && <><span style={{ color: 'var(--border-strong)' }}>·</span><span>{job.location}</span></>}
+              {salary && <><span style={{ color: 'var(--border-strong)' }}>·</span><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{salary}</span></>}
+              {job.remote && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--accent)', background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)', borderRadius: 3, padding: '1px 6px' }}>REMOTE</span>}
+            </div>
+          </div>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' as const,
+            padding: '2px 8px', borderRadius: 20, flexShrink: 0,
+            color: job.status === 'applied' ? 'var(--score-high)' : 'var(--accent)',
+            background: job.status === 'applied' ? 'rgba(22,163,74,0.08)' : 'var(--accent-subtle)',
+            border: `0.5px solid ${job.status === 'applied' ? 'rgba(22,163,74,0.25)' : 'var(--accent-border)'}`,
+          }}>
+            {job.status === 'applied' ? '✓ Applied' : 'Saved'}
+          </span>
+        </div>
+
+        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 6 }}>
+          Saved {formatDate(job.saved_at)}{job.applied_at ? ` · Applied ${formatDate(job.applied_at)}` : ''}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+          <a
+            href={job.redirect_url} target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-muted)', border: '0.5px solid var(--border-strong)', borderRadius: 4, padding: '5px 12px', textDecoration: 'none' }}
+          >
+            View job →
+          </a>
+          {job.status === 'saved' ? (
+            <button
+              onClick={() => handleAction('apply')} disabled={loading}
+              style={{ fontSize: 12, fontWeight: 600, color: 'var(--score-high)', background: 'rgba(22,163,74,0.06)', border: '0.5px solid rgba(22,163,74,0.2)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1 }}
+            >
+              Mark applied
+            </button>
+          ) : (
+            <button
+              onClick={() => handleAction('unapply')} disabled={loading}
+              style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: '0.5px solid var(--border)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1 }}
+            >
+              Undo applied
+            </button>
+          )}
+          <button
+            onClick={() => handleAction('unsave')} disabled={loading}
+            style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: '0.5px solid var(--border)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', marginLeft: 'auto', opacity: loading ? 0.5 : 1 }}
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Empty State ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
@@ -472,17 +595,61 @@ function EmptyState() {
   )
 }
 
+function EmptySavedJobs() {
+  return (
+    <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+      <div style={{
+        width: 56, height: 56, borderRadius: '50%',
+        background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <svg width="22" height="22" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>No saved jobs yet</p>
+      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px' }}>
+        Star jobs from your analysis results to track them here.
+      </p>
+      <Link href="/" style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '10px 20px',
+        background: 'var(--text-primary)', color: 'var(--bg)',
+        borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
+        textDecoration: 'none',
+      }}>
+        Find matching jobs
+        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+        </svg>
+      </Link>
+    </div>
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function HistoryPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [entries,  setEntries]  = useState<HistoryEntry[]>([])
-  const [loading,  setLoading]  = useState(true)
+
+  // Tab state
+  const [tab, setTab] = useState<'analyses' | 'saved'>('analyses')
+
+  // Analyses state
+  const [entries,     setEntries]     = useState<HistoryEntry[]>([])
+  const [loading,     setLoading]     = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore,  setHasMore]  = useState(false)
-  const [page,     setPage]     = useState(0)
-  const [selected, setSelected] = useState<HistoryEntry | null>(null)
+  const [hasMore,     setHasMore]     = useState(false)
+  const [page,        setPage]        = useState(0)
+  const [selected,    setSelected]    = useState<HistoryEntry | null>(null)
+
+  // Saved jobs state
+  const [savedJobs,        setSavedJobs]        = useState<SavedJobEntry[]>([])
+  const [savedLoading,     setSavedLoading]     = useState(false)
+  const [savedFilter,      setSavedFilter]      = useState<'all' | 'saved' | 'applied'>('all')
+  const [token,            setToken]            = useState<string | null>(null)
 
   const fetchPage = async (pageIndex: number, userId: string, append = false) => {
     const supabase = createSupabaseBrowser()
@@ -502,12 +669,39 @@ export default function HistoryPage() {
     }
   }
 
+  async function fetchSavedJobs(tok: string, status?: string) {
+    setSavedLoading(true)
+    try {
+      const url = status && status !== 'all' ? `/api/jobs/save?status=${status}` : '/api/jobs/save'
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${tok}` } })
+      const { jobs } = await res.json()
+      setSavedJobs(jobs ?? [])
+    } finally {
+      setSavedLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (authLoading) return
     if (!user) { setLoading(false); router.replace('/'); return }
 
+    // Get session token for API calls
+    const supabase = createSupabaseBrowser()
+    supabase.auth.getSession().then(({ data }) => {
+      const tok = data.session?.access_token ?? null
+      setToken(tok)
+      if (tok) fetchSavedJobs(tok)
+    })
+
     fetchPage(0, user.id).finally(() => setLoading(false))
   }, [user, authLoading, router])
+
+  // Refetch saved jobs when filter changes
+  useEffect(() => {
+    if (!token) return
+    fetchSavedJobs(token, savedFilter)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedFilter])
 
   const loadMore = async () => {
     if (!user || loadingMore) return
@@ -517,6 +711,21 @@ export default function HistoryPage() {
     setPage(next)
     setLoadingMore(false)
   }
+
+  function handleSavedJobStatusChange(jobId: string, newStatus: 'saved' | 'applied' | 'removed') {
+    if (newStatus === 'removed') {
+      setSavedJobs(prev => prev.filter(j => j.job_id !== jobId))
+    } else {
+      setSavedJobs(prev => prev.map(j =>
+        j.job_id === jobId
+          ? { ...j, status: newStatus, applied_at: newStatus === 'applied' ? new Date().toISOString() : null }
+          : j
+      ))
+    }
+  }
+
+  const savedCount   = savedJobs.filter(j => j.status === 'saved').length
+  const appliedCount = savedJobs.filter(j => j.status === 'applied').length
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
@@ -568,73 +777,148 @@ export default function HistoryPage() {
       {/* Main content */}
       <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '40px 32px' }}>
 
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px', letterSpacing: '-0.03em' }}>
-            Analysis history
+        {/* Page title + tabs */}
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px', letterSpacing: '-0.03em' }}>
+            History
           </h1>
-          {!loading && entries.length > 0 && (
-            <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: 0 }}>
-              {entries.length} {entries.length === 1 ? 'analysis' : 'analyses'} saved
-            </p>
-          )}
-        </div>
 
-        {/* Loading skeleton */}
-        {(loading && !authLoading) && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[1, 2, 3].map(i => (
-              <div key={i} style={{
-                height: 90, borderRadius: 'var(--radius-lg)',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                animation: 'pulse 1.5s ease-in-out infinite',
-                opacity: 1 - i * 0.15,
-              }} />
-            ))}
-            <style>{`@keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && !authLoading && entries.length === 0 && <EmptyState />}
-
-        {/* Entries */}
-        {!loading && !authLoading && entries.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {entries.map(entry => (
-              <HistoryCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
-            ))}
-            {hasMore && (
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
+            {([
+              { key: 'analyses', label: 'Analyses', count: entries.length },
+              { key: 'saved',    label: 'Saved Jobs', count: savedJobs.length },
+            ] as const).map(t => (
               <button
-                onClick={loadMore}
-                disabled={loadingMore}
+                key={t.key}
+                onClick={() => setTab(t.key)}
                 style={{
-                  marginTop: 8,
-                  padding: '11px 20px',
-                  background: 'transparent',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-secondary)',
-                  fontSize: 13, fontWeight: 500,
-                  cursor: loadingMore ? 'default' : 'pointer',
-                  opacity: loadingMore ? 0.5 : 1,
-                  transition: 'border-color 0.15s, color 0.15s',
-                  fontFamily: 'var(--font-sans)',
-                }}
-                onMouseEnter={e => {
-                  if (!loadingMore) {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
-                    ;(e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'
-                  }
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-                  ;(e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'
+                  fontSize: 13, fontWeight: 600,
+                  color: tab === t.key ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  background: 'none', border: 'none',
+                  borderBottom: `2px solid ${tab === t.key ? 'var(--text-primary)' : 'transparent'}`,
+                  padding: '8px 14px', marginBottom: -1,
+                  cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  transition: 'color 0.15s',
+                  display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
-                {loadingMore ? 'Loading…' : 'Load more'}
+                {t.label}
+                {t.count > 0 && (
+                  <span style={{
+                    fontSize: 10, fontWeight: 700,
+                    color: tab === t.key ? 'var(--bg)' : 'var(--text-tertiary)',
+                    background: tab === t.key ? 'var(--text-primary)' : 'var(--bg-muted)',
+                    borderRadius: 20, padding: '1px 6px',
+                    minWidth: 18, textAlign: 'center',
+                  }}>
+                    {t.count}
+                  </span>
+                )}
               </button>
-            )}
+            ))}
           </div>
+        </div>
+
+        {/* ── ANALYSES TAB ── */}
+        {tab === 'analyses' && (
+          <>
+            {(loading && !authLoading) && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{
+                    height: 90, borderRadius: 'var(--radius-lg)',
+                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                    opacity: 1 - i * 0.15,
+                  }} />
+                ))}
+                <style>{`@keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+              </div>
+            )}
+            {!loading && !authLoading && entries.length === 0 && <EmptyState />}
+            {!loading && !authLoading && entries.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {entries.map(entry => (
+                  <HistoryCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
+                ))}
+                {hasMore && (
+                  <button
+                    onClick={loadMore} disabled={loadingMore}
+                    style={{
+                      marginTop: 8, padding: '11px 20px',
+                      background: 'transparent', border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)',
+                      fontSize: 13, fontWeight: 500,
+                      cursor: loadingMore ? 'default' : 'pointer',
+                      opacity: loadingMore ? 0.5 : 1,
+                      transition: 'border-color 0.15s, color 0.15s',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                    onMouseEnter={e => { if (!loadingMore) { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)' } }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)' }}
+                  >
+                    {loadingMore ? 'Loading…' : 'Load more'}
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── SAVED JOBS TAB ── */}
+        {tab === 'saved' && (
+          <>
+            {/* Stats + filter */}
+            {savedJobs.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap' as const, gap: 10 }}>
+                <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <span><strong style={{ color: 'var(--text-primary)' }}>{savedCount}</strong> saved</span>
+                  <span><strong style={{ color: 'var(--score-high)' }}>{appliedCount}</strong> applied</span>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {(['all', 'saved', 'applied'] as const).map(f => (
+                    <button
+                      key={f} onClick={() => setSavedFilter(f)}
+                      style={{
+                        fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
+                        textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 4,
+                        border: `0.5px solid ${savedFilter === f ? 'var(--text-primary)' : 'var(--border)'}`,
+                        background: savedFilter === f ? 'var(--text-primary)' : 'transparent',
+                        color: savedFilter === f ? 'var(--bg)' : 'var(--text-tertiary)',
+                        cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.1s',
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {savedLoading && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ height: 110, borderRadius: 'var(--radius-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', animation: 'pulse 1.5s ease-in-out infinite', opacity: 1 - i * 0.15 }} />
+                ))}
+              </div>
+            )}
+
+            {!savedLoading && savedJobs.length === 0 && <EmptySavedJobs />}
+
+            {!savedLoading && savedJobs.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {savedJobs.map(job => (
+                  <SavedJobCard
+                    key={job.job_id}
+                    job={job}
+                    token={token}
+                    onStatusChange={handleSavedJobStatusChange}
+                  />
+                ))}
+              </div>
+            )}
+          </>
         )}
 
       </main>
@@ -645,7 +929,6 @@ export default function HistoryPage() {
         </span>
       </footer>
 
-      {/* Detail drawer */}
       {selected && <DetailDrawer entry={selected} onClose={() => setSelected(null)} />}
     </div>
   )

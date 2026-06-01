@@ -739,11 +739,6 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
 // ─── JobMatchesSection ────────────────────────────────────────────────────────
 
-// Countries where Adzuna has local listings — others get "Remote & global jobs"
-const ADZUNA_UI_SUPPORTED = new Set([
-  'gb','us','ca','au','de','nl','sg','at','be','br','in','nz','pl','za','fr','it','es','ru','mx','ar',
-])
-
 const FIT_COLORS: Record<string, string> = {
   strong:  'var(--score-high)',
   good:    '#65A30D',
@@ -760,29 +755,62 @@ function FitBadge({ label, score }: { label: string; score: number }) {
   )
 }
 
-function JobCard({ job, fitLocked, onUnlock, blurred }: { job: JobMatchType; fitLocked: boolean; onUnlock: () => void; blurred?: boolean }) {
+function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus }: {
+  job: JobMatchType; fitLocked: boolean; onUnlock: () => void; blurred?: boolean
+  token: string | null; initialStatus?: 'none' | 'saved' | 'applied'
+}) {
   const { listing, fit } = job
-  const [saved, setSaved] = useState<'none'|'saved'|'applied'>('none')
+  const [saved, setSaved]     = useState<'none'|'saved'|'applied'>(initialStatus ?? 'none')
+  const [saving, setSaving]   = useState(false)
   const [expanded, setExpanded] = useState(false)
 
   const salary = listing.salary_min
     ? `${Math.round(listing.salary_min / 1000)}k${listing.salary_max ? `–${Math.round(listing.salary_max / 1000)}k` : '+'}`
     : null
 
+  // Sync initial status from localStorage for anonymous users
   useEffect(() => {
+    if (token) return // logged in — use initialStatus from DB
     try {
       const s = localStorage.getItem(`job-${listing.id}`)
       if (s === 'saved' || s === 'applied') setSaved(s)
     } catch {}
-  }, [listing.id])
+  }, [listing.id, token])
 
-  function handleSave(status: 'saved'|'applied') {
-    const next = saved === status ? 'none' : status
+  async function handleSave(status: 'saved' | 'applied') {
+    const isToggleOff = saved === status
+    const next: 'none' | 'saved' | 'applied' = isToggleOff ? 'none' : status
+
+    // Optimistic update
     setSaved(next)
+
+    if (!token) {
+      // Anonymous: localStorage only
+      try {
+        if (next === 'none') localStorage.removeItem(`job-${listing.id}`)
+        else localStorage.setItem(`job-${listing.id}`, next)
+      } catch {}
+      return
+    }
+
+    // Logged in: persist to DB
+    setSaving(true)
     try {
-      if (next === 'none') localStorage.removeItem(`job-${listing.id}`)
-      else localStorage.setItem(`job-${listing.id}`, next)
-    } catch {}
+      const action = isToggleOff
+        ? (status === 'applied' ? 'unapply' : 'unsave')
+        : (status === 'applied' ? 'apply' : 'save')
+
+      await fetch('/api/jobs/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action, listing }),
+      })
+    } catch {
+      // Revert on error
+      setSaved(saved)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -849,16 +877,27 @@ function JobCard({ job, fitLocked, onUnlock, blurred }: { job: JobMatchType; fit
         <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" style={{ flex:1, textAlign:'center' as const, fontSize:12, fontWeight:600, color:'var(--text-primary)', background:'var(--bg-muted)', border:'0.5px solid var(--border-strong)', borderRadius:4, padding:'6px 12px', textDecoration:'none' }}>
           View job →
         </a>
-        <button onClick={() => handleSave('saved')} title="Save job" style={{ fontSize:13, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background: saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color: saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+        <button
+          onClick={() => !saving && handleSave('saved')}
+          title={saved==='saved' ? 'Unsave job' : 'Save job'}
+          style={{ fontSize:13, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background: saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color: saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor: saving?'wait':'pointer', fontFamily:'var(--font-sans)', opacity: saving ? 0.6 : 1, transition:'all 0.15s' }}>
           {saved==='saved'?'★':'☆'}
         </button>
-        <button onClick={() => handleSave('applied')} title="Mark as applied" style={{ fontSize:11, fontWeight:600, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background: saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color: saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>
+        <button
+          onClick={() => !saving && handleSave('applied')}
+          title={saved==='applied' ? 'Mark as not applied' : 'Mark as applied'}
+          style={{ fontSize:11, fontWeight:600, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background: saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color: saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor: saving?'wait':'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', opacity: saving ? 0.6 : 1, transition:'all 0.15s' }}>
           {saved==='applied'?'✓ Applied':'Applied?'}
         </button>
       </div>
     </div>
   )
 }
+
+// Countries shown as "near you" vs "remote & global"
+const ADZUNA_UI_SUPPORTED = new Set([
+  'gb','us','ca','au','de','nl','sg','at','be','br','in','nz','pl','za','fr','it','es','ru','mx','ar',
+])
 
 type FilterType = 'all' | 'strong' | 'good' | 'partial' | 'stretch'
 
@@ -868,15 +907,17 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   isPremium: boolean
   onUnlock: () => void
 }) {
-  // Cache key per analysis — survives page refresh within the same session
   const CACHE_KEY = `jobs-cache-${result.analysis_id}`
 
-  const [state, setState]   = useState<'idle'|'loading'|'done'|'error'>('idle')
-  const [data, setData]     = useState<JobsResponse | null>(null)
-  const [errMsg, setErrMsg] = useState('')
-  const [filter, setFilter] = useState<FilterType>('all')
+  const [state, setState]         = useState<'idle'|'loading'|'done'|'error'>('idle')
+  const [data, setData]           = useState<JobsResponse | null>(null)
+  const [errMsg, setErrMsg]       = useState('')
+  const [filter, setFilter]       = useState<FilterType>('all')
+  const [savedStatuses, setSavedStatuses] = useState<Record<string, 'saved'|'applied'>>({})
+  // Alert subscription state
+  const [alertState, setAlertState] = useState<'idle'|'loading'|'subscribed'|'error'>('idle')
 
-  // On mount: try sessionStorage first, fetch only if no cache
+  // Load sessionStorage cache on mount
   useEffect(() => {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY)
@@ -889,6 +930,20 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
     fetchJobs()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Load saved job statuses from DB (logged in users)
+  useEffect(() => {
+    if (!token || state !== 'done') return
+    fetch('/api/jobs/save', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(({ jobs }) => {
+        const map: Record<string, 'saved'|'applied'> = {}
+        for (const j of (jobs ?? [])) map[j.job_id] = j.status
+        setSavedStatuses(map)
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, state])
 
   async function fetchJobs() {
     setState('loading')
@@ -917,10 +972,41 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
     }
   }
 
+  async function handleAlertSubscribe() {
+    if (!token) { onUnlock(); return }
+    setAlertState('loading')
+    try {
+      const res = await fetch('/api/jobs/alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          action: 'subscribe',
+          cvMeta: {
+            detected_domain: result.detected_domain,
+            detected_level:  result.detected_level,
+            trajectory:      result.career_story.trajectory_detected,
+            keywords:        result.ats.missing_keywords ?? [],
+          },
+        }),
+      })
+      if (!res.ok) throw new Error()
+      setAlertState('subscribed')
+    } catch {
+      setAlertState('error')
+    }
+  }
+
   const filteredJobs = data?.jobs.filter(j => {
     if (filter === 'all') return true
     return j.fit?.fit_label === filter
   }) ?? []
+
+  // Count per filter for labels
+  const counts = data?.jobs.reduce((acc, j) => {
+    const l = j.fit?.fit_label
+    if (l) acc[l] = (acc[l] ?? 0) + 1
+    return acc
+  }, {} as Record<string, number>) ?? {}
 
   // Free: show first 2 full, rest blurred
   const FREE_LIMIT = 2
@@ -944,28 +1030,54 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
 
         {/* Filters */}
         {data && data.jobs.length > 0 && (
-          <div style={{ display:'flex', gap:6 }}>
-            {(['all', 'strong', 'good', 'partial', 'stretch'] as FilterType[]).map(f => (
-              <button key={f} onClick={() => setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--text-primary)':'var(--border)'}`, background: filter===f?'var(--text-primary)':'transparent', color: filter===f?'var(--bg)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s' }}>
-                {f}
-              </button>
-            ))}
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap' as const }}>
+            {(['all', 'strong', 'good', 'partial', 'stretch'] as FilterType[]).map(f => {
+              const count = f === 'all' ? data.jobs.length : (counts[f] ?? 0)
+              return (
+                <button key={f} onClick={() => setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--text-primary)':'var(--border)'}`, background: filter===f?'var(--text-primary)':'transparent', color: filter===f?'var(--bg)':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)', transition:'all 0.1s' }}>
+                  {f}{count > 0 && f !== 'all' ? ` (${count})` : f === 'all' ? ` (${count})` : ''}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
 
+      {/* Refresh + Alert row */}
       {state === 'done' && data && (
-        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:8 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+          {/* Email alert subscription */}
+          <div>
+            {alertState === 'subscribed' ? (
+              <div style={{ fontSize:12, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}>
+                <span>✓</span> Weekly job alerts activated
+              </div>
+            ) : alertState === 'error' ? (
+              <div style={{ fontSize:12, color:'var(--score-low)' }}>Failed to subscribe. Try again.</div>
+            ) : (
+              <button
+                onClick={handleAlertSubscribe}
+                disabled={alertState === 'loading'}
+                style={{ fontSize:12, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'4px 12px', cursor: alertState==='loading'?'wait':'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', opacity: alertState==='loading'?0.6:1, transition:'all 0.15s', display:'flex', alignItems:'center', gap:6 }}>
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {alertState === 'loading' ? 'Activating…' : 'Get weekly alerts'}
+              </button>
+            )}
+          </div>
+
+          {/* Refresh */}
           <button
             onClick={() => { try { sessionStorage.removeItem(CACHE_KEY) } catch {}; fetchJobs() }}
             style={{ fontSize:11, color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'3px 10px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'color 0.1s, border-color 0.1s' }}
             onMouseOver={e => { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.borderColor='var(--border-strong)' }}
-            onMouseOut={e  => { e.currentTarget.style.color='var(--text-tertiary)';  e.currentTarget.style.borderColor='var(--border)' }}
-          >
-            ↻ Refresh jobs
+            onMouseOut={e  => { e.currentTarget.style.color='var(--text-tertiary)';  e.currentTarget.style.borderColor='var(--border)' }}>
+            ↻ Refresh
           </button>
         </div>
       )}
+
       {state === 'loading' && (
         <div style={{ fontSize:13, color:'var(--text-secondary)', padding:'16px 0', display:'flex', alignItems:'center', gap:8 }}>
           <div style={{ width:14, height:14, borderRadius:'50%', border:'1.5px solid var(--border)', borderTopColor:'var(--text-primary)', animation:'spin 0.7s linear infinite' }}/>
@@ -994,6 +1106,8 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                     fitLocked={data.fit_locked}
                     onUnlock={onUnlock}
                     blurred={!isPremium && idx >= FREE_LIMIT}
+                    token={token}
+                    initialStatus={savedStatuses[job.listing.id]}
                   />
                 ))}
               </div>
