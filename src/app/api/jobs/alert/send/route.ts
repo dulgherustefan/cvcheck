@@ -48,7 +48,7 @@ async function fetchJobsForAlert(domain: string, level: string): Promise<Array<{
       fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(query)}&limit=4`, { headers: { Accept: 'application/json' } }),
     ])
 
-    const jobs: typeof [] = []
+    const jobs: Array<{ title: string; company: string; location: string; redirect_url: string; description: string; salary_min?: number; salary_max?: number }> = []
 
     if (adzunaRes.status === 'fulfilled' && adzunaRes.value.ok) {
       const data = await adzunaRes.value.json()
