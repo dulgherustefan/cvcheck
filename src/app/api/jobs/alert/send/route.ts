@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { Resend } from 'resend'
-import { buildJobAlertEmail } from '../route'
+import { buildJobAlertEmail } from '@/lib/email-templates'
 import Anthropic from '@anthropic-ai/sdk'
 
 export const runtime = 'nodejs'
