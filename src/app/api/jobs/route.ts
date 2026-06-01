@@ -161,7 +161,7 @@ async function fetchAdzunaJobsFromCountry(
       title:        r.title ?? 'Untitled',
       company:      r.company?.display_name ?? 'Unknown company',
       location:     r.location?.display_name ?? country.toUpperCase(),
-      description:  (r.description ?? '').slice(0, 600).replace(/\s+/g, ' ').trim(),
+      description:  (r.description ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 600),
       redirect_url: r.redirect_url ?? '',
       salary_min:   r.salary_min,
       salary_max:   r.salary_max,
@@ -283,10 +283,15 @@ async function fetchAllJobs(
 
   console.log(`[jobs] Total before dedup — adzuna: ${adzunaListings.status === 'fulfilled' ? adzunaListings.value.length : 0}, remotive: ${remotiveListings.status === 'fulfilled' ? remotiveListings.value.length : 0}`)
 
-  // Deduplicate by normalized title+company
+  // Deduplicate by normalized title+company (fuzzy: strip level words + punctuation)
   const seen = new Set<string>()
+  const normalize = (s: string) =>
+    s.toLowerCase()
+     .replace(/\b(senior|junior|lead|staff|principal|head of|vp|director)\b/g, '')
+     .replace(/[^a-z0-9]/g, '')
+     .trim()
   return all.filter(j => {
-    const key = `${j.title.toLowerCase().trim()}-${j.company.toLowerCase().trim()}`
+    const key = `${normalize(j.title)}-${normalize(j.company)}`
     if (seen.has(key)) return false
     seen.add(key)
     return true

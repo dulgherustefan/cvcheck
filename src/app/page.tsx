@@ -770,7 +770,7 @@ function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus, onSa
   const [saving, setSaving]   = useState(false)
   const [expanded, setExpanded] = useState(false)
 
-  const salary = listing.salary_min
+  const salary = listing.salary_min && listing.salary_min >= 1000
     ? `${Math.round(listing.salary_min / 1000)}k${listing.salary_max ? `–${Math.round(listing.salary_max / 1000)}k` : '+'}`
     : null
 
@@ -914,7 +914,9 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   isPremium: boolean
   onUnlock: () => void
 }) {
-  const CACHE_KEY = `jobs-cache-${result.analysis_id}`
+  const CACHE_KEY         = `jobs-cache-${result.analysis_id}`
+  const SAVED_CACHE_KEY   = `jobs-saved-${result.analysis_id}`
+  const CACHE_TTL_MS      = 24 * 60 * 60 * 1000 // 24h
 
   const [state, setState]         = useState<'idle'|'loading'|'done'|'error'>('idle')
   const [data, setData]           = useState<JobsResponse | null>(null)
@@ -924,14 +926,25 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
   // Alert subscription state
   const [alertState, setAlertState] = useState<'idle'|'loading'|'subscribed'|'error'>('idle')
 
-  // Load sessionStorage cache on mount
+  // Load sessionStorage cache on mount (with 24h expiry)
   useEffect(() => {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY)
       if (cached) {
-        setData(JSON.parse(cached) as JobsResponse)
-        setState('done')
-        return
+        const parsed = JSON.parse(cached) as { data: JobsResponse; cachedAt: number }
+        if (Date.now() - parsed.cachedAt < CACHE_TTL_MS) {
+          setData(parsed.data)
+          setState('done')
+          // Restore savedStatuses from cache too
+          try {
+            const savedCached = sessionStorage.getItem(SAVED_CACHE_KEY)
+            if (savedCached) setSavedStatuses(JSON.parse(savedCached))
+          } catch {}
+          return
+        }
+        // Expired — remove stale cache
+        sessionStorage.removeItem(CACHE_KEY)
+        sessionStorage.removeItem(SAVED_CACHE_KEY)
       }
     } catch {}
     fetchJobs()
@@ -947,6 +960,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
         const map: Record<string, 'saved'|'applied'> = {}
         for (const j of (jobs ?? [])) map[j.job_id] = j.status
         setSavedStatuses(map)
+        try { sessionStorage.setItem(SAVED_CACHE_KEY, JSON.stringify(map)) } catch {}
       })
       .catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -970,7 +984,10 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? 'Unknown error') }
       const json = await res.json() as JobsResponse
-      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(json)) } catch {}
+      try {
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: json, cachedAt: Date.now() }))
+        sessionStorage.removeItem(SAVED_CACHE_KEY) // force re-fetch of saved statuses
+      } catch {}
       setData(json)
       setState('done')
     } catch (e: unknown) {
@@ -1088,7 +1105,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
 
           {/* Refresh */}
           <button
-            onClick={() => { try { sessionStorage.removeItem(CACHE_KEY) } catch {}; fetchJobs() }}
+            onClick={() => { try { sessionStorage.removeItem(CACHE_KEY); sessionStorage.removeItem(SAVED_CACHE_KEY) } catch {}; fetchJobs() }}
             style={{ fontSize:11, color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'3px 10px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'color 0.1s, border-color 0.1s' }}
             onMouseOver={e => { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.borderColor='var(--border-strong)' }}
             onMouseOut={e  => { e.currentTarget.style.color='var(--text-tertiary)';  e.currentTarget.style.borderColor='var(--border)' }}>
@@ -1116,15 +1133,16 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
           {filteredJobs.length === 0 ? (
             <div style={{ fontSize:13, color:'var(--text-secondary)' }}>No {filter !== 'all' ? filter : ''} matches found. Try a different filter.</div>
           ) : (
-            <div style={{ position:'relative' as const }}>
+            <div style={{ display:'flex', flexDirection:'column' as const, gap:12 }}>
+              {/* Visible jobs — first 2 for free, all for premium */}
               <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))', gap:12 }}>
-                {filteredJobs.map((job, idx) => (
+                {filteredJobs.slice(0, isPremium ? filteredJobs.length : FREE_LIMIT).map((job) => (
                   <JobCard
                     key={job.listing.id}
                     job={job}
                     fitLocked={data.fit_locked}
                     onUnlock={onUnlock}
-                    blurred={!isPremium && idx >= FREE_LIMIT}
+                    blurred={false}
                     token={token}
                     initialStatus={savedStatuses[job.listing.id]}
                     onSaveChange={handleSaveChange}
@@ -1132,17 +1150,42 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                 ))}
               </div>
 
-              {/* Blur overlay CTA for free users */}
+              {/* Lock block for free users */}
               {!isPremium && filteredJobs.length > FREE_LIMIT && (
-                <div style={{ position:'absolute' as const, bottom:0, left:0, right:0, height:'60%', background:'linear-gradient(to bottom, transparent, var(--bg) 70%)', display:'flex', flexDirection:'column' as const, alignItems:'center', justifyContent:'flex-end', paddingBottom:24 }}>
-                  <div style={{ textAlign:'center' as const, maxWidth:320 }}>
-                    <p style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', marginBottom:8, letterSpacing:'-0.2px' }}>
-                      {filteredJobs.length - FREE_LIMIT} more matching jobs + skill gaps analysis
-                    </p>
-                    <button onClick={onUnlock} style={{ fontSize:13, fontWeight:700, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:4, padding:'9px 20px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>
-                      Unlock with Pro — €1.99
-                    </button>
+                <div style={{
+                  border: '0.5px dashed var(--accent-border)',
+                  borderRadius: 8,
+                  padding: '28px 24px',
+                  background: 'linear-gradient(135deg, rgba(127,119,221,0.06) 0%, rgba(127,119,221,0.02) 100%)',
+                  display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
+                  gap: 12, textAlign: 'center' as const,
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
                   </div>
+                  <div>
+                    <p style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.2px' }}>
+                      {filteredJobs.length - FREE_LIMIT} more matching jobs
+                    </p>
+                    <p style={{ fontSize:12, color:'var(--text-tertiary)', margin:0, lineHeight:1.5 }}>
+                      Unlock all matches + skill gap analysis for every role
+                    </p>
+                  </div>
+                  <button onClick={onUnlock} style={{
+                    fontSize:13, fontWeight:700, color:'var(--bg)',
+                    background:'var(--text-primary)', border:'none',
+                    borderRadius:4, padding:'9px 24px',
+                    cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em',
+                  }}>
+                    Unlock with Premium — €5.99/mo
+                  </button>
                 </div>
               )}
             </div>
