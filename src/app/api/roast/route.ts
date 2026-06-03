@@ -87,7 +87,7 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
     if (gated.impact) (gated.impact as unknown as Record<string, unknown>).rewrites = null
   }
   if (gated.how_to_fix_locked && Array.isArray(gated.red_flags)) {
-    gated.red_flags = gated.red_flags.map((f: Record<string, unknown>) => ({
+    gated.red_flags = (gated.red_flags as unknown as Record<string, unknown>[]).map((f) => ({
       ...f,
       how_to_fix: null,
     })) as unknown as typeof gated.red_flags
@@ -106,11 +106,11 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
     cr.signals_missing = null
   }
   if (gated.actions_locked && Array.isArray(gated.top_3_actions)) {
-    gated.top_3_actions = gated.top_3_actions.map((a: Record<string, unknown>) => ({
+    gated.top_3_actions = (gated.top_3_actions as unknown as Record<string, unknown>[]).map((a) => ({
       ...a,
       how:     null,
       example: null,
-    }))
+    })) as unknown as typeof gated.top_3_actions
   }
   return gated
 }
