@@ -90,7 +90,7 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
     gated.red_flags = gated.red_flags.map((f: Record<string, unknown>) => ({
       ...f,
       how_to_fix: null,
-    }))
+    })) as unknown as typeof gated.red_flags
   }
   if (gated.keywords_locked && gated.ats) {
     const ats = gated.ats as Record<string, unknown>
