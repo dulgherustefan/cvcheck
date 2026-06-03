@@ -93,16 +93,16 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
     })) as unknown as typeof gated.red_flags
   }
   if (gated.keywords_locked && gated.ats) {
-    const ats = gated.ats as Record<string, unknown>
+    const ats = gated.ats as unknown as Record<string, unknown>
     ats.missing_keywords    = null
     ats.formatting_issues   = null
   }
   if (gated.gaps_locked && gated.career_story) {
-    const cs = gated.career_story as Record<string, unknown>
+    const cs = gated.career_story as unknown as Record<string, unknown>
     cs.gaps_or_transitions = null
   }
   if (gated.missing_signals_locked && gated.credibility) {
-    const cr = gated.credibility as Record<string, unknown>
+    const cr = gated.credibility as unknown as Record<string, unknown>
     cr.signals_missing = null
   }
   if (gated.actions_locked && Array.isArray(gated.top_3_actions)) {
