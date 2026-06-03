@@ -84,7 +84,7 @@ async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed
 // This is the critical layer — UI flags alone are not enough.
 function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
   if (gated.rewrites_locked) {
-    if (gated.impact) (gated.impact as Record<string, unknown>).rewrites = null
+    if (gated.impact) (gated.impact as unknown as Record<string, unknown>).rewrites = null
   }
   if (gated.how_to_fix_locked && Array.isArray(gated.red_flags)) {
     gated.red_flags = gated.red_flags.map((f: Record<string, unknown>) => ({
