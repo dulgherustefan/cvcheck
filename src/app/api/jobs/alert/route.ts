@@ -9,11 +9,18 @@ export const runtime = 'nodejs'
 const resend = new Resend(process.env.RESEND_API_KEY!)
 const FROM_EMAIL = process.env.RESEND_FROM ?? 'CVCheck <alerts@cvcheck.app>'
 
+// Allowed values for validation
+const ALLOWED_ACTIONS = new Set(['subscribe', 'unsubscribe'])
+
 async function getUserIdFromRequest(req: NextRequest): Promise<{ userId: string; email: string } | null> {
   try {
     const authHeader = req.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) return null
     const token = authHeader.replace('Bearer ', '')
+
+    // Basic token sanity check — JWTs are at least 20 chars
+    if (token.length < 20 || token.length > 2048) return null
+
     const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
     if (error || !user?.email) return null
     return { userId: user.id, email: user.email }
@@ -28,11 +35,18 @@ export async function GET(req: NextRequest) {
   const auth = await getUserIdFromRequest(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from('job_alerts')
     .select('subscribed, detected_domain, detected_level, created_at, last_sent_at')
     .eq('user_id', auth.userId)
     .single()
+
+  // Don't leak DB error details to client
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 = row not found, that's fine
+    console.error('[alert GET] DB error:', error.code)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
 
   return NextResponse.json({ alert: data ?? null })
 }
@@ -43,54 +57,92 @@ export async function POST(req: NextRequest) {
   const auth = await getUserIdFromRequest(req)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json() as {
+  // Validate Content-Type
+  const contentType = req.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    return NextResponse.json({ error: 'Invalid content type' }, { status: 415 })
+  }
+
+  let body: {
     action: 'subscribe' | 'unsubscribe'
     cvMeta?: Pick<JobsRequest, 'detected_domain' | 'detected_level' | 'trajectory' | 'keywords'>
   }
 
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  // Validate action field
+  if (!body?.action || !ALLOWED_ACTIONS.has(body.action)) {
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+  }
+
   if (body.action === 'unsubscribe') {
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('job_alerts')
       .update({ subscribed: false })
       .eq('user_id', auth.userId)
+
+    if (error) {
+      console.error('[alert unsubscribe] DB error:', error.code)
+      return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    }
+
     return NextResponse.json({ ok: true, subscribed: false })
   }
 
-  if (body.action === 'subscribe') {
-    if (!body.cvMeta?.detected_domain) {
-      return NextResponse.json({ error: 'cvMeta is required for subscribe' }, { status: 400 })
-    }
+  // subscribe
+  if (!body.cvMeta?.detected_domain) {
+    return NextResponse.json({ error: 'cvMeta is required for subscribe' }, { status: 400 })
+  }
 
-    const { data: alertRow, error: upsertError } = await supabaseAdmin
-      .from('job_alerts')
-      .upsert({
-        user_id:         auth.userId,
-        email:           auth.email,
-        detected_domain: body.cvMeta.detected_domain,
-        detected_level:  body.cvMeta.detected_level,
-        trajectory:      body.cvMeta.trajectory ?? '',
-        keywords:        body.cvMeta.keywords ?? [],
-        subscribed:      true,
-      }, { onConflict: 'user_id' })
-      .select('unsubscribe_token')
-      .single()
+  // Sanitize inputs — strip anything suspicious, cap lengths
+  const detected_domain = String(body.cvMeta.detected_domain).slice(0, 100)
+  const detected_level  = String(body.cvMeta.detected_level ?? '').slice(0, 50)
+  const trajectory      = String(body.cvMeta.trajectory ?? '').slice(0, 500)
+  const keywords        = Array.isArray(body.cvMeta.keywords)
+    ? body.cvMeta.keywords.slice(0, 30).map(k => String(k).slice(0, 50))
+    : []
 
-    if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 500 })
+  const { data: alertRow, error: upsertError } = await supabaseAdmin
+    .from('job_alerts')
+    .upsert({
+      user_id:         auth.userId,
+      email:           auth.email,
+      detected_domain,
+      detected_level,
+      trajectory,
+      keywords,
+      subscribed:      true,
+    }, { onConflict: 'user_id' })
+    .select('unsubscribe_token')
+    .single()
 
+  if (upsertError) {
+    console.error('[alert subscribe] Upsert error:', upsertError.code)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+
+  const unsubscribeToken = alertRow?.unsubscribe_token ?? ''
+
+  try {
     await resend.emails.send({
       from:    FROM_EMAIL,
       to:      auth.email,
       subject: '✓ Job alerts activated — CVCheck',
       html:    buildConfirmationEmail({
-        email:            auth.email,
-        domain:           body.cvMeta.detected_domain,
-        level:            body.cvMeta.detected_level,
-        unsubscribeToken: alertRow?.unsubscribe_token ?? '',
+        email: auth.email,
+        domain: detected_domain,
+        level:  detected_level,
+        unsubscribeToken,
       }),
     })
-
-    return NextResponse.json({ ok: true, subscribed: true })
+  } catch (emailErr) {
+    // Don't fail the subscription if email fails — log and continue
+    console.error('[alert subscribe] Email send failed:', emailErr)
   }
 
-  return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+  return NextResponse.json({ ok: true, subscribed: true })
 }

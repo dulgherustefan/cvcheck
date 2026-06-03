@@ -664,7 +664,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
           <div style={{ padding:'24px 26px 20px', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
             <div>
               <h2 style={{ fontSize:17, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Plans</h2>
-              <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0 }}>Start free. Upgrade when you need the full picture.</p>
+              <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0 }}>See your score free. Pay €1.99 once to fix it.</p>
             </div>
             <button className="_pm-close" onClick={onClose} style={{ width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-subtle)', border:'0.5px solid var(--border)', borderRadius:6, color:'var(--text-tertiary)', cursor:'pointer', transition:'all 0.15s', flexShrink:0, fontFamily:'var(--font-sans)' }}>
               <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1605,9 +1605,9 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
       {!isPro && (
         <div className={styles.upgradeBanner}>
           <div className={styles.upgradeBannerContent}>
-            <p className={styles.upgradeBannerTitle}>Unlock the full picture</p>
+            <p className={styles.upgradeBannerTitle}>You're missing the part that actually helps.</p>
             <p className={styles.upgradeBannerSub}>
-              Pro unlocks your bullet rewrites, how to fix every red flag, missing ATS keywords, career gap analysis, and full how-to steps for all 3 priority actions. €1.99, one-time.
+              Pro shows your bullet rewrites on your real text, how to fix every red flag, the ATS keywords you're missing, and 3 priority actions with step-by-step instructions. €1.99, once.
             </p>
           </div>
           <div className={styles.upgradeBannerActions}>
@@ -1633,7 +1633,7 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
         <div style={{ textAlign:'center' as const, padding:'16px', fontSize:12, color:'var(--text-tertiary)' }}>
           <button onClick={() => setShowAuthModal(true)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline', padding:0 }}>
             Sign in
-          </button> to save this analysis to your history — free for all accounts.
+          </button> to save this to your history — free for all accounts.
         </div>
       )}
     </>
@@ -1642,9 +1642,9 @@ function ResultContent({ result, isPro, user, savedToHistory, token, setShowUpgr
 
 // ─── Static landing data ──────────────────────────────────────────────────────
 const HOW_STEPS = [
-  { n:'01', title:'Paste a link or drop your PDF', desc:'Portfolio URLs, LinkedIn profiles, personal sites, or a PDF. Takes 5 seconds to submit.' },
-  { n:'02', title:'We read it like a recruiter would', desc:'CVCheck checks 7 things that actually determine whether your CV passes or fails — ATS, red flags, impact, story, and more.' },
-  { n:'03', title:'You get a score and real feedback', desc:'Free gives you the score, first impression, impact stats, and red flag count. Pro unlocks rewrites, fixes, and priority actions — €1.99 one-time.' },
+  { n:'01', title:'Drop your CV or paste a link', desc:'PDF, portfolio URL, LinkedIn — whatever you have. Takes 5 seconds. No formatting required.' },
+  { n:'02', title:'We read it the way recruiters do', desc:'7 things that actually get you rejected or hired: ATS match, red flags, impact, story, first impression. Not grammar.' },
+  { n:'03', title:'You get a score with real fixes', desc:'Not "improve your bullet points." Your actual bullet points, rewritten. Free gets you the score and red flags. Pro (€1.99, once) gets you everything fixed.' },
 ]
 
 const SAMPLE_DIMS = [
@@ -1659,20 +1659,20 @@ const SAMPLE_DIMS = [
 ]
 
 const SAMPLE_OBS = [
-  { type:'strength', text:'Strong action verbs throughout — "Led", "Increased", "Delivered" signal ownership immediately.' },
-  { type:'strength', text:'LinkedIn and portfolio clearly linked in the header.' },
-  { type:'weakness', text:'Experience section lists responsibilities, not outcomes — no numbers anywhere in 5 years of work.' },
-  { type:'weakness', text:'"Team player with great communication" appears twice. Filler phrases hurt credibility.' },
+  { type:'strength', text:'Action verbs front every bullet — "Led", "Shipped", "Cut" — tells the recruiter you own your work, not just witness it.' },
+  { type:'strength', text:'LinkedIn and portfolio in the header. Recruiter can verify you in one click.' },
+  { type:'weakness', text:'5 years of experience, zero numbers. "Managed projects" tells them nothing. "Delivered 3 projects under budget by €40k" does.' },
+  { type:'weakness', text:'"Results-driven team player" in the summary. Every CV says this. It costs you credibility, not gains it.' },
 ]
 
 const DIMS_LIST = [
-  { name:'First Impression',     desc:'What a recruiter understands in the first 7 seconds — title, summary, top section' },
-  { name:'Impact & Achievements',desc:'Quantified results, strong action verbs, bullet quality across every role' },
-  { name:'ATS Compatibility',    desc:'Keywords, searchable job title, parser-friendly formatting' },
-  { name:'Red Flags',            desc:'Absence of dealbreakers, unexplained gaps, inconsistencies, and polish issues' },
-  { name:'Career Story',         desc:'Clear trajectory, role progression, seniority match' },
-  { name:'Format & Scannability',desc:'Length, density, section ordering, visual consistency' },
-  { name:'Credibility',          desc:'Portfolio links, recognizable brands, certifications, proof points' },
+  { name:'First Impression',     desc:'What a recruiter actually reads in the first 7 seconds — and whether it makes them keep going' },
+  { name:'Impact & Achievements',desc:'Do your bullets show what you did, or just where you worked? Numbers, verbs, outcomes.' },
+  { name:'ATS Compatibility',    desc:'Whether a parser can read your CV before a human ever sees it — keywords, title, format' },
+  { name:'Red Flags',            desc:'Gaps, inconsistencies, overpromises, and polish issues that make recruiters pause' },
+  { name:'Career Story',         desc:'Does your trajectory make sense? Is there a clear through-line from where you were to where you are?' },
+  { name:'Format & Scannability',desc:'Can someone skim this in 10 seconds and find what they need? Length, density, ordering.' },
+  { name:'Credibility',          desc:'Portfolio, brands, certifications — anything that makes a recruiter trust you before the interview' },
 ]
 
 const LOADING_STEPS = [
@@ -1905,7 +1905,7 @@ export default function Home() {
 
               <div className={styles.heroBadge}>
                 <span className={styles.heroBadgeDot}/>
-                AI feedback · CVs &amp; portfolios
+                CV analysis · score + fixes in 30s
               </div>
 
               <h1 className={styles.heroTitle}>
@@ -1914,7 +1914,7 @@ export default function Home() {
               </h1>
 
               <p className={styles.heroSubtitle}>
-                Paste a link or upload your CV. Get a score, rating, and real feedback — free for your first scan.
+                Paste a link or drop your PDF. In 30 seconds you'll know your score, what's hurting you, and what to fix — free, no account needed.
               </p>
 
               {/* Upload box */}
@@ -2001,7 +2001,7 @@ export default function Home() {
                 <div className={styles.freeNote}>
                   {tier === 'free' && analysisCount >= 1
                     ? <>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={() => setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
-                    : '1 free analysis · No account required'
+                    : '1 free scan · no account, no card'
                   }
                 </div>
               </div>
@@ -2010,10 +2010,10 @@ export default function Home() {
             {/* ── Stats strip ── */}
             <div className={styles.statsStrip} ref={statsRef as React.RefObject<HTMLDivElement>}>
               {[
-                { num:'8',    label:'dimensions scored per CV' },
-                { num:'~30s', label:'average analysis time' },
-                { num:'€1.99',   label:'one-time Pro — not a subscription' },
-                { num:'0',    label:'vague "consider improving" feedback' },
+                { num:'7',    label:'dimensions — not just a vibe check' },
+                { num:'~30s', label:'from upload to full score' },
+                { num:'€1.99',   label:'Pro · one-time, not a subscription' },
+                { num:'0',    label:'"consider improving" in your feedback' },
               ].map((s, i) => (
                 <div key={s.num} className={styles.statItem} data-reveal data-reveal-delay={i * 70}>
                   <span className={styles.statNum}>{s.num}</span>
@@ -2027,7 +2027,7 @@ export default function Home() {
               <div className={styles.sectionWrap}>
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>How it works</p>
-                  <h2 className={styles.sTitle}>Three steps, thirty seconds.</h2>
+                  <h2 className={styles.sTitle}>Three steps. Done before your coffee gets cold.</h2>
                   <p className={styles.sSub}>No account needed for your first scan.</p>
                 </div>
                 <div className={styles.howSteps}>
@@ -2047,8 +2047,8 @@ export default function Home() {
               <div className={styles.sectionWrap}>
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>What you get</p>
-                  <h2 className={styles.sTitle}>A real score, not a pep talk.</h2>
-                  <p className={styles.sSub}>Free gives you the score and a preview. Pro unlocks the full picture — all 8 dimensions, observations, and fixes with rewritten examples.</p>
+                  <h2 className={styles.sTitle}>Numbers, not encouragement.</h2>
+                  <p className={styles.sSub}>Free shows your score and what's hurting you. Pro (€1.99, once) shows every fix with your actual text rewritten — ready to copy.</p>
                 </div>
                 <div className={styles.sampleCard} data-reveal data-reveal-delay="80">
                   <div className={styles.sampleTop}>
@@ -2104,7 +2104,7 @@ export default function Home() {
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>What we score</p>
                   <h2 className={styles.sTitle}>7 dimensions, not just a vibe check.</h2>
-                  <p className={styles.sSub}>Each weighted by how much recruiters actually care — not what's easiest to measure.</p>
+                  <p className={styles.sSub}>Weighted by what actually gets you rejected — not what's easiest to measure.</p>
                 </div>
                 <div className={styles.dimsGrid}>
                   {DIMS_LIST.map((d, i) => (
@@ -2128,7 +2128,7 @@ export default function Home() {
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
                   <p className={styles.sEyebrow}>Pricing</p>
                   <h2 className={styles.sTitle}>No tricks, no "contact us for pricing."</h2>
-                  <p className={styles.sSub}>One free scan to see your score. Pro unlocks the full breakdown for €1.99 — once. Premium for unlimited.</p>
+                  <p className={styles.sSub}>Free gets you the score and what's broken. Pro fixes it — €1.99, once, yours forever. Premium for when you're applying seriously.</p>
                 </div>
                 <div className={styles.pricingCards} data-reveal data-reveal-delay="80">
                   {(['free','pro','premium'] as const).map(pk => {
