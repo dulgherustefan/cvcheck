@@ -11,10 +11,9 @@ export async function GET() {
       return NextResponse.json({ tier: 'free' })
     }
 
-    // Fetch from credits table (or users/subscriptions table — adjust to your schema)
     const { data, error } = await supabase
       .from('credits')
-      .select('tier, subscription_end, roast_count')
+      .select('plan, subscription_end, used')
       .eq('user_id', user.id)
       .single()
 
@@ -23,9 +22,9 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      tier: data.tier ?? 'free',
+      tier: data.plan ?? 'free',
       subscription_end: data.subscription_end ?? null,
-      roast_count: data.roast_count ?? 0,
+      roast_count: data.used ?? 0,
     })
   } catch {
     return NextResponse.json({ tier: 'free' })
