@@ -170,8 +170,8 @@ function ParticleCanvas() {
       ctx.clearRect(0, 0, W, H)
 
       const dark = isDark()
-      const col      = dark ? 'rgba(200,198,240,' : 'rgba(60,55,140,'
-      const colAccent = dark ? 'rgba(160,154,232,' : 'rgba(83,74,183,'
+      const col      = dark ? 'rgba(220,185,160,' : 'rgba(90,55,30,'
+      const colAccent = dark ? 'rgba(224,130,80,' : 'rgba(212,98,42,'
 
       for (const p of pts) {
         const dx = p.x - mouse.x
@@ -226,7 +226,7 @@ function ParticleCanvas() {
       if (mouse.active && mouse.x > -100) {
         const glowR = 120
         const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, glowR)
-        grd.addColorStop(0, dark ? 'rgba(127,119,221,0.10)' : 'rgba(83,74,183,0.08)')
+        grd.addColorStop(0, dark ? 'rgba(212,98,42,0.10)' : 'rgba(212,98,42,0.08)')
         grd.addColorStop(1, 'rgba(0,0,0,0)')
         ctx.beginPath()
         ctx.arc(mouse.x, mouse.y, glowR, 0, Math.PI * 2)
@@ -251,13 +251,13 @@ function ParticleCanvas() {
 
         ctx.beginPath()
         ctx.arc(mouse.x, mouse.y, 3, 0, Math.PI * 2)
-        ctx.fillStyle = dark ? 'rgba(160,154,232,0.7)' : 'rgba(83,74,183,0.6)'
+        ctx.fillStyle = dark ? 'rgba(224,130,80,0.7)' : 'rgba(212,98,42,0.6)'
         ctx.fill()
 
         const pulse = 0.4 + 0.3 * Math.sin(frame * 0.06)
         ctx.beginPath()
         ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2)
-        ctx.strokeStyle = dark ? `rgba(127,119,221,${pulse * 0.4})` : `rgba(83,74,183,${pulse * 0.35})`
+        ctx.strokeStyle = dark ? `rgba(212,98,42,${pulse * 0.4})` : `rgba(212,98,42,${pulse * 0.35})`
         ctx.lineWidth = 0.8
         ctx.stroke()
       }
@@ -778,8 +778,23 @@ function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus, onSa
   useEffect(() => {
     if (token) return // logged in — use initialStatus from DB
     try {
-      const s = localStorage.getItem(`job-${listing.id}`)
-      if (s === 'saved' || s === 'applied') setSaved(s)
+      const raw = localStorage.getItem(`job-${listing.id}`)
+      if (!raw) return
+      // Support both old format (plain string) and new format ({ status, expiresAt })
+      let status: string | null = null
+      try {
+        const parsed = JSON.parse(raw)
+        if (parsed?.expiresAt && Date.now() > parsed.expiresAt) {
+          // Expired — evict
+          localStorage.removeItem(`job-${listing.id}`)
+          return
+        }
+        status = parsed?.status ?? null
+      } catch {
+        // Legacy plain-string format
+        status = raw
+      }
+      if (status === 'saved' || status === 'applied') setSaved(status)
     } catch {}
   }, [listing.id, token])
 
@@ -792,10 +807,17 @@ function JobCard({ job, fitLocked, onUnlock, blurred, token, initialStatus, onSa
     onSaveChange?.(listing.id, next)
 
     if (!token) {
-      // Anonymous: localStorage only
+      // Anonymous: localStorage with 7-day TTL
+      // Format: JSON { status, expiresAt } so we can evict stale entries
       try {
-        if (next === 'none') localStorage.removeItem(`job-${listing.id}`)
-        else localStorage.setItem(`job-${listing.id}`, next)
+        if (next === 'none') {
+          localStorage.removeItem(`job-${listing.id}`)
+        } else {
+          localStorage.setItem(`job-${listing.id}`, JSON.stringify({
+            status:    next,
+            expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+          }))
+        }
       } catch {}
       return
     }
@@ -1156,7 +1178,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                   border: '0.5px dashed var(--accent-border)',
                   borderRadius: 8,
                   padding: '28px 24px',
-                  background: 'linear-gradient(135deg, rgba(127,119,221,0.06) 0%, rgba(127,119,221,0.02) 100%)',
+                  background: 'linear-gradient(135deg, rgba(212,98,42,0.06) 0%, rgba(212,98,42,0.02) 100%)',
                   display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
                   gap: 12, textAlign: 'center' as const,
                 }}>
@@ -1203,7 +1225,7 @@ function QuickWinBanner({ text, onUnlock, isPro }: { text?: string; onUnlock: ()
     <div style={{
       padding: '18px 22px',
       borderRadius: 8,
-      background: 'linear-gradient(135deg, rgba(127,119,221,0.07) 0%, rgba(127,119,221,0.03) 100%)',
+      background: 'linear-gradient(135deg, rgba(212,98,42,0.07) 0%, rgba(212,98,42,0.03) 100%)',
       border: '0.5px solid var(--accent-border)',
       display: 'flex', alignItems: 'flex-start', gap: 14,
       animation: 'fadeUp 0.45s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both',
@@ -1688,6 +1710,23 @@ export default function Home() {
   const { tier } = useTier(user?.id)
   const router = useRouter()
 
+  // Clears all session-scoped caches before signing out.
+  // Prevents job data from a previous user being visible to the next one
+  // on shared devices (sessionStorage persists for the browser tab lifetime).
+  function handleSignOut() {
+    try {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i)
+        if (key && (key.startsWith('jobs-cache-') || key.startsWith('jobs-saved-'))) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(k => sessionStorage.removeItem(k))
+    } catch {}
+    signOut()
+  }
+
   const [showAuthModal,    setShowAuthModal]    = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showAccountModal, setShowAccountModal] = useState(false)
@@ -1870,7 +1909,7 @@ export default function Home() {
               <AccountDropdown user={user} tier={tier}
                 onOpenAccount={() => setShowAccountModal(true)}
                 onOpenPlans={() => setShowPlansModal(true)}
-                onSignOut={() => signOut()}/>
+                onSignOut={() => handleSignOut()}/>
             ) : (
               <div className={styles.headerAuthBtns}>
                 <button className={styles.signInBtn} onClick={() => setShowAuthModal(true)}>Sign in</button>
@@ -1886,7 +1925,7 @@ export default function Home() {
       {/* ── Modals ── */}
       {showAuthModal    && <AuthModal onClose={() => setShowAuthModal(false)}/>}
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} roastId={result?.analysis_id} userId={user?.id} userEmail={user?.email}/>}
-      {showAccountModal && user && <AccountModal onClose={() => setShowAccountModal(false)} userId={user.id} userEmail={user.email??''} onUpgrade={() => { setShowAccountModal(false); setShowPlansModal(true) }} onSignOut={() => { setShowAccountModal(false); signOut() }}/>}
+      {showAccountModal && user && <AccountModal onClose={() => setShowAccountModal(false)} userId={user.id} userEmail={user.email??''} onUpgrade={() => { setShowAccountModal(false); setShowPlansModal(true) }} onSignOut={() => { setShowAccountModal(false); handleSignOut() }}/>}
       {showPlansModal   && <PlansModal tier={tier} userId={user?.id} userEmail={user?.email} onClose={() => setShowPlansModal(false)} onBuy={() => { setShowPlansModal(false); setShowUpgradeModal(true) }}/>}
 
       <main className={styles.main}>

@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { checkRateLimit, makeIdentifier } from '@/lib/ratelimit'
 
 // Reuse the shared admin client instead of creating a new one per request
 // (the original created a new Supabase client on every POST/GET call)
@@ -91,6 +92,18 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  // Rate limit the public GET — prevents token enumeration brute-force
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? req.headers.get('x-real-ip')
+    ?? 'unknown'
+  const rl = await checkRateLimit(makeIdentifier(null, ip), false)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } },
+    )
+  }
+
   const token = req.nextUrl.searchParams.get('token')
   if (!token) {
     return NextResponse.json({ error: 'Missing token' }, { status: 400 })

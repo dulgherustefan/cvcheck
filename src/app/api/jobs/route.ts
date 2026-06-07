@@ -491,8 +491,8 @@ const anthropic = new Anthropic()
 
 async function analyzeJobFit(
   job: JobListing,
-  cvMeta: JobsRequest,
-  isPro: boolean,
+  cvMeta: Pick<JobsRequest, 'detected_domain' | 'detected_level' | 'trajectory' | 'keywords'>,
+  _isPremium: boolean,
 ): Promise<JobFitAnalysis> {
   const prompt = `You are a senior recruiter. Given a candidate profile and a job listing, return ONLY a JSON object — no explanation, no markdown fences.
 
@@ -534,7 +534,8 @@ gaps: exactly 3 short strings (max 10 words) — specific skills or experience m
     .trim()
 
   const parsed = JSON.parse(text) as JobFitAnalysis
-  if (!isPro) parsed.gaps = []
+  // Clamp fit_score to valid range
+  parsed.fit_score = Math.min(100, Math.max(0, parsed.fit_score ?? 0))
   return parsed
 }
 
@@ -543,9 +544,28 @@ gaps: exactly 3 short strings (max 10 words) — specific skills or experience m
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as JobsRequest
-    const { detected_domain, detected_level, trajectory, keywords, country } = body
+    const { detected_domain, detected_level, trajectory, keywords } = body
 
     if (!detected_domain || !detected_level) {
+      return NextResponse.json(
+        { error: 'detected_domain and detected_level are required' },
+        { status: 400 },
+      )
+    }
+
+    // Sanitize CV meta fields that go into the AI prompt — cap length, strip control chars
+    const sanitize = (s: string | undefined, max: number) =>
+      (s ?? '').replace(/[\x00-\x1F\x7F]/g, ' ').trim().slice(0, max)
+
+    const safeDomain     = sanitize(detected_domain, 100)
+    const safeLevel      = sanitize(detected_level, 50)
+    const safeTrajectory = sanitize(trajectory, 200)
+    const safeKeywords   = (keywords ?? [])
+      .slice(0, 30)
+      .map(k => sanitize(k, 50))
+      .filter(Boolean)
+
+    if (!safeDomain || !safeLevel) {
       return NextResponse.json(
         { error: 'detected_domain and detected_level are required' },
         { status: 400 },
@@ -555,11 +575,13 @@ export async function POST(req: NextRequest) {
     const userId    = await getUserIdFromRequest(req)
     const tier      = await getTierForUser(userId)
     const isPro     = tier === 'pro' || tier === 'premium'
-    const fitLocked = !isPro
+    const isPremium = tier === 'premium'
+    const fitLocked = !isPremium  // fit analysis is Premium-only
 
+    // Country is read exclusively from server-side headers — never from client body
+    // (prevents users from spoofing country to manipulate job results)
     const detectedCountry = (
-      country
-      ?? req.headers.get('x-vercel-ip-country')?.toLowerCase()
+      req.headers.get('x-vercel-ip-country')?.toLowerCase()
       ?? req.headers.get('cf-ipcountry')?.toLowerCase()
       ?? 'gb'
     )
@@ -568,16 +590,16 @@ export async function POST(req: NextRequest) {
     console.log(`[jobs] Country: ${detectedCountry} | supported: ${isSupported}`)
 
     // Build query + fetch from all sources in parallel
-    const query = buildAdzunaQuery(detected_domain, detected_level, trajectory ?? '')
-    let listings = await fetchAllJobs(query, detected_domain, detected_level, detectedCountry)
+    const query = buildAdzunaQuery(safeDomain, safeLevel, safeTrajectory)
+    let listings = await fetchAllJobs(query, safeDomain, safeLevel, detectedCountry)
     let queryUsed = query
 
     // Fallback if still 0 results
     if (listings.length === 0) {
-      const fallback = buildFallbackQuery(detected_domain)
+      const fallback = buildFallbackQuery(safeDomain)
       if (fallback !== query) {
         console.log('[jobs] 0 results, trying fallback:', fallback)
-        listings = await fetchAllJobs(fallback, detected_domain, detected_level, detectedCountry)
+        listings = await fetchAllJobs(fallback, safeDomain, safeLevel, detectedCountry)
         queryUsed = fallback
       }
     }
@@ -602,14 +624,27 @@ export async function POST(req: NextRequest) {
       toAnalyze = toAnalyze.slice(0, 12)
     }
 
+    const safeCvMeta = {
+      detected_domain: safeDomain,
+      detected_level:  safeLevel,
+      trajectory:      safeTrajectory,
+      keywords:        safeKeywords,
+    }
+
     const fitResults = await Promise.allSettled(
-      toAnalyze.map(listing => analyzeJobFit(listing, body, isPro)),
+      toAnalyze.map(listing => analyzeJobFit(listing, safeCvMeta, isPremium)),
     )
 
     let jobs: JobMatch[] = toAnalyze.map((listing, i) => {
       const result = fitResults[i]
       const fit: JobFitAnalysis | null =
         result.status === 'fulfilled' ? result.value : null
+
+      // For non-Premium users, strip the full fit analysis from the response.
+      // Only expose a nulled-out placeholder so the UI can show the lock state.
+      if (fitLocked) {
+        return { listing, fit: null }
+      }
       return { listing, fit }
     })
 

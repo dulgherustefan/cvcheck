@@ -1,9 +1,9 @@
 /*
   CVCheck — page.module.css
-  Design language: Ramp.com — ultra-clean, editorial, stark.
-  - Near-black background with hairline borders
+  Palette: Cream (#FDF8F3) · Terracotta (#D4622A) · Espresso (#2D1F0E)
+  - Warm cream background with hairline espresso borders
   - DM Serif Display for headlines, DM Sans tight for everything else
-  - Violet accent as a signal, never as fill
+  - Terracotta accent as a signal, never as fill
   - Generous section padding, dense component internals
   - Particle canvas with cursor interaction covers full hero
   - Animations: fast (150–300ms), translateY(8px), no bounce
@@ -51,7 +51,7 @@
 }
 .logo:hover .logoMark {
   transform: scale(1.08);
-  box-shadow: 0 2px 12px rgba(127,119,221,0.25);
+  box-shadow: 0 2px 12px rgba(212,98,42,0.18);
 }
 
 .logoText {
@@ -114,7 +114,7 @@
 .upgradeHeaderBtn:hover {
   opacity: 0.88;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(45,31,14,0.18);
 }
 .upgradeHeaderBtn:active { transform: translateY(0); }
 
@@ -136,12 +136,12 @@
   pointer-events: none; z-index: 0;
 }
 
-/* Radial violet glow at top — richer, Ramp-like */
+/* Radial warm glow at top */
 .heroGradient {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
     radial-gradient(ellipse 80% 50% at 50% -8%,
-      color-mix(in srgb, var(--accent) 14%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 12%, transparent) 0%,
       transparent 60%),
     radial-gradient(ellipse 40% 30% at 20% 30%,
       color-mix(in srgb, var(--accent) 4%, transparent) 0%,
@@ -177,7 +177,7 @@
   letter-spacing: 0.1em; text-transform: uppercase;
   font-weight: 700; border-radius: 2px; margin-bottom: 40px;
   animation: fadeUp 0.55s 0.05s cubic-bezier(0.22, 1, 0.36, 1) both;
-  box-shadow: 0 0 16px rgba(127,119,221,0.12), inset 0 0.5px 0 rgba(255,255,255,0.05);
+  box-shadow: 0 0 16px rgba(212,98,42,0.10), inset 0 0.5px 0 rgba(255,255,255,0.05);
 }
 
 .heroBadgeDot {
@@ -227,8 +227,8 @@
   width: 100%; max-width: 560px;
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(127,119,221,0.10),
-    0 0 40px rgba(127,119,221,0.08),
+    0 0 0 1px rgba(212,98,42,0.08),
+    0 0 40px rgba(212,98,42,0.06),
     0 8px 48px rgba(0,0,0,0.18),
     0 2px 8px rgba(0,0,0,0.08);
   animation: fadeUp 0.55s 0.29s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -236,8 +236,8 @@
 }
 .uploadBox:hover {
   box-shadow:
-    0 0 0 1px rgba(127,119,221,0.20),
-    0 0 70px rgba(127,119,221,0.14),
+    0 0 0 1px rgba(212,98,42,0.16),
+    0 0 70px rgba(212,98,42,0.10),
     0 8px 56px rgba(0,0,0,0.24),
     0 2px 8px rgba(0,0,0,0.08);
 }
@@ -288,7 +288,7 @@
 .urlField:focus {
   border-color: var(--text-primary);
   background: var(--bg-muted);
-  box-shadow: 0 0 0 3px rgba(127,119,221,0.08);
+  box-shadow: 0 0 0 3px rgba(212,98,42,0.06);
 }
 
 /* Submit button */
@@ -327,7 +327,7 @@
 }
 .dropzoneActive {
   border-color: var(--accent); background: var(--accent-subtle); border-style: solid;
-  box-shadow: 0 0 0 3px rgba(127,119,221,0.10), inset 0 0 20px rgba(127,119,221,0.04);
+  box-shadow: 0 0 0 3px rgba(212,98,42,0.08), inset 0 0 20px rgba(212,98,42,0.03);
 }
 .dropzoneHasFile {
   cursor: default; border-style: solid; border-color: var(--border);
@@ -521,7 +521,7 @@
   transition: box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .sampleCard:hover {
-  box-shadow: 0 16px 64px rgba(0,0,0,0.14), 0 4px 12px rgba(127,119,221,0.06);
+  box-shadow: 0 16px 64px rgba(0,0,0,0.14), 0 4px 12px rgba(212,98,42,0.05);
 }
 
 .sampleTop {
@@ -664,7 +664,7 @@
   outline: 1px solid var(--text-primary);
   outline-offset: -1px;
   border-radius: 0;
-  box-shadow: inset 0 0 40px rgba(127,119,221,0.04);
+  box-shadow: inset 0 0 40px rgba(212,98,42,0.03);
 }
 
 .pricingBadge {
@@ -707,7 +707,7 @@
 .pricingCtaAccent:hover {
   opacity: 0.88;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(45,31,14,0.18);
 }
 .pricingCtaAccent:active { transform: translateY(0); }
 
@@ -756,7 +756,7 @@
   position: absolute;
   inset: -5px; border-radius: 50%;
   border: 0.5px solid transparent;
-  border-top-color: rgba(127,119,221,0.25);
+  border-top-color: rgba(212,98,42,0.18);
   animation: spin 1.4s linear infinite reverse;
 }
 
@@ -772,9 +772,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(127,119,221,0.12) 40%,
-    rgba(127,119,221,0.18) 50%,
-    rgba(127,119,221,0.12) 60%,
+    rgba(212,98,42,0.10) 40%,
+    rgba(212,98,42,0.14) 50%,
+    rgba(212,98,42,0.10) 60%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -1044,11 +1044,11 @@
   content: '';
   position: absolute; inset: 0; border-radius: 8px;
   background: radial-gradient(ellipse 60% 100% at 100% 50%,
-    rgba(127,119,221,0.06) 0%, transparent 70%);
+    rgba(212,98,42,0.05) 0%, transparent 70%);
   pointer-events: none;
 }
 .upgradeBanner:hover {
-  box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 40px rgba(45,31,14,0.08);
   border-color: var(--border-strong);
 }
 .upgradeBannerContent { display: flex; flex-direction: column; gap: 8px; position: relative; }
@@ -1067,7 +1067,7 @@
 .upgradeBannerPro:hover {
   opacity: 0.88;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(45,31,14,0.18);
 }
 .upgradeBannerPro:active { transform: translateY(0); }
 
