@@ -709,7 +709,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
                     {/* CTA */}
                     {!isCurrent && pk !== 'free' && (
-                      <button className="_pm-btn" onClick={() => handleBuy(pk)} disabled={!!buying} style={{ width:'100%', marginTop:12, padding:'10px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'opacity 0.15s' }}>
+                      <button className="_pm-btn" onClick={() => handleBuy(pk)} disabled={!!buying} style={{ width:'100%', marginTop:12, padding:'10px', fontSize:13, fontWeight:600, color:'#fff', background:'var(--accent)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'background 0.15s' }}>
                         {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €1.99' : 'Get Premium — €5.99/mo'}
                       </button>
                     )}
@@ -1201,8 +1201,8 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                     </p>
                   </div>
                   <button onClick={onUnlock} style={{
-                    fontSize:13, fontWeight:700, color:'var(--bg)',
-                    background:'var(--text-primary)', border:'none',
+                    fontSize:13, fontWeight:700, color:'#fff',
+                    background:'var(--accent)', border:'none',
                     borderRadius:4, padding:'9px 24px',
                     cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em',
                   }}>
@@ -1316,7 +1316,7 @@ function JobTeaser({ domain, level, isPremium, onUnlock }: {
           </div>
         </div>
       </div>
-      <button onClick={onUnlock} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: 'var(--bg)', background: 'var(--text-primary)', border: 'none', borderRadius: 4, padding: '7px 14px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
+      <button onClick={onUnlock} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: 4, padding: '7px 14px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
         Get Premium →
       </button>
     </div>
