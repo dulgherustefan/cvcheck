@@ -709,7 +709,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: {
 
                     {/* CTA */}
                     {!isCurrent && pk !== 'free' && (
-                      <button className="_pm-btn" onClick={() => handleBuy(pk)} disabled={!!buying} style={{ width:'100%', marginTop:12, padding:'10px', fontSize:13, fontWeight:600, color:'#fff', background:'var(--accent)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'background 0.15s' }}>
+                      <button className="_pm-btn" onClick={() => handleBuy(pk)} disabled={!!buying} style={{ width:'100%', marginTop:12, padding:'10px', fontSize:13, fontWeight:600, color:'var(--bg)', background:'var(--text-primary)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', opacity:buying===pk?0.5:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.01em', transition:'opacity 0.15s' }}>
                         {buying===pk ? 'Loading…' : pk==='pro' ? 'Get Pro — €1.99' : 'Get Premium — €5.99/mo'}
                       </button>
                     )}
@@ -1201,8 +1201,8 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: {
                     </p>
                   </div>
                   <button onClick={onUnlock} style={{
-                    fontSize:13, fontWeight:700, color:'#fff',
-                    background:'var(--accent)', border:'none',
+                    fontSize:13, fontWeight:700, color:'var(--bg)',
+                    background:'var(--text-primary)', border:'none',
                     borderRadius:4, padding:'9px 24px',
                     cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em',
                   }}>
@@ -1316,7 +1316,7 @@ function JobTeaser({ domain, level, isPremium, onUnlock }: {
           </div>
         </div>
       </div>
-      <button onClick={onUnlock} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: '#fff', background: 'var(--accent)', border: 'none', borderRadius: 4, padding: '7px 14px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
+      <button onClick={onUnlock} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: 'var(--bg)', background: 'var(--text-primary)', border: 'none', borderRadius: 4, padding: '7px 14px', cursor: 'pointer', whiteSpace: 'nowrap' as const, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
         Get Premium →
       </button>
     </div>
@@ -2081,63 +2081,208 @@ export default function Home() {
               </div>
             </section>
 
-            {/* ── Sample result ── */}
-            <section className={styles.sampleSection} ref={sampleRef as React.RefObject<HTMLElement>}>
+            {/* ── CV Analysis feature section ── */}
+            <section className={styles.featureSection} ref={sampleRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
-                <div className={styles.sHead} data-reveal data-reveal-delay="0">
-                  <p className={styles.sEyebrow}>What you get</p>
-                  <h2 className={styles.sTitle}>Numbers, not encouragement.</h2>
-                  <p className={styles.sSub}>Free shows your score and what's hurting you. Pro (€1.99, once) shows every fix with your actual text rewritten — ready to copy.</p>
-                </div>
-                <div className={styles.sampleCard} data-reveal data-reveal-delay="80">
-                  <div className={styles.sampleTop}>
-                    <div className={styles.sampleRing}>
-                      <svg width="92" height="92" viewBox="0 0 92 92">
-                        <circle cx="46" cy="46" r="38" fill="none" stroke="var(--bg-muted)" strokeWidth="4.5"/>
-                        <circle cx="46" cy="46" r="38" fill="none" stroke="var(--score-high)" strokeWidth="4.5"
-                          strokeLinecap="round" strokeDasharray="172 239" transform="rotate(-90 46 46)"/>
-                      </svg>
-                      <div className={styles.sampleScore}>
-                        <span className={styles.sampleScoreNum}>72</span>
-                        <span className={styles.sampleScoreMax}>/100</span>
-                      </div>
-                    </div>
-                    <div className={styles.sampleMeta}>
-                      <span className={styles.sampleBadge}>Good</span>
-                      <p className={styles.sampleSummary}>Solid structure and clear contact info. The experience section reads like a job description rather than a track record — adding numbers would move this from Good to Strong quickly.</p>
+                <div className={styles.featureTwoCol} data-reveal data-reveal-delay="0">
+                  <div className={styles.featureText}>
+                    <p className={styles.sEyebrow}>AI CV Analysis</p>
+                    <h2 className={styles.sTitle}>Every recruiter bias, every ATS gap — exposed.</h2>
+                    <p className={styles.sSub}>CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper — flagging weak verbs, missing keywords, format issues, and credibility gaps with a score across 7 dimensions.</p>
+                    <div className={styles.sampleBars} ref={sampleBarsRef} style={{ marginTop:24 }}>
+                      {SAMPLE_DIMS.slice(0,5).map(d => (
+                        <div key={d.label} className={styles.sampleBar}>
+                          <div className={styles.sampleBarHeader}>
+                            <span className={styles.sampleBarLabel}>{d.label}</span>
+                            <span className={styles.sampleBarScore}>{d.pct}%</span>
+                          </div>
+                          <div className={styles.sampleBarTrack}>
+                            <div className={styles.sampleBarFill} data-bar-pct={d.pct}/>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className={styles.sampleBars} ref={sampleBarsRef}>
-                    {SAMPLE_DIMS.map(d => (
-                      <div key={d.label} className={styles.sampleBar}>
-                        <div className={styles.sampleBarHeader}>
-                          <span className={styles.sampleBarLabel}>{d.label}</span>
-                          <span className={styles.sampleBarScore}>{d.pct}%</span>
+                  <div className={styles.featureMockup}>
+                    {/* Score card */}
+                    <div className={styles.mockCard}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
+                        <div>
+                          <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:4 }}>Product Designer · 6yr exp</div>
+                          <div style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)' }}>Ana Ionescu</div>
                         </div>
-                        <div className={styles.sampleBarTrack}>
-                          <div className={styles.sampleBarFill} data-bar-pct={d.pct}/>
+                        <div style={{ background:'var(--accent)', color:'#fff', borderRadius:8, padding:'8px 14px', textAlign:'center' as const }}>
+                          <div style={{ fontSize:22, fontWeight:800, lineHeight:1 }}>73</div>
+                          <div style={{ fontSize:9, fontWeight:500, marginTop:2 }}>/ 100</div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                  <div className={styles.sampleObs}>
-                    {SAMPLE_OBS.map((o,i) => (
-                      <div key={i} className={styles.sampleObsCard} style={{
-                        borderTop: i >= 2 ? '0.5px solid var(--border)' : 'none',
-                        borderRight: i % 2 === 0 ? '0.5px solid var(--border)' : 'none',
-                      }}>
-                        <span className={styles.sampleObsType} style={{ color: o.type==='strength' ? 'var(--score-high)' : 'var(--score-low)' }}>
-                          {o.type==='strength' ? '✓ Strength' : '✗ Weakness'}
-                        </span>
-                        <p className={styles.sampleObsText}>{o.text}</p>
+                      <div style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.6, marginBottom:14 }}>
+                        Strong portfolio, but bullets lack measurable outcomes and 3 ATS keywords are missing.
                       </div>
-                    ))}
+                      {/* Before / After rewrite */}
+                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:8 }}>Bullet Rewrite</div>
+                      <div style={{ borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', fontSize:12 }}>
+                        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
+                          <div style={{ padding:'10px 12px', background:'rgba(220,38,38,0.04)', borderRight:'0.5px solid var(--border)' }}>
+                            <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-low)', marginBottom:5 }}>Before</div>
+                            <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.5 }}>Worked on improving the onboarding experience.</p>
+                          </div>
+                          <div style={{ padding:'10px 12px', background:'rgba(22,163,74,0.04)' }}>
+                            <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-high)', marginBottom:5 }}>After</div>
+                            <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500, lineHeight:1.5 }}>Redesigned onboarding for 12k users, cutting drop-off 34% in 3 months.</p>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Keyword pills */}
+                      <div style={{ display:'flex', flexWrap:'wrap' as const, gap:5, marginTop:12 }}>
+                        {['Figma','UX Research','Prototyping'].map(k => (
+                          <span key={k} style={{ fontSize:11, padding:'3px 9px', borderRadius:3, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', color:'var(--accent-text)' }}>{k} ✓</span>
+                        ))}
+                        {['Design Systems','A/B Testing'].map(k => (
+                          <span key={k} style={{ fontSize:11, padding:'3px 9px', borderRadius:3, background:'rgba(220,38,38,0.06)', border:'0.5px solid rgba(220,38,38,0.2)', color:'var(--score-low)' }}>{k} ✗</span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </section>
 
-            {/* ── 8 Dimensions ── */}
+            {/* ── CTA Banner 1 ── */}
+            <div className={styles.ctaBanner}>
+              <div className={styles.sectionWrap} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:32 }}>
+                <div>
+                  <p style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'rgba(255,255,255,0.6)', marginBottom:6 }}>CV Analysis</p>
+                  <h2 style={{ fontSize:22, fontWeight:800, color:'#fff', margin:'0 0 8px', letterSpacing:'-0.03em' }}>Stop guessing. Start knowing.</h2>
+                  <p style={{ fontSize:14, color:'rgba(255,255,255,0.75)', margin:0, maxWidth:420, lineHeight:1.6 }}>Get your score, your red flags, and AI-rewritten bullets — all in under 30 seconds.</p>
+                </div>
+                <button onClick={scrollToTop} style={{ flexShrink:0, whiteSpace:'nowrap' as const, padding:'12px 24px', fontSize:14, fontWeight:700, color:'var(--accent)', background:'#fff', border:'none', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-sans)', transition:'opacity 0.15s' }}>
+                  Analyze My CV — Free
+                </button>
+              </div>
+            </div>
+
+            {/* ── Job Matching feature section ── */}
+            <section className={styles.featureSection} style={{ background:'var(--bg)' }}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.featureTwoCol} data-reveal data-reveal-delay="0">
+                  {/* Mockup left */}
+                  <div className={styles.featureMockup}>
+                    <div className={styles.mockCard}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.05em' }}>Matched Jobs</div>
+                        <div style={{ display:'flex', gap:5 }}>
+                          <span style={{ background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'2px 8px', fontSize:11, fontWeight:700, color:'var(--accent-text)' }}>3 Saved</span>
+                          <span style={{ background:'var(--accent)', color:'#fff', borderRadius:4, padding:'2px 8px', fontSize:11, fontWeight:700 }}>7 MATCHED</span>
+                        </div>
+                      </div>
+                      {/* Job rows */}
+                      {[
+                        { init:'PD', name:'Sr. Product Designer', co:'Figma', loc:'Remote EU', fit:'87%', status:'Saved', statusColor:'var(--accent)', statusBg:'var(--accent-subtle)' },
+                        { init:'UX', name:'UX Design Lead', co:'Zalando', loc:'Berlin, DE', fit:'74%', status:'Interview', statusColor:'#1D4ED8', statusBg:'rgba(29,78,216,0.08)' },
+                        { init:'DL', name:'Design Lead', co:'Monzo', loc:'London, UK', fit:'91%', status:'Applied', statusColor:'var(--score-high)', statusBg:'rgba(22,163,74,0.08)' },
+                      ].map((j, i) => (
+                        <div key={j.name} style={{ display:'grid', gridTemplateColumns:'1fr auto auto auto', gap:12, alignItems:'center', padding:'10px 0', borderBottom: i < 2 ? '0.5px solid var(--border)' : 'none' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <div style={{ width:26, height:26, borderRadius:5, background:'var(--accent-subtle)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:800, color:'var(--accent)', flexShrink:0 }}>{j.init}</div>
+                            <div>
+                              <div style={{ fontSize:12, fontWeight:600, color:'var(--text-primary)' }}>{j.name}</div>
+                              <div style={{ fontSize:10, color:'var(--text-tertiary)' }}>{j.loc}</div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize:11, color:'var(--text-secondary)' }}>{j.co}</div>
+                          <div style={{ fontSize:12, fontWeight:700, color:'var(--accent)' }}>{j.fit}</div>
+                          <span style={{ fontSize:10, fontWeight:600, padding:'2px 8px', borderRadius:10, color:j.statusColor, background:j.statusBg }}>{j.status}</span>
+                        </div>
+                      ))}
+                      {/* Fit strip */}
+                      <div style={{ marginTop:12, padding:'10px 14px', background:'var(--bg-subtle)', borderRadius:6, border:'0.5px solid var(--border)' }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.06em', marginBottom:6 }}>Fit Analysis — Figma Sr. Designer</div>
+                        <div style={{ display:'flex', flexDirection:'column' as const, gap:5 }}>
+                          {[{ label:'Figma proficiency', pct:90 },{ label:'Design Systems', pct:40 },{ label:'User Research', pct:80 }].map(s => (
+                            <div key={s.label}>
+                              <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, color:'var(--text-secondary)', marginBottom:2 }}><span>{s.label}</span><span style={{ color: s.pct<50?'var(--score-low)':'var(--score-high)' }}>{s.pct}%</span></div>
+                              <div style={{ height:4, background:'var(--bg-muted)', borderRadius:2 }}><div style={{ height:4, borderRadius:2, background: s.pct<50?'var(--score-low)':'var(--accent)', width:`${s.pct}%` }}/></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Text right */}
+                  <div className={styles.featureText}>
+                    <p className={styles.sEyebrow}>Job Matching</p>
+                    <h2 className={styles.sTitle}>Jobs that actually fit — with a score to prove it.</h2>
+                    <p className={styles.sSub}>After analyzing your CV, CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score (0–100), strengths, and gaps for every job.</p>
+                    <button onClick={scrollToTop} className={styles.featureCta}>See Matched Jobs ↑</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ── CTA Banner 2 — subtle ── */}
+            <div className={styles.ctaBannerSubtle}>
+              <div className={styles.sectionWrap} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:32 }}>
+                <div>
+                  <p style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--accent)', marginBottom:6 }}>Job Matching</p>
+                  <h2 style={{ fontSize:22, fontWeight:800, color:'var(--text-primary)', margin:'0 0 8px', letterSpacing:'-0.03em' }}>Jobs matched to your CV. Not the other way around.</h2>
+                  <p style={{ fontSize:14, color:'var(--text-secondary)', margin:0, maxWidth:420, lineHeight:1.6 }}>Stop applying blindly. Know your fit score before you apply.</p>
+                </div>
+                <button onClick={scrollToTop} style={{ flexShrink:0, whiteSpace:'nowrap' as const, padding:'12px 24px', fontSize:14, fontWeight:700, color:'#fff', background:'var(--accent)', border:'none', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-sans)', transition:'opacity 0.15s' }}>
+                  See My Matches ↑
+                </button>
+              </div>
+            </div>
+
+            {/* ── Job Alerts section (dark) ── */}
+            <section className={styles.alertsSection}>
+              <div className={styles.sectionWrap}>
+                <div className={styles.featureTwoCol} data-reveal data-reveal-delay="0">
+                  <div className={styles.featureText}>
+                    <p style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--accent-light, rgba(240,196,168,0.9))', marginBottom:10 }}>Job Alerts</p>
+                    <h2 style={{ fontSize:'clamp(26px,3.5vw,38px)', fontWeight:800, color:'#fff', lineHeight:1.15, marginBottom:16, letterSpacing:'-0.03em' }}>New matched jobs in your inbox every Monday.</h2>
+                    <p style={{ fontSize:15, color:'rgba(255,255,255,0.6)', lineHeight:1.7, marginBottom:28 }}>Subscribe once — we'll send you weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
+                    <button onClick={scrollToTop} style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'12px 24px', fontSize:14, fontWeight:700, color:'var(--accent)', background:'#fff', border:'none', borderRadius:6, cursor:'pointer', fontFamily:'var(--font-sans)', transition:'opacity 0.15s' }}>
+                      Enable Job Alerts
+                    </button>
+                  </div>
+                  {/* Email mockup */}
+                  <div className={styles.featureMockup}>
+                    <div style={{ background:'rgba(255,255,255,0.06)', border:'0.5px solid rgba(255,255,255,0.12)', borderRadius:12, padding:20 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16, paddingBottom:14, borderBottom:'0.5px solid rgba(255,255,255,0.1)' }}>
+                        <div style={{ width:30, height:30, background:'var(--accent)', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                          <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#fff' }}>CVCheck</div>
+                          <div style={{ fontSize:10, color:'rgba(255,255,255,0.45)' }}>Weekly Job Alerts · Monday 9:00</div>
+                        </div>
+                      </div>
+                      {[
+                        { title:'Sr. Product Designer', co:'Figma', salary:'€80k–€110k', fit:87 },
+                        { title:'UX Design Lead', co:'Zalando', salary:'€70k–€90k', fit:74 },
+                      ].map(j => (
+                        <div key={j.title} style={{ background:'rgba(255,255,255,0.08)', borderRadius:8, padding:14, marginBottom:10 }}>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#fff', marginBottom:2 }}>{j.title} — {j.co}</div>
+                          <div style={{ fontSize:11, color:'rgba(255,255,255,0.5)', marginBottom:8 }}>{j.salary} · Remote</div>
+                          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+                            <span style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:4, background:'rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.6)' }}>Full Time</span>
+                            <span style={{ fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:4, background:'var(--accent)', color:'#fff' }}>Fit: {j.fit}%</span>
+                          </div>
+                        </div>
+                      ))}
+                      <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6, marginTop:4 }}>
+                        {['Adzuna','Remotive','We Work Remotely'].map(b => (
+                          <span key={b} style={{ fontSize:10, fontWeight:500, padding:'3px 10px', borderRadius:4, background:'rgba(255,255,255,0.08)', color:'rgba(255,255,255,0.4)' }}>{b}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ── 7 Dimensions ── */}
             <section id="dims" className={styles.dimsSection} ref={dimsRef as React.RefObject<HTMLElement>}>
               <div className={styles.sectionWrap}>
                 <div className={styles.sHead} data-reveal data-reveal-delay="0">
@@ -2209,6 +2354,22 @@ export default function Home() {
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   Secure checkout via Stripe · No subscription on Pro · 1 scan always free
                 </p>
+              </div>
+            </section>
+
+            {/* ── Testimonial ── */}
+            <section className={styles.testimonialSection}>
+              <div className={styles.sectionWrap} style={{ textAlign:'center' as const }}>
+                <div style={{ display:'flex', justifyContent:'center', gap:3, marginBottom:16 }}>
+                  {[...Array(5)].map((_,i) => (
+                    <svg key={i} width="18" height="18" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  ))}
+                </div>
+                <p style={{ fontSize:13, color:'var(--text-tertiary)', marginBottom:20 }}>Rated <strong style={{ color:'var(--text-secondary)' }}>4.9</strong> by early users</p>
+                <blockquote style={{ fontFamily:'var(--font-serif)', fontSize:'clamp(18px,2.5vw,24px)', fontWeight:400, color:'var(--text-primary)', lineHeight:1.45, fontStyle:'italic', maxWidth:640, margin:'0 auto 20px' }}>
+                  "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
+                </blockquote>
+                <p style={{ fontSize:13, color:'var(--text-tertiary)' }}>— Mihai D., Product Manager, Bucharest</p>
               </div>
             </section>
 

@@ -1218,3 +1218,84 @@
 }
 
 /* prefers-reduced-motion handled in globals.css */
+
+/* ─── Feature sections (two-col layout) ─────────────────────────── */
+.featureSection {
+  background: var(--bg-elevated);
+  padding: 88px 0;
+}
+
+.featureTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  align-items: center;
+}
+
+.featureText {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.featureCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 11px 22px;
+  font-size: 13px; font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none; border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.15s;
+  align-self: flex-start;
+}
+.featureCta:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+.featureMockup {
+  position: relative;
+}
+
+.mockCard {
+  background: var(--bg-elevated);
+  border: 0.5px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── CTA Banners ────────────────────────────────────────────────── */
+.ctaBanner {
+  background: var(--accent);
+  padding: 44px 0;
+}
+
+.ctaBannerSubtle {
+  background: var(--bg-subtle);
+  padding: 44px 0;
+  border-top: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* ─── Job Alerts dark section ────────────────────────────────────── */
+.alertsSection {
+  background: var(--text-primary);
+  padding: 88px 0;
+}
+
+/* ─── Testimonial section ────────────────────────────────────────── */
+.testimonialSection {
+  background: var(--bg-subtle);
+  padding: 80px 0;
+  border-top: 0.5px solid var(--border);
+}
+
+/* ─── Responsive additions ───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .featureTwoCol { grid-template-columns: 1fr; gap: 40px; }
+  .ctaBanner > *, .ctaBannerSubtle > * { flex-direction: column; align-items: flex-start; }
+}
