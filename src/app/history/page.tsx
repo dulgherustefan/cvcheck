@@ -67,8 +67,6 @@ const RATING_COLORS: Record<Rating, string> = {
   excellent: '#0891B2',
 }
 
-// Only the columns needed for list + drawer — excludes legacy fields
-// and heavy JSONB columns not rendered in the list view
 const LIST_SELECT = [
   'id', 'created_at', 'source', 'total_score', 'rating',
   'detected_domain', 'detected_level', 'summary', 'scores',
@@ -110,9 +108,9 @@ function MiniRing({ score }: { score: number }) {
   return (
     <div style={{ position: 'relative', width: 60, height: 60, flexShrink: 0 }}>
       <svg width="60" height="60" viewBox="0 0 60 60">
-        <circle cx="30" cy="30" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5" />
+        <circle cx="30" cy="30" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="4.5" />
         <circle
-          cx="30" cy="30" r={r} fill="none" stroke={color} strokeWidth="5"
+          cx="30" cy="30" r={r} fill="none" stroke={color} strokeWidth="4.5"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${circ}`}
           transform="rotate(-90 30 30)"
@@ -123,7 +121,7 @@ function MiniRing({ score }: { score: number }) {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color, lineHeight: 1 }}>{score}</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color, lineHeight: 1, fontFamily: 'var(--font-display)' }}>{score}</span>
         <span style={{ fontSize: 8, color: 'var(--text-tertiary)', lineHeight: 1, marginTop: 1 }}>/100</span>
       </div>
     </div>
@@ -134,64 +132,77 @@ function MiniRing({ score }: { score: number }) {
 
 function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => void }) {
   const vColor = RATING_COLORS[entry.rating]
+  const tierMeta = entry.tier === 'premium'
+    ? { label: 'Premium', color: '#92650A', bg: 'rgba(234,179,8,0.10)', border: 'rgba(234,179,8,0.28)' }
+    : entry.tier === 'pro'
+    ? { label: 'Pro', color: 'var(--accent)', bg: 'var(--accent-subtle)', border: 'var(--accent-border)' }
+    : null
 
   return (
     <button
       onClick={onClick}
+      className="_hist-card"
       style={{
         display: 'flex', alignItems: 'center', gap: 16,
         width: '100%', padding: '18px 20px',
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
+        borderRadius: 14,
         cursor: 'pointer', textAlign: 'left',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
-        ;(e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-md)'
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-        ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+        transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
       }}
     >
       <MiniRing score={entry.total_score} />
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, flexWrap: 'wrap' }}>
+          {/* Rating badge */}
           <span style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+            textTransform: 'uppercase' as const,
             color: vColor,
             background: `${vColor}14`,
-            border: `1px solid ${vColor}30`,
+            border: `1px solid ${vColor}28`,
             padding: '2px 8px', borderRadius: 20,
           }}>
             {RATING_LABELS[entry.rating]}
           </span>
+          {/* Tier badge */}
+          {tierMeta && (
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+              textTransform: 'uppercase' as const,
+              color: tierMeta.color, background: tierMeta.bg,
+              border: `1px solid ${tierMeta.border}`,
+              padding: '2px 8px', borderRadius: 20,
+            }}>
+              {tierMeta.label}
+            </span>
+          )}
           {entry.detected_domain && (
-            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500 }}>
               {entry.detected_domain}
             </span>
           )}
-          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-            {formatSource(entry.source)}
-          </span>
         </div>
         <p style={{
-          fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5,
+          fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55,
           margin: 0, overflow: 'hidden', textOverflow: 'ellipsis',
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          fontWeight: 500,
         }}>
           {entry.summary}
         </p>
       </div>
 
-      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
         <span style={{ fontSize: 11, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
           {formatDate(entry.created_at)}
         </span>
-        <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
+        <span style={{ fontSize: 10, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {formatSource(entry.source)}
+        </span>
+        <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24" style={{ opacity: 0.5 }}>
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </div>
@@ -225,7 +236,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+        background: 'rgba(26,18,9,0.60)', backdropFilter: 'blur(8px)',
         display: 'flex', justifyContent: 'flex-end',
       }}
       onClick={onClose}
@@ -233,38 +244,50 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: 520,
+          width: '100%', maxWidth: 540,
           height: '100%', overflowY: 'auto',
           background: 'var(--bg-elevated)',
-          borderLeft: '1px solid var(--border)',
-          boxShadow: '-24px 0 80px rgba(0,0,0,0.3)',
+          borderLeft: '1px solid var(--border-strong)',
+          boxShadow: '-32px 0 100px rgba(45,31,14,0.25)',
           display: 'flex', flexDirection: 'column',
-          animation: 'slideIn 0.22s cubic-bezier(0.4,0,0.2,1)',
+          animation: 'slideIn 0.25s cubic-bezier(0.22,1,0.36,1)',
         }}
       >
-        <style>{`@keyframes slideIn { from { transform: translateX(40px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }`}</style>
+        <style>{`
+          @keyframes slideIn { from { transform: translateX(48px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+          ._drawer-close:hover { background: var(--accent-subtle) !important; border-color: var(--accent-border) !important; color: var(--accent) !important; }
+          ._hist-card:hover { border-color: var(--accent-border) !important; box-shadow: 0 4px 20px rgba(45,31,14,0.10) !important; transform: translateY(-1px) !important; }
+        `}</style>
 
-        {/* Drawer Header */}
+        {/* Stripe + Header */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
+
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '18px 24px', borderBottom: '1px solid var(--border)',
           position: 'sticky', top: 0, background: 'var(--bg-elevated)', zIndex: 10,
+          backdropFilter: 'blur(20px)',
         }}>
           <div>
-            <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 2px' }}>
+            <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 3px', fontWeight: 500 }}>
               {formatDate(entry.created_at)} · {formatSource(entry.source)}
             </p>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            <h2 style={{
+              fontSize: 17, fontWeight: 800, color: 'var(--text-heading)', margin: 0,
+              fontFamily: 'var(--font-display)', letterSpacing: '-0.02em',
+            }}>
               Analysis detail
             </h2>
           </div>
           <button
+            className="_drawer-close"
             onClick={onClose}
             style={{
-              width: 30, height: 30, borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border)', background: 'none',
+              width: 32, height: 32, borderRadius: 8,
+              border: '1px solid var(--border)', background: 'var(--bg-subtle)',
               cursor: 'pointer', color: 'var(--text-tertiary)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s',
             }}
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -273,10 +296,14 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
           </button>
         </div>
 
-        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 28 }}>
+        <div style={{ padding: '24px 24px 40px', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
           {/* Score hero */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 20,
+            padding: '20px', background: 'var(--bg)', borderRadius: 14,
+            border: '1px solid var(--border)',
+          }}>
             <div style={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
               {(() => {
                 const r = 30, circ = 2 * Math.PI * r
@@ -285,36 +312,39 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 return (
                   <>
                     <svg width="80" height="80" viewBox="0 0 80 80">
-                      <circle cx="40" cy="40" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="6" />
-                      <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="6"
+                      <circle cx="40" cy="40" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5.5" />
+                      <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="5.5"
                         strokeLinecap="round"
                         strokeDasharray={`${dash} ${circ}`}
                         transform="rotate(-90 40 40)"
                       />
                     </svg>
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color, lineHeight: 1 }}>{entry.total_score}</span>
+                      <span style={{ fontSize: 20, fontWeight: 800, color, lineHeight: 1, fontFamily: 'var(--font-display)' }}>{entry.total_score}</span>
                       <span style={{ fontSize: 9, color: 'var(--text-tertiary)', lineHeight: 1, marginTop: 2 }}>/100</span>
                     </div>
                   </>
                 )
               })()}
             </div>
-            <div>
-              <span style={{
-                display: 'inline-block', fontSize: 12, fontWeight: 700,
-                color: vColor, background: `${vColor}14`,
-                border: `1px solid ${vColor}30`,
-                padding: '3px 10px', borderRadius: 20, marginBottom: 8,
-              }}>
-                {RATING_LABELS[entry.rating]}
-              </span>
-              {(entry.detected_domain || entry.detected_level) && (
-                <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '0 0 6px' }}>
-                  {[entry.detected_domain, entry.detected_level].filter(Boolean).join(' · ')}
-                </p>
-              )}
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', gap: 7, marginBottom: 8, flexWrap: 'wrap' }}>
+                <span style={{
+                  display: 'inline-block', fontSize: 11, fontWeight: 700,
+                  letterSpacing: '0.04em', textTransform: 'uppercase' as const,
+                  color: vColor, background: `${vColor}14`,
+                  border: `1px solid ${vColor}28`,
+                  padding: '3px 10px', borderRadius: 20,
+                }}>
+                  {RATING_LABELS[entry.rating]}
+                </span>
+                {(entry.detected_domain || entry.detected_level) && (
+                  <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500, alignSelf: 'center' }}>
+                    {[entry.detected_domain, entry.detected_level].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                 {entry.summary}
               </p>
             </div>
@@ -322,132 +352,175 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
 
           {/* First Impression */}
           {entry.first_impression && (
-            <div>
-              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-                First Impression
-              </h3>
-              <div style={{ padding: '14px 16px', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <DrawerSection title="First Impression">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                   {entry.first_impression.what_recruiter_sees}
                 </p>
                 {entry.first_impression.recommended_title !== entry.first_impression.current_title && (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>{entry.first_impression.current_title}</span>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '10px 12px', background: 'var(--bg-subtle)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>{entry.first_impression.current_title}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>→</span>
-                    <span style={{ fontSize: 11, color: 'var(--score-high)', fontWeight: 600 }}>{entry.first_impression.recommended_title}</span>
+                    <span style={{ fontSize: 12, color: 'var(--score-high)', fontWeight: 600 }}>{entry.first_impression.recommended_title}</span>
                   </div>
                 )}
-                <span style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                  color: entry.first_impression.passes_7_second_test ? '#16A34A' : '#DC2626',
-                  alignSelf: 'flex-start',
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                  textTransform: 'uppercase' as const,
+                  color: entry.first_impression.passes_7_second_test ? '#15803D' : '#DC2626',
+                  background: entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
+                  border: `1px solid ${entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`,
+                  padding: '4px 10px', borderRadius: 20, alignSelf: 'flex-start',
                 }}>
-                  {entry.first_impression.passes_7_second_test ? '✓ Passes 7-second test' : '✗ Fails 7-second test'}
-                </span>
+                  {entry.first_impression.passes_7_second_test
+                    ? <><svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Passes 7-second test</>
+                    : <><svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Fails 7-second test</>
+                  }
+                </div>
               </div>
-            </div>
+            </DrawerSection>
           )}
 
           {/* Red Flags */}
           {entry.red_flags && entry.red_flags.length > 0 && (
-            <div>
-              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-                Red Flags
-              </h3>
+            <DrawerSection title={`Red Flags (${entry.red_flags.length})`}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {entry.red_flags.map((flag, i) => {
                   const c = severityColor(flag.severity)
                   return (
-                    <div key={i} style={{ padding: '12px 14px', background: `${c}08`, borderRadius: 'var(--radius-md)', border: `1px solid ${c}25` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isPro && flag.how_to_fix ? 8 : 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: c, padding: '2px 7px', borderRadius: 4, background: `${c}14` }}>
+                    <div key={i} style={{
+                      padding: '12px 14px', background: `${c}07`,
+                      borderRadius: 10, border: `1px solid ${c}22`,
+                      borderLeft: `3px solid ${c}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isPro && flag.how_to_fix ? 10 : 0 }}>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, textTransform: 'uppercase' as const,
+                          letterSpacing: '0.06em', color: c,
+                          padding: '2px 7px', borderRadius: 4, background: `${c}14`,
+                          flexShrink: 0,
+                        }}>
                           {flag.severity}
                         </span>
-                        <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{flag.flag}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.4 }}>{flag.flag}</span>
                       </div>
                       {isPro && flag.how_to_fix && (
-                        <div style={{ padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', borderLeft: `3px solid ${c}` }}>
-                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{flag.how_to_fix}</p>
+                        <div style={{ padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 7 }}>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>{flag.how_to_fix}</p>
                         </div>
                       )}
                     </div>
                   )
                 })}
               </div>
-            </div>
+            </DrawerSection>
           )}
 
           {/* Top 3 Actions */}
           {entry.top_3_actions && entry.top_3_actions.length > 0 && (
-            <div style={{ position: 'relative' }}>
-              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-                Top Actions
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, filter: isPro ? 'none' : 'blur(4px)', userSelect: isPro ? 'auto' : 'none', pointerEvents: isPro ? 'auto' : 'none' }}>
+            <DrawerSection title="Top Actions">
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: 10,
+                filter: isPro ? 'none' : 'blur(4px)',
+                userSelect: isPro ? 'auto' : 'none',
+                pointerEvents: isPro ? 'auto' : 'none',
+                position: 'relative',
+              }}>
                 {entry.top_3_actions.map((action, i) => (
                   <div key={i} style={{
                     padding: '14px 16px', background: 'var(--bg)',
-                    borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
-                    borderLeft: '3px solid var(--text-primary)',
+                    borderRadius: 10, border: '1px solid var(--border)',
+                    borderLeft: '3px solid var(--accent)',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-muted)', width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+                      <span style={{
+                        fontSize: 10, fontWeight: 800, color: '#fff',
+                        background: 'var(--accent)',
+                        width: 20, height: 20, borderRadius: 6,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0, marginTop: 1,
+                      }}>
                         {i + 1}
                       </span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{action.action}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{action.action}</span>
                     </div>
-                    <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.5, margin: 0 }}>{action.why_it_matters}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.55, margin: '0 0 0 30px' }}>{action.why_it_matters}</p>
                     {isPro && action.how && (
-                      <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)' }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>How</p>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>{action.how}</p>
+                      <div style={{ marginTop: 10, marginLeft: 30, padding: '8px 10px', background: 'var(--bg-subtle)', borderRadius: 7 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-tertiary)', margin: '0 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>How</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, margin: 0 }}>{action.how}</p>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
               {!isPro && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <a href="/" style={{ padding: '10px 20px', background: 'var(--text-primary)', color: 'var(--bg)', borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
-                    Unlock full analysis — €2
+                <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
+                  <a href="/" style={{
+                    padding: '10px 22px',
+                    background: 'var(--accent)', color: '#fff',
+                    borderRadius: 9, fontSize: 13, fontWeight: 700,
+                    textDecoration: 'none',
+                    boxShadow: '0 4px 12px rgba(212,98,42,0.30)',
+                  }}>
+                    Unlock full analysis — €1.99
                   </a>
                 </div>
               )}
-            </div>
+            </DrawerSection>
           )}
 
           {/* Career Story */}
           {entry.career_story && (
-            <div>
-              <h3 style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-tertiary)', margin: '0 0 12px' }}>
-                Career Story
-              </h3>
-              <div style={{ padding: '14px 16px', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <DrawerSection title="Career Story">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
                   {entry.career_story.trajectory_detected}
                 </p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                    color: entry.career_story.progression_clear ? '#16A34A' : '#CA8A04',
-                    padding: '2px 7px', borderRadius: 4,
-                    background: entry.career_story.progression_clear ? 'rgba(34,197,94,0.1)' : 'rgba(202,138,4,0.1)',
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+                    color: entry.career_story.progression_clear ? '#15803D' : '#A16207',
+                    padding: '3px 9px', borderRadius: 20,
+                    background: entry.career_story.progression_clear ? 'rgba(22,163,74,0.08)' : 'rgba(202,138,4,0.10)',
+                    border: `1px solid ${entry.career_story.progression_clear ? 'rgba(22,163,74,0.2)' : 'rgba(202,138,4,0.22)'}`,
                   }}>
                     {entry.career_story.progression_clear ? '✓ Clear progression' : '⚠ Unclear progression'}
                   </span>
                   <span style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)', padding: '2px 7px', borderRadius: 4, background: 'var(--bg-muted)',
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+                    color: 'var(--text-secondary)', padding: '3px 9px', borderRadius: 20,
+                    background: 'var(--bg-subtle)', border: '1px solid var(--border)',
                   }}>
                     {entry.career_story.seniority_match}
                   </span>
                 </div>
               </div>
-            </div>
+            </DrawerSection>
           )}
 
         </div>
       </div>
+    </div>
+  )
+}
+
+// ── DrawerSection helper ──────────────────────────────────────────────────────
+
+function DrawerSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <h3 style={{
+          fontSize: 11, fontWeight: 700, letterSpacing: '0.07em',
+          textTransform: 'uppercase' as const, color: 'var(--text-tertiary)', margin: 0,
+        }}>
+          {title}
+        </h3>
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      </div>
+      {children}
     </div>
   )
 }
@@ -481,113 +554,149 @@ function SavedJobCard({ job, token, onStatusChange }: {
     }
   }
 
+  const isApplied = job.status === 'applied'
+
   return (
     <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 16,
-      padding: '16px 20px',
+      padding: '18px 20px',
       background: 'var(--bg-elevated)',
-      border: `1px solid ${job.status === 'applied' ? 'rgba(22,163,74,0.25)' : 'var(--border)'}`,
-      borderRadius: 'var(--radius-lg)',
+      border: `1px solid ${isApplied ? 'rgba(22,163,74,0.22)' : 'var(--border)'}`,
+      borderRadius: 14,
       transition: 'border-color 0.15s',
     }}>
-      {/* Status indicator */}
-      <div style={{
-        width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 5,
-        background: job.status === 'applied' ? 'var(--score-high)' : 'var(--accent)',
-      }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        {/* Company logo placeholder */}
+        <div style={{
+          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+          background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 14, fontWeight: 700, color: 'var(--text-tertiary)',
+          fontFamily: 'var(--font-display)',
+        }}>
+          {job.company.slice(0, 1).toUpperCase()}
+        </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
               {job.title}
             </div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3, display: 'flex', gap: 6, flexWrap: 'wrap' as const, alignItems: 'center' }}>
-              <span>{job.company}</span>
-              {job.location && <><span style={{ color: 'var(--border-strong)' }}>·</span><span>{job.location}</span></>}
-              {salary && <><span style={{ color: 'var(--border-strong)' }}>·</span><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{salary}</span></>}
-              {job.remote && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--accent)', background: 'var(--accent-subtle)', border: '0.5px solid var(--accent-border)', borderRadius: 3, padding: '1px 6px' }}>REMOTE</span>}
-            </div>
+            <span style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+              textTransform: 'uppercase' as const,
+              padding: '3px 9px', borderRadius: 20, flexShrink: 0,
+              color: isApplied ? '#15803D' : 'var(--accent)',
+              background: isApplied ? 'rgba(22,163,74,0.08)' : 'var(--accent-subtle)',
+              border: `1px solid ${isApplied ? 'rgba(22,163,74,0.22)' : 'var(--accent-border)'}`,
+            }}>
+              {isApplied ? '✓ Applied' : 'Saved'}
+            </span>
           </div>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' as const,
-            padding: '2px 8px', borderRadius: 20, flexShrink: 0,
-            color: job.status === 'applied' ? 'var(--score-high)' : 'var(--accent)',
-            background: job.status === 'applied' ? 'rgba(22,163,74,0.08)' : 'var(--accent-subtle)',
-            border: `0.5px solid ${job.status === 'applied' ? 'rgba(22,163,74,0.25)' : 'var(--accent-border)'}`,
-          }}>
-            {job.status === 'applied' ? '✓ Applied' : 'Saved'}
-          </span>
-        </div>
 
-        <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 6 }}>
-          Saved {formatDate(job.saved_at)}{job.applied_at ? ` · Applied ${formatDate(job.applied_at)}` : ''}
-        </div>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', gap: 6, flexWrap: 'wrap' as const, alignItems: 'center', marginBottom: 8, fontWeight: 500 }}>
+            <span>{job.company}</span>
+            {job.location && <><span style={{ color: 'var(--border-strong)' }}>·</span><span>{job.location}</span></>}
+            {salary && <><span style={{ color: 'var(--border-strong)' }}>·</span><span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{salary}</span></>}
+            {job.remote && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
+                color: 'var(--accent)', background: 'var(--accent-subtle)',
+                border: '1px solid var(--accent-border)', borderRadius: 4, padding: '2px 7px',
+              }}>Remote</span>
+            )}
+          </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-          <a
-            href={job.redirect_url} target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', background: 'var(--bg-muted)', border: '0.5px solid var(--border-strong)', borderRadius: 4, padding: '5px 12px', textDecoration: 'none' }}
-          >
-            View job →
-          </a>
-          {job.status === 'saved' ? (
-            <button
-              onClick={() => handleAction('apply')} disabled={loading}
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--score-high)', background: 'rgba(22,163,74,0.06)', border: '0.5px solid rgba(22,163,74,0.2)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1 }}
+          <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 12, fontWeight: 500 }}>
+            Saved {formatDate(job.saved_at)}{job.applied_at ? ` · Applied ${formatDate(job.applied_at)}` : ''}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+            <a
+              href={job.redirect_url} target="_blank" rel="noopener noreferrer"
+              style={{
+                fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
+                background: 'var(--bg-subtle)', border: '1px solid var(--border-strong)',
+                borderRadius: 8, padding: '6px 14px', textDecoration: 'none',
+                transition: 'background 0.15s, border-color 0.15s',
+              }}
             >
-              Mark applied
-            </button>
-          ) : (
+              View job →
+            </a>
+            {job.status === 'saved' ? (
+              <button
+                onClick={() => handleAction('apply')} disabled={loading}
+                style={{
+                  fontSize: 12, fontWeight: 600, color: '#15803D',
+                  background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.22)',
+                  borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                Mark applied
+              </button>
+            ) : (
+              <button
+                onClick={() => handleAction('unapply')} disabled={loading}
+                style={{
+                  fontSize: 12, color: 'var(--text-tertiary)',
+                  background: 'none', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1,
+                }}
+              >
+                Undo applied
+              </button>
+            )}
             <button
-              onClick={() => handleAction('unapply')} disabled={loading}
-              style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: '0.5px solid var(--border)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1 }}
+              onClick={() => handleAction('unsave')} disabled={loading}
+              style={{
+                fontSize: 12, color: 'var(--text-tertiary)',
+                background: 'none', border: '1px solid var(--border)',
+                borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
+                fontFamily: 'var(--font-sans)', marginLeft: 'auto', opacity: loading ? 0.5 : 1,
+              }}
             >
-              Undo applied
+              Remove
             </button>
-          )}
-          <button
-            onClick={() => handleAction('unsave')} disabled={loading}
-            style={{ fontSize: 12, color: 'var(--text-tertiary)', background: 'none', border: '0.5px solid var(--border)', borderRadius: 4, padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', marginLeft: 'auto', opacity: loading ? 0.5 : 1 }}
-          >
-            Remove
-          </button>
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-// ── Empty State ───────────────────────────────────────────────────────────────
+// ── Empty States ──────────────────────────────────────────────────────────────
 
 function EmptyState() {
   return (
     <div style={{ textAlign: 'center', padding: '80px 24px' }}>
       <div style={{
-        width: 56, height: 56, borderRadius: '50%',
-        background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+        width: 64, height: 64, borderRadius: 16,
+        background: 'var(--accent-subtle)', border: '1px solid var(--accent-border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 20px',
       }}>
-        <svg width="22" height="22" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24">
+        <svg width="26" height="26" fill="none" stroke="var(--accent)" strokeWidth="1.5" viewBox="0 0 24 24">
           <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
           <rect x="9" y="3" width="6" height="4" rx="1" />
         </svg>
       </div>
-      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>No analyses yet</p>
-      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px' }}>
+      <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading)', margin: '0 0 8px', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>No analyses yet</p>
+      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 28px', fontWeight: 500 }}>
         Run your first analysis and it will appear here.
       </p>
       <Link href="/" style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '10px 20px',
-        background: 'var(--text-primary)', color: 'var(--bg)',
-        borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        padding: '11px 24px',
+        background: 'var(--accent)', color: '#fff',
+        borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
+        boxShadow: '0 4px 14px rgba(212,98,42,0.28)',
       }}>
-        Analyze something
-        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        Analyze a CV
+        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
         </svg>
       </Link>
@@ -599,28 +708,29 @@ function EmptySavedJobs() {
   return (
     <div style={{ textAlign: 'center', padding: '80px 24px' }}>
       <div style={{
-        width: 56, height: 56, borderRadius: '50%',
-        background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+        width: 64, height: 64, borderRadius: 16,
+        background: 'var(--accent-subtle)', border: '1px solid var(--accent-border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 20px',
       }}>
-        <svg width="22" height="22" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24">
+        <svg width="26" height="26" fill="none" stroke="var(--accent)" strokeWidth="1.5" viewBox="0 0 24 24">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
         </svg>
       </div>
-      <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>No saved jobs yet</p>
-      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px' }}>
+      <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading)', margin: '0 0 8px', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>No saved jobs yet</p>
+      <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 28px', fontWeight: 500 }}>
         Star jobs from your analysis results to track them here.
       </p>
       <Link href="/" style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '10px 20px',
-        background: 'var(--text-primary)', color: 'var(--bg)',
-        borderRadius: 'var(--radius-sm)', fontSize: 14, fontWeight: 600,
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        padding: '11px 24px',
+        background: 'var(--accent)', color: '#fff',
+        borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
+        boxShadow: '0 4px 14px rgba(212,98,42,0.28)',
       }}>
         Find matching jobs
-        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
           <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
         </svg>
       </Link>
@@ -635,17 +745,14 @@ function HistoryContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Read ?tab=saved from URL (set by AccountDropdown "Saved jobs" link)
   const initialTab = searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
   const [tab, setTab] = useState<'analyses' | 'saved'>(initialTab)
 
-  // Sync tab when URL param changes (e.g. navigating back)
   useEffect(() => {
     const t = searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
     setTab(t)
   }, [searchParams])
 
-  // Analyses state
   const [entries,     setEntries]     = useState<HistoryEntry[]>([])
   const [loading,     setLoading]     = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -653,7 +760,6 @@ function HistoryContent() {
   const [page,        setPage]        = useState(0)
   const [selected,    setSelected]    = useState<HistoryEntry | null>(null)
 
-  // Saved jobs state
   const [savedJobs,        setSavedJobs]        = useState<SavedJobEntry[]>([])
   const [savedLoading,     setSavedLoading]     = useState(false)
   const [savedFilter,      setSavedFilter]      = useState<'all' | 'saved' | 'applied'>('all')
@@ -663,14 +769,12 @@ function HistoryContent() {
     const supabase = createSupabaseBrowser()
     const from = pageIndex * PAGE_SIZE
     const to   = from + PAGE_SIZE - 1
-
     const { data, error } = await supabase
       .from('roasts')
       .select(LIST_SELECT)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .range(from, to)
-
     if (!error && data) {
       setEntries(prev => append ? [...prev, ...(data as unknown as HistoryEntry[])] : (data as unknown as HistoryEntry[]))
       setHasMore(data.length === PAGE_SIZE)
@@ -692,19 +796,15 @@ function HistoryContent() {
   useEffect(() => {
     if (authLoading) return
     if (!user) { setLoading(false); router.replace('/'); return }
-
-    // Get session token for API calls
     const supabase = createSupabaseBrowser()
     supabase.auth.getSession().then(({ data }) => {
       const tok = data.session?.access_token ?? null
       setToken(tok)
       if (tok) fetchSavedJobs(tok, savedFilter)
     })
-
     fetchPage(0, user.id).finally(() => setLoading(false))
   }, [user, authLoading, router])
 
-  // Refetch saved jobs when filter changes
   useEffect(() => {
     if (!token) return
     fetchSavedJobs(token, savedFilter)
@@ -737,20 +837,37 @@ function HistoryContent() {
     const url = newTab === 'saved' ? '/history?tab=saved' : '/history'
     router.replace(url, { scroll: false })
   }
+
   const savedCount   = savedJobs.filter(j => j.status === 'saved').length
   const appliedCount = savedJobs.filter(j => j.status === 'applied').length
+  const filteredJobs = savedFilter === 'all' ? savedJobs : savedJobs.filter(j => j.status === savedFilter)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <style>{`
+        ._hist-card:hover {
+          border-color: var(--accent-border) !important;
+          box-shadow: 0 4px 20px rgba(45,31,14,0.10) !important;
+          transform: translateY(-1px) !important;
+        }
+        ._hist-tab { transition: color 0.15s, border-color 0.15s !important; }
+        ._hist-tab:hover { color: var(--text-primary) !important; }
+        ._hist-filter { transition: all 0.15s !important; }
+        ._hist-filter:hover { border-color: var(--border-strong) !important; color: var(--text-secondary) !important; }
+        ._hist-loadmore { transition: all 0.15s !important; }
+        ._hist-loadmore:hover { border-color: var(--accent-border) !important; color: var(--accent) !important; background: var(--accent-subtle) !important; }
+      `}</style>
 
       {/* Header */}
       <header style={{
         borderBottom: '1px solid var(--border)',
-        background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
+        background: 'color-mix(in srgb, var(--bg-elevated) 92%, transparent)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         position: 'sticky', top: 0, zIndex: 100,
       }}>
+        {/* Accent stripe */}
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)' }} />
         <div style={{
           maxWidth: 860, margin: '0 auto',
           padding: '0 32px',
@@ -760,7 +877,7 @@ function HistoryContent() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <Link href="/" style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              color: 'var(--text-tertiary)', textDecoration: 'none', fontSize: 13,
+              color: 'var(--text-tertiary)', textDecoration: 'none', fontSize: 13, fontWeight: 500,
               transition: 'color 0.15s',
             }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'}
@@ -772,13 +889,19 @@ function HistoryContent() {
               Back
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-              CVCheck
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+                <rect width="28" height="28" rx="6" fill="#D4622A"/>
+                <path d="M7 14.5L11.5 19L21 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
+                CVCheck
+              </span>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {user && (
-              <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-tertiary)', fontWeight: 500 }}>
                 {user.email?.split('@')[0]}
               </span>
             )}
@@ -788,42 +911,52 @@ function HistoryContent() {
       </header>
 
       {/* Main content */}
-      <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '40px 32px' }}>
+      <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '48px 32px' }}>
 
-        {/* Page title + tabs */}
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px', letterSpacing: '-0.03em' }}>
+        {/* Page title */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{
+            fontSize: 32, fontWeight: 800, color: 'var(--text-heading)',
+            margin: '0 0 4px', letterSpacing: '-0.03em',
+            fontFamily: 'var(--font-display)', lineHeight: 1.1,
+          }}>
             History
           </h1>
+          <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px', fontWeight: 500 }}>
+            Your CV analyses and saved job applications.
+          </p>
 
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
+          <div style={{
+            display: 'flex', gap: 0,
+            borderBottom: '1.5px solid var(--border)',
+          }}>
             {([
               { key: 'analyses', label: 'Analyses', count: entries.length },
               { key: 'saved',    label: 'Saved Jobs', count: savedJobs.length },
             ] as const).map(t => (
               <button
                 key={t.key}
+                className="_hist-tab"
                 onClick={() => handleTabChange(t.key)}
                 style={{
                   fontSize: 13, fontWeight: 600,
-                  color: tab === t.key ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  color: tab === t.key ? 'var(--accent)' : 'var(--text-tertiary)',
                   background: 'none', border: 'none',
-                  borderBottom: `2px solid ${tab === t.key ? 'var(--text-primary)' : 'transparent'}`,
-                  padding: '8px 14px', marginBottom: -1,
+                  borderBottom: `2px solid ${tab === t.key ? 'var(--accent)' : 'transparent'}`,
+                  padding: '8px 16px', marginBottom: -1.5,
                   cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                  transition: 'color 0.15s',
-                  display: 'flex', alignItems: 'center', gap: 6,
+                  display: 'flex', alignItems: 'center', gap: 7,
                 }}
               >
                 {t.label}
                 {t.count > 0 && (
                   <span style={{
                     fontSize: 10, fontWeight: 700,
-                    color: tab === t.key ? 'var(--bg)' : 'var(--text-tertiary)',
-                    background: tab === t.key ? 'var(--text-primary)' : 'var(--bg-muted)',
-                    borderRadius: 20, padding: '1px 6px',
-                    minWidth: 18, textAlign: 'center',
+                    color: tab === t.key ? '#fff' : 'var(--text-tertiary)',
+                    background: tab === t.key ? 'var(--accent)' : 'var(--bg-muted)',
+                    borderRadius: 20, padding: '1px 7px',
+                    minWidth: 20, textAlign: 'center',
                   }}>
                     {t.count}
                   </span>
@@ -840,13 +973,13 @@ function HistoryContent() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1, 2, 3].map(i => (
                   <div key={i} style={{
-                    height: 90, borderRadius: 'var(--radius-lg)',
+                    height: 92, borderRadius: 14,
                     background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                    animation: 'pulse 1.5s ease-in-out infinite',
-                    opacity: 1 - i * 0.15,
+                    animation: 'skPulse 1.5s ease-in-out infinite',
+                    opacity: 1 - i * 0.18,
                   }} />
                 ))}
-                <style>{`@keyframes pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }`}</style>
+                <style>{`@keyframes skPulse { 0%,100%{opacity:0.5} 50%{opacity:0.9} }`}</style>
               </div>
             )}
             {!loading && !authLoading && entries.length === 0 && <EmptyState />}
@@ -857,19 +990,17 @@ function HistoryContent() {
                 ))}
                 {hasMore && (
                   <button
+                    className="_hist-loadmore"
                     onClick={loadMore} disabled={loadingMore}
                     style={{
                       marginTop: 8, padding: '11px 20px',
                       background: 'transparent', border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)',
-                      fontSize: 13, fontWeight: 500,
+                      borderRadius: 10, color: 'var(--text-secondary)',
+                      fontSize: 13, fontWeight: 600,
                       cursor: loadingMore ? 'default' : 'pointer',
                       opacity: loadingMore ? 0.5 : 1,
-                      transition: 'border-color 0.15s, color 0.15s',
                       fontFamily: 'var(--font-sans)',
                     }}
-                    onMouseEnter={e => { if (!loadingMore) { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)' } }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)' }}
                   >
                     {loadingMore ? 'Loading…' : 'Load more'}
                   </button>
@@ -882,24 +1013,34 @@ function HistoryContent() {
         {/* ── SAVED JOBS TAB ── */}
         {tab === 'saved' && (
           <>
-            {/* Stats + filter */}
             {savedJobs.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap' as const, gap: 10 }}>
-                <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
-                  <span><strong style={{ color: 'var(--text-primary)' }}>{savedCount}</strong> saved</span>
-                  <span><strong style={{ color: 'var(--score-high)' }}>{appliedCount}</strong> applied</span>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginBottom: 20, flexWrap: 'wrap' as const, gap: 12,
+              }}>
+                {/* Stats */}
+                <div style={{ display: 'flex', gap: 20, fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span>
+                    <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{savedCount}</strong> saved
+                  </span>
+                  <span>
+                    <strong style={{ color: 'var(--score-high)', fontWeight: 700 }}>{appliedCount}</strong> applied
+                  </span>
                 </div>
+                {/* Filter pills */}
                 <div style={{ display: 'flex', gap: 6 }}>
                   {(['all', 'saved', 'applied'] as const).map(f => (
                     <button
-                      key={f} onClick={() => setSavedFilter(f)}
+                      key={f}
+                      className="_hist-filter"
+                      onClick={() => setSavedFilter(f)}
                       style={{
-                        fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
-                        textTransform: 'uppercase' as const, padding: '3px 10px', borderRadius: 4,
-                        border: `0.5px solid ${savedFilter === f ? 'var(--text-primary)' : 'var(--border)'}`,
-                        background: savedFilter === f ? 'var(--text-primary)' : 'transparent',
-                        color: savedFilter === f ? 'var(--bg)' : 'var(--text-tertiary)',
-                        cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.1s',
+                        fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                        textTransform: 'capitalize' as const, padding: '4px 12px', borderRadius: 20,
+                        border: `1px solid ${savedFilter === f ? 'var(--accent)' : 'var(--border)'}`,
+                        background: savedFilter === f ? 'var(--accent)' : 'transparent',
+                        color: savedFilter === f ? '#fff' : 'var(--text-tertiary)',
+                        cursor: 'pointer', fontFamily: 'var(--font-sans)',
                       }}
                     >
                       {f}
@@ -912,16 +1053,16 @@ function HistoryContent() {
             {savedLoading && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1, 2, 3].map(i => (
-                  <div key={i} style={{ height: 110, borderRadius: 'var(--radius-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', animation: 'pulse 1.5s ease-in-out infinite', opacity: 1 - i * 0.15 }} />
+                  <div key={i} style={{ height: 120, borderRadius: 14, background: 'var(--bg-elevated)', border: '1px solid var(--border)', animation: 'skPulse 1.5s ease-in-out infinite', opacity: 1 - i * 0.18 }} />
                 ))}
               </div>
             )}
 
             {!savedLoading && savedJobs.length === 0 && <EmptySavedJobs />}
 
-            {!savedLoading && savedJobs.length > 0 && (
+            {!savedLoading && filteredJobs.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {savedJobs.map(job => (
+                {filteredJobs.map(job => (
                   <SavedJobCard
                     key={job.job_id}
                     job={job}
@@ -931,14 +1072,25 @@ function HistoryContent() {
                 ))}
               </div>
             )}
+
+            {!savedLoading && savedJobs.length > 0 && filteredJobs.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--text-tertiary)', fontSize: 14, fontWeight: 500 }}>
+                No {savedFilter} jobs found.
+              </div>
+            )}
           </>
         )}
 
       </main>
 
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 860, width: '100%', margin: '0 auto' }}>
+      <footer style={{
+        borderTop: '1px solid var(--border)',
+        padding: '24px 32px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        maxWidth: 860, width: '100%', margin: '0 auto',
+      }}>
         <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-          © 2026 Dulgheru Stefan. All rights reserved.
+          © 2026 CVCheck · cvcheck.app
         </span>
       </footer>
 
