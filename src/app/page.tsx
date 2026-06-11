@@ -792,7 +792,11 @@ export default function Home() {
         </div>
         <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} className='nav-link' style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
+            <li key={href}><button onClick={()=>{
+              const el = document.querySelector(href)
+              if (el) { el.scrollIntoView({behavior:'smooth'}) }
+              else { router.push(`/${href}`) }
+            }} className='nav-link' style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -1089,7 +1093,7 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'#fff', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Alerts</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'rgba(255,255,255,0.8)', lineHeight:1.65, maxWidth:480, margin:'0 auto 32px', fontWeight:500 }}>Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-outline" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Enable Job Alerts ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden', transition:'opacity 0.15s, transform 0.12s' }}>Enable Job Alerts ↑</button>
 
               {/* Email mockup */}
               <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ maxWidth:560, margin:'0 auto', background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid rgba(255,255,255,0.2)', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', overflow:'hidden', textAlign:'left' as const }}>
@@ -1228,14 +1232,14 @@ export default function Home() {
               <p style={{ fontSize:13, color:'#8A6848', lineHeight:1.6 }}>AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>
             </div>
             {[
-              { title:'Product', links:['CV Analysis','Job Matching','Job Alerts','Pricing'] },
-              { title:'Company', links:['About','Blog','Privacy Policy','Terms of Service'] },
-              { title:'Support', links:['Help Center','Contact'] },
+              { title:'Product', links:[{label:'CV Analysis',href:'/#analysis'},{label:'Job Matching',href:'/#jobs'},{label:'Job Alerts',href:'/#alerts'},{label:'Pricing',href:'/#pricing'}] },
+              { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'}] },
+              { title:'Support', links:[{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
             ].map(col=>(
               <div key={col.title}>
                 <div style={{ fontSize:12, fontWeight:700, color:'#fff', marginBottom:14, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{col.title}</div>
                 <ul style={{ listStyle:'none', display:'flex', flexDirection:'column' as const, gap:10 }}>
-                  {col.links.map(l=><li key={l}><Link href="/" style={{ fontSize:13, color:'#8A6848', textDecoration:'none' }}>{l}</Link></li>)}
+                  {col.links.map(l=><li key={l.label}><Link href={l.href} style={{ fontSize:13, color:'#8A6848', textDecoration:'none' }}>{l.label}</Link></li>)}
                 </ul>
               </div>
             ))}
