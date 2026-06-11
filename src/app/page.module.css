@@ -194,10 +194,10 @@
 
 /* ── Title ── */
 .heroTitle {
-  font-family: var(--font-sans);
-  font-size: clamp(38px, 5.5vw, 64px);
-  line-height: 1.05;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 74px);
+  line-height: 1.0;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
   margin: 0 0 20px;
   font-weight: 800;
@@ -212,8 +212,8 @@
 
 /* ── Subtitle ── */
 .heroSubtitle {
-  font-size: 17px; color: var(--text-secondary);
-  line-height: 1.6; max-width: 480px;
+  font-size: 20px; color: var(--text-secondary);
+  line-height: 1.55; max-width: 600px;
   margin: 0 auto 48px;
   letter-spacing: -0.01em; font-weight: 400;
   animation: fadeUp 0.55s 0.21s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -407,10 +407,10 @@
 .statItem:hover { background: var(--bg-subtle); }
 
 .statNum {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 52px; font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -3px; line-height: 1;
+  letter-spacing: -0.02em; line-height: 1;
   transition: color 0.2s;
 }
 .statItem:hover .statNum { color: var(--accent); }
@@ -442,17 +442,17 @@
 }
 
 .sTitle {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: clamp(30px, 4vw, 48px);
   font-weight: 800;
-  letter-spacing: -0.03em; line-height: 1.08;
+  letter-spacing: -0.01em; line-height: 1.0;
   color: var(--text-primary); margin: 0;
 }
 
 .sSub {
-  font-size: 17px; color: var(--text-secondary);
-  margin: 0; line-height: 1.6;
-  letter-spacing: -0.01em; max-width: 480px;
+  font-size: 19px; color: var(--text-secondary);
+  margin: 0; line-height: 1.55;
+  letter-spacing: -0.01em; max-width: 560px;
   text-align: center; font-weight: 400;
 }
 
@@ -682,8 +682,8 @@
 }
 
 .pricingCardPrice {
-  font-family: var(--font-sans); font-size: 52px; font-weight: 800;
-  color: var(--text-primary); letter-spacing: -0.04em; line-height: 1;
+  font-family: var(--font-display); font-size: 52px; font-weight: 800;
+  color: var(--text-primary); letter-spacing: -0.02em; line-height: 1;
 }
 
 .pricingCardPeriod { font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
@@ -854,8 +854,8 @@
 
 .scoreNumber {
   font-size: 30px; font-weight: 800;
-  line-height: 1; letter-spacing: -0.04em;
-  font-family: var(--font-sans);
+  line-height: 1; letter-spacing: -0.02em;
+  font-family: var(--font-display);
   animation: scoreCountUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .scoreMax { font-size: 11px; color: var(--text-tertiary); }
@@ -1298,8 +1298,8 @@
 
 @media (max-width: 480px) {
   .upgradeHeaderBtn { display: none; }
-  .heroTitle { font-size: 38px; letter-spacing: -0.03em; }
-  .sTitle { font-size: 32px; letter-spacing: -0.025em; }
+  .heroTitle { font-size: 40px; letter-spacing: -0.01em; }
+  .sTitle { font-size: 30px; letter-spacing: -0.01em; }
 }
 
 /* prefers-reduced-motion handled in globals.css */
