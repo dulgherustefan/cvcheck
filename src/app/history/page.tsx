@@ -636,9 +636,14 @@ function HistoryContent() {
   const searchParams = useSearchParams()
 
   // Read ?tab=saved from URL (set by AccountDropdown "Saved jobs" link)
-  const [tab, setTab] = useState<'analyses' | 'saved'>(
-    searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
-  )
+  const initialTab = searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
+  const [tab, setTab] = useState<'analyses' | 'saved'>(initialTab)
+
+  // Sync tab when URL param changes (e.g. navigating back)
+  useEffect(() => {
+    const t = searchParams.get('tab') === 'saved' ? 'saved' : 'analyses'
+    setTab(t)
+  }, [searchParams])
 
   // Analyses state
   const [entries,     setEntries]     = useState<HistoryEntry[]>([])
@@ -693,7 +698,7 @@ function HistoryContent() {
     supabase.auth.getSession().then(({ data }) => {
       const tok = data.session?.access_token ?? null
       setToken(tok)
-      if (tok) fetchSavedJobs(tok)
+      if (tok) fetchSavedJobs(tok, savedFilter)
     })
 
     fetchPage(0, user.id).finally(() => setLoading(false))
@@ -727,7 +732,11 @@ function HistoryContent() {
     }
   }
 
-  const savedCount   = savedJobs.filter(j => j.status === 'saved').length
+  function handleTabChange(newTab: 'analyses' | 'saved') {
+    setTab(newTab)
+    const url = newTab === 'saved' ? '/history?tab=saved' : '/history'
+    router.replace(url, { scroll: false })
+  }
   const appliedCount = savedJobs.filter(j => j.status === 'applied').length
 
   return (
@@ -794,7 +803,7 @@ function HistoryContent() {
             ] as const).map(t => (
               <button
                 key={t.key}
-                onClick={() => setTab(t.key)}
+                onClick={() => handleTabChange(t.key)}
                 style={{
                   fontSize: 13, fontWeight: 600,
                   color: tab === t.key ? 'var(--text-primary)' : 'var(--text-tertiary)',

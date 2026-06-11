@@ -14,7 +14,7 @@ interface AccountModalProps {
 
 const TIER_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
   free:    { label: 'Free',    color: 'var(--text-tertiary)',  bg: 'var(--bg-subtle)',   border: 'var(--border)' },
-  pro:     { label: 'Pro',     color: 'var(--accent-hi)',     bg: 'var(--accent-subtle)', border: 'var(--border-strong)' },
+  pro:     { label: 'Pro',     color: 'var(--accent)',     bg: 'var(--accent-subtle)', border: 'var(--border-strong)' },
   premium: { label: 'Premium', color: '#B8881C',               bg: 'rgba(239,159,39,0.10)', border: 'rgba(239,159,39,0.25)' },
 }
 
