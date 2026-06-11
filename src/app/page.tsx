@@ -764,7 +764,7 @@ export default function Home() {
   useScrollReveal(appState === 'idle' || appState === 'error')
 
   const S = {
-    nav: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:60, borderBottom:'1px solid var(--border)', background:'var(--bg-elevated)', position:'sticky' as const, top:0, zIndex:200 },
+    nav: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:60, borderBottom:'1px solid var(--border)', background:'var(--bg-elevated)', position:'sticky' as const, top:0, zIndex:200, isolation:'isolate' as const },
     sect: (bg:string) => ({ background:bg, padding:'80px 40px' }),
     wrap: { maxWidth:1100, margin:'0 auto' },
     twoCol: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:64, alignItems:'center' as const },
@@ -790,18 +790,18 @@ export default function Home() {
           <svg viewBox="0 0 28 28" fill="none" width="28" height="28"><rect width="28" height="28" rx="6" fill="#D4622A"/><path d="M7 14.5L11.5 19L21 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           CVCheck
         </div>
-        <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none' }}>
+        <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
             <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} style={{ fontSize:14, color:'var(--text-secondary)', background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           {!authLoading&&(user?(
             <AccountDropdown user={user} tier={tier} onOpenAccount={()=>setShowAccountModal(true)} onOpenPlans={()=>setShowPlansModal(true)} onSignOut={handleSignOut}/>
           ):(
             <>
-              <button onClick={()=>setShowAuthModal(true)} style={{ fontSize:14, fontWeight:600, color:'var(--text-secondary)', background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign in</button>
-              <button onClick={scrollToUpload} style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Check My CV — Free</button>
+              <button onClick={()=>setShowAuthModal(true)} style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
+              <button onClick={()=>setShowAuthModal(true)} style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign up</button>
             </>
           ))}
           <ThemeToggle/>
