@@ -737,6 +737,7 @@ function HistoryContent() {
     const url = newTab === 'saved' ? '/history?tab=saved' : '/history'
     router.replace(url, { scroll: false })
   }
+  const savedCount   = savedJobs.filter(j => j.status === 'saved').length
   const appliedCount = savedJobs.filter(j => j.status === 'applied').length
 
   return (
