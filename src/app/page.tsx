@@ -426,7 +426,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
   return (
     <div style={{ maxWidth:800, margin:'0 auto', padding:'0 20px', display:'flex', flexDirection:'column' as const, gap:20 }}>
       {/* Score hero */}
-      <div style={{ display:'flex', alignItems:'center', gap:28, padding:'28px 32px', background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', boxShadow:'var(--shadow-md)' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:28, padding:'28px 32px', background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', boxShadow:'var(--shadow-md)' }}>
         <ScoreRing score={result.total_score}/>
         <div style={{ flex:1 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' as const, marginBottom:8 }}>
@@ -438,7 +438,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       </div>
 
       {/* First Impression */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
         <h2 style={{ fontSize:15, fontWeight:700, color:'var(--text-primary)', marginBottom:14, letterSpacing:'-0.01em' }}>First Impression</h2>
         <div style={{ padding:'14px 18px', borderRadius:6, border:`0.5px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.25)':'rgba(220,38,38,0.25)'}`, background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.04)':'rgba(220,38,38,0.04)' }}>
           <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', marginBottom:7 }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</div>
@@ -448,7 +448,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       </div>
 
       {/* Score Breakdown */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }} ref={barsRef}>
+      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }} ref={barsRef}>
         <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', marginBottom:4, letterSpacing:'-0.02em' }}>Score Breakdown</h2>
         {SCORE_DIMENSIONS.map(({key,label,max,desc})=>(
           <DimensionBar key={key} label={label} score={(result.scores as unknown as Record<string,number>)[key]??0} max={max} desc={desc} locked={false} onUnlock={unlock}/>
@@ -456,7 +456,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       </div>
 
       {/* Impact */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
           <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Impact & Achievements</h2>
           {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>}
@@ -481,7 +481,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       </div>
 
       {/* ATS */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
           <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>ATS Compatibility</h2>
           {result.keywords_locked&&<UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>}
@@ -504,7 +504,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
 
       {/* Red Flags */}
       {result.red_flags.length>0&&(
-        <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
             <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Red Flags</h2>
             {result.how_to_fix_locked&&<UnlockBtn label="Unlock fixes — €1.99" onClick={unlock}/>}
@@ -516,7 +516,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       )}
 
       {/* Top 3 Actions */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:10, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
           <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Top 3 Actions</h2>
           {result.actions_locked&&<UnlockBtn label="Unlock how-to + examples — €1.99" onClick={unlock}/>}
@@ -565,7 +565,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
   }
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'20px 16px' }} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:14, width:'100%', maxWidth:500, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)' }}>
+      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:12, width:'100%', maxWidth:500, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)' }}>
         <div style={{ padding:'24px 26px 20px', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
           <div>
             <h2 style={{ fontSize:17, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Plans</h2>
@@ -579,7 +579,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
           {(['free','pro','premium'] as const).map(pk=>{
             const p=PLAN_DEFS[pk]; const isCurrent=tier===pk
             return (
-              <div key={pk} style={{ border:pk==='pro'?'1.5px solid var(--border-strong)':'0.5px solid var(--border)', borderRadius:10, background:pk==='pro'?'var(--bg-subtle)':'var(--bg)', overflow:'hidden' }}>
+              <div key={pk} style={{ border:pk==='pro'?'1.5px solid var(--border-strong)':'0.5px solid var(--border)', borderRadius:8, background:pk==='pro'?'var(--bg-subtle)':'var(--bg)', overflow:'hidden' }}>
                 <div style={{ padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <span style={{ fontSize:11, fontWeight:700, color:pk==='pro'?'var(--text-primary)':pk==='premium'?'var(--score-high)':'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.07em' }}>{p.label}</span>
@@ -792,7 +792,7 @@ export default function Home() {
         </div>
         <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} style={{ fontSize:14, color:'var(--text-secondary)', background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
+            <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} className='nav-link' style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -800,8 +800,8 @@ export default function Home() {
             <AccountDropdown user={user} tier={tier} onOpenAccount={()=>setShowAccountModal(true)} onOpenPlans={()=>setShowPlansModal(true)} onSignOut={handleSignOut}/>
           ):(
             <>
-              <button onClick={()=>setShowAuthModal(true)} style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
-              <button onClick={()=>setShowAuthModal(true)} style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign up</button>
+              <button onClick={()=>setShowAuthModal(true)} className='btn-outline' style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
+              <button onClick={()=>setShowAuthModal(true)} className='btn-primary' style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign up</button>
             </>
           ))}
           <ThemeToggle/>
@@ -816,12 +816,12 @@ export default function Home() {
             <h1 style={{ fontSize:'clamp(36px,5vw,58px)', fontWeight:800, lineHeight:0.95, color:'var(--text-heading)', marginBottom:20, letterSpacing:'-0.025em', fontFamily:'var(--font-display)' }}>
               Your CV, Brutally Honest.<br/>Land More Interviews.
             </h1>
-            <p style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:600, margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em' }}>
+            <p style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:600, margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em', maxWidth:'60ch', margin:'0 auto 32px' }}>
               Upload your CV and get a full AI diagnosis — score, red flags, ATS gaps, and rewritten bullets — in seconds.
             </p>
 
             {/* Upload Box */}
-            <div id="upload" style={{ maxWidth:560, margin:'0 auto 12px', background:'var(--bg-elevated)', border:'0.5px solid var(--border-strong)', borderRadius:10, overflow:'hidden', boxShadow:'var(--shadow-xl)' }}>
+            <div id="upload" style={{ maxWidth:560, margin:'0 auto 12px', background:'var(--bg-elevated)', border:'0.5px solid var(--border-strong)', borderRadius:8, overflow:'hidden', boxShadow:'var(--shadow-xl)' }}>
               <div style={{ display:'flex', borderBottom:'0.5px solid var(--border)' }}>
                 {(['url','pdf'] as const).map(m=>(
                   <button key={m} onClick={()=>setMode(m)} style={{ flex:1, padding:'12px', fontSize:13, fontWeight:600, color:mode===m?'var(--text-primary)':'var(--text-tertiary)', background:mode===m?'var(--bg-elevated)':'var(--bg-subtle)', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', borderBottom:mode===m?'2px solid var(--accent)':'2px solid transparent', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
@@ -941,10 +941,10 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>AI CV Analysis</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:640, margin:'0 auto 16px' }}>Every recruiter bias, every ATS gap — exposed.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:19, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px', fontWeight:500 }}>CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper — flagging weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Analyze My CV — Free ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Analyze My CV — Free ↑</button>
 
               {/* Big mockup */}
-              <div data-sr data-sr-delay="0.28" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:14, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
+              <div data-sr data-sr-delay="0.28" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
                 {/* Mockup header bar */}
                 <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
                   <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
@@ -1020,10 +1020,10 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Matching</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit — with a score to prove it.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:19, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px', fontWeight:500 }}>CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↑</button>
 
               {/* Big job card mockup */}
-              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:14, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
+              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
                 <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
                   <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
                   <div style={{ flex:1, height:24, background:'var(--bg-muted)', borderRadius:4, maxWidth:300, margin:'0 auto' }}/>
@@ -1089,10 +1089,10 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'#fff', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Alerts</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'rgba(255,255,255,0.8)', lineHeight:1.65, maxWidth:480, margin:'0 auto 32px', fontWeight:500 }}>Subscribe once and get weekly job alerts tailored to your CV's domain and level — with fit scores so you only open the ones worth your time.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Enable Job Alerts ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-outline" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Enable Job Alerts ↑</button>
 
               {/* Email mockup */}
-              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ maxWidth:560, margin:'0 auto', background:'var(--bg-elevated)', borderRadius:14, border:'0.5px solid rgba(255,255,255,0.2)', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', overflow:'hidden', textAlign:'left' as const }}>
+              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ maxWidth:560, margin:'0 auto', background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid rgba(255,255,255,0.2)', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', overflow:'hidden', textAlign:'left' as const }}>
                 <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
                   <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
                   <div style={{ flex:1, height:24, background:'var(--bg-muted)', borderRadius:4, maxWidth:260, margin:'0 auto' }}/>
@@ -1138,7 +1138,7 @@ export default function Home() {
                   {n:'03',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, title:'Fix & Rewrite', desc:'Get AI-rewritten bullets, missing keywords, and how-to fixes.'},
                   {n:'04',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>, title:'Apply Smarter', desc:'Match to jobs with a fit score. Get weekly alerts. Land interviews.'},
                 ].map((s,i)=>(
-                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} style={{ background:'var(--bg-elevated)', borderRadius:12, padding:'28px 20px', border:'0.5px solid var(--border)', boxShadow:'0 2px 12px rgba(45,31,14,0.06)', textAlign:'center' as const }}>
+                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className='card-hover' style={{ background:'var(--bg-elevated)', borderRadius:12, padding:'28px 20px', border:'0.5px solid var(--border)', boxShadow:'0 2px 12px rgba(45,31,14,0.06)', textAlign:'center' as const }}>
                     <div style={{ width:48, height:48, borderRadius:12, background:'var(--accent-subtle)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>{s.icon}</div>
                     <div style={{ fontSize:10, fontWeight:800, color:'var(--accent)', letterSpacing:'0.1em', marginBottom:8, fontFamily:'var(--font-mono)' }}>STEP {s.n}</div>
                     <div style={{ fontSize:15, fontWeight:700, color:'var(--text-primary)', marginBottom:8 }}>{s.title}</div>
@@ -1175,7 +1175,7 @@ export default function Home() {
                   { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','AI bullet rewrites on your text','How-to-fix for every red flag','Missing ATS keywords','Career gap analysis','Top 3 actions with how-to + examples'], cta:'Get Pro — €1.99',   ctaAction:()=>setShowUpgradeModal(true), ctaStyle:{background:'var(--accent)',color:'#fff',border:'none'} },
                   { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',      ctaAction:()=>setShowUpgradeModal(true), ctaStyle:{background:'transparent',color:'var(--accent)',border:'2px solid var(--accent)'} },
                 ] as const).map((p,i)=>(
-                  <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} style={{ background:'var(--bg)', borderRadius:14, border:p.badge?'2px solid var(--border-strong)':'0.5px solid var(--border)', padding:'32px 28px', position:'relative' as const, boxShadow:p.badge?'0 8px 40px rgba(45,31,14,0.12)':'0 2px 8px rgba(45,31,14,0.06)' }}>
+                  <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} style={{ background:'var(--bg)', borderRadius:12, border:p.badge?'2px solid var(--border-strong)':'0.5px solid var(--border)', padding:'32px 28px', position:'relative' as const, boxShadow:p.badge?'0 8px 40px rgba(45,31,14,0.12)':'0 2px 8px rgba(45,31,14,0.06)' }}>
                     {p.badge&&<div style={{ position:'absolute' as const, top:-13, left:'50%', transform:'translateX(-50%)', background:'var(--accent)', color:'#fff', borderRadius:20, padding:'4px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.05em', whiteSpace:'nowrap' as const }}>{p.badge}</div>}
                     <div style={{ fontSize:12, fontWeight:700, color:p.badge?'var(--accent)':'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:10 }}>{p.label}</div>
                     <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:4 }}>
@@ -1200,7 +1200,7 @@ export default function Home() {
           <section style={{ background:'var(--bg)', padding:'96px 40px', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
             <div style={{ maxWidth:680, margin:'0 auto' }}>
               <h2 style={{ fontSize:'clamp(26px,3vw,38px)', fontWeight:800, color:'var(--text-heading)', letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:40 }}>The most honest feedback your CV will ever get.</h2>
-              <div style={{ background:'var(--bg-elevated)', borderRadius:14, border:'0.5px solid var(--border)', padding:'40px 44px', boxShadow:'0 8px 40px rgba(45,31,14,0.08)' }}>
+              <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border)', padding:'40px 44px', boxShadow:'0 8px 40px rgba(45,31,14,0.08)' }}>
                 <div style={{ display:'flex', justifyContent:'center', gap:3, marginBottom:14 }}>
                   {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
                 </div>
