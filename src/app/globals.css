@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,8 +9,8 @@
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif: 'Inter', -apple-system, sans-serif;
+  --font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Satoshi', 'Inter', -apple-system, sans-serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
 
   /* ── CVCheck Light — Cream / Terracotta / Espresso ── */
