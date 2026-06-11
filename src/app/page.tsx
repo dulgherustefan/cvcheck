@@ -792,7 +792,7 @@ export default function Home() {
         </div>
         <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none' }}>
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} style={{ fontSize:14, color:'var(--text-secondary)', background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500 }}>{label}</button></li>
+            <li key={href}><button onClick={()=>document.querySelector(href)?.scrollIntoView({behavior:'smooth'})} style={{ fontSize:14, color:'var(--text-secondary)', background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
@@ -813,10 +813,10 @@ export default function Home() {
         {/* HERO */}
         <section style={{ background:'var(--bg-elevated)', padding:'80px 40px 60px', textAlign:'center' as const }}>
           <div style={S.wrap}>
-            <h1 style={{ fontSize:'clamp(36px,5vw,58px)', fontWeight:800, lineHeight:1.08, color:'var(--text-primary)', marginBottom:18, letterSpacing:'-0.03em' }}>
+            <h1 style={{ fontSize:'clamp(40px,5.5vw,64px)', fontWeight:800, lineHeight:1.05, color:'var(--text-primary)', marginBottom:20, letterSpacing:'-0.04em', fontFamily:'var(--font-sans)' }}>
               Your CV, Brutally Honest.<br/>Land More Interviews.
             </h1>
-            <p style={{ fontSize:17, color:'var(--text-secondary)', maxWidth:520, margin:'0 auto 32px', lineHeight:1.65 }}>
+            <p style={{ fontSize:17, color:'var(--text-secondary)', maxWidth:540, margin:'0 auto 32px', lineHeight:1.6, fontWeight:400, letterSpacing:'-0.01em' }}>
               Upload your CV and get a full AI diagnosis — score, red flags, ATS gaps, and rewritten bullets — in seconds.
             </p>
 
@@ -939,7 +939,7 @@ export default function Home() {
           <section id="analysis" style={{ background:'var(--bg-elevated)', padding:'96px 40px 80px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>AI CV Analysis</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(28px,4vw,46px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.1, letterSpacing:'-0.03em', marginBottom:16, maxWidth:640, margin:'0 auto 16px' }}>Every recruiter bias, every ATS gap — exposed.</h2>
+              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.05, letterSpacing:'-0.04em', marginBottom:16, maxWidth:640, margin:'0 auto 16px' }}>Every recruiter bias, every ATS gap — exposed.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px' }}>CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper — flagging weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Analyze My CV — Free ↑</button>
 
@@ -1018,7 +1018,7 @@ export default function Home() {
           <section id="jobs" style={{ background:'var(--bg)', padding:'96px 40px 80px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Matching</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(28px,4vw,46px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.1, letterSpacing:'-0.03em', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit — with a score to prove it.</h2>
+              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.05, letterSpacing:'-0.04em', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit — with a score to prove it.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px' }}>CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↑</button>
 
@@ -1087,7 +1087,7 @@ export default function Home() {
           <section id="alerts" style={{ background:'var(--accent)', padding:'96px 40px 80px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'#fff', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Alerts</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(28px,4vw,46px)', fontWeight:800, color:'#fff', lineHeight:1.1, letterSpacing:'-0.03em', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
+              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.04em', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'rgba(255,255,255,0.75)', lineHeight:1.65, maxWidth:480, margin:'0 auto 32px' }}>Subscribe once and get weekly job alerts tailored to your CV's domain and level — with fit scores so you only open the ones worth your time.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Enable Job Alerts ↑</button>
 
@@ -1129,7 +1129,7 @@ export default function Home() {
           <section style={{ background:'var(--bg)', padding:'96px 40px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>How it works</div>
-              <h2 style={{ fontSize:'clamp(28px,4vw,46px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.1, letterSpacing:'-0.03em', marginBottom:16, maxWidth:560, margin:'0 auto 56px' }}>Done before your coffee gets cold.</h2>
+              <h2 style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.05, letterSpacing:'-0.04em', marginBottom:16, maxWidth:560, margin:'0 auto 56px' }}>Done before your coffee gets cold.</h2>
 
               <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:24 }}>
                 {[
@@ -1152,7 +1152,7 @@ export default function Home() {
           {/* ── Job Domain Examples ── */}
           <section style={{ background:'var(--bg-subtle)', padding:'80px 40px', borderTop:'0.5px solid var(--border)' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <h2 style={{ fontSize:'clamp(22px,3vw,34px)', fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.02em', marginBottom:12 }}>Works for every domain and level.</h2>
+              <h2 style={{ fontSize:'clamp(24px,3vw,36px)', fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginBottom:12 }}>Works for every domain and level.</h2>
               <p style={{ fontSize:15, color:'var(--text-secondary)', marginBottom:36 }}>CVCheck detects your field and seniority automatically.</p>
               <div style={{ display:'flex', flexWrap:'wrap' as const, gap:10, justifyContent:'center' }}>
                 {['Product Design','Engineering','Product Management','Marketing','Data Science','UX Research','Frontend Dev','Backend Dev','DevOps','Sales','Finance','Operations','Content','HR','Consulting','Startup Founder'].map(d=>(
@@ -1166,7 +1166,7 @@ export default function Home() {
           <section id="pricing" style={{ background:'var(--bg-elevated)', padding:'96px 40px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Pricing</div>
-              <h2 style={{ fontSize:'clamp(28px,4vw,46px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.1, letterSpacing:'-0.03em', marginBottom:12, maxWidth:520, margin:'0 auto 12px' }}>No tricks. No "contact us."</h2>
+              <h2 style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-primary)', lineHeight:1.05, letterSpacing:'-0.04em', marginBottom:12, maxWidth:520, margin:'0 auto 12px' }}>No tricks. No "contact us."</h2>
               <p style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:420, margin:'0 auto 56px' }}>Start free. Pay once for Pro. Subscribe for unlimited.</p>
 
               <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, textAlign:'left' as const }}>
@@ -1199,13 +1199,13 @@ export default function Home() {
           {/* ── Testimonial ── */}
           <section style={{ background:'var(--bg)', padding:'96px 40px', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
             <div style={{ maxWidth:680, margin:'0 auto' }}>
-              <h2 style={{ fontSize:'clamp(22px,3vw,32px)', fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.02em', marginBottom:40 }}>The most honest feedback your CV will ever get.</h2>
+              <h2 style={{ fontSize:'clamp(26px,3vw,38px)', fontWeight:800, color:'var(--text-primary)', letterSpacing:'-0.03em', marginBottom:40 }}>The most honest feedback your CV will ever get.</h2>
               <div style={{ background:'var(--bg-elevated)', borderRadius:14, border:'0.5px solid var(--border)', padding:'40px 44px', boxShadow:'0 8px 40px rgba(45,31,14,0.08)' }}>
                 <div style={{ display:'flex', justifyContent:'center', gap:3, marginBottom:14 }}>
                   {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
                 </div>
                 <p style={{ fontSize:13, color:'var(--text-tertiary)', marginBottom:20 }}>Rated <strong style={{ color:'var(--text-secondary)' }}>4.9</strong> by early users</p>
-                <blockquote style={{ fontSize:'clamp(17px,2vw,20px)', fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, fontStyle:'italic', marginBottom:20, fontFamily:'var(--font-serif)' }}>
+                <blockquote style={{ fontSize:'clamp(17px,2vw,22px)', fontWeight:700, color:'var(--text-primary)', lineHeight:1.45, fontStyle:'normal', marginBottom:20, fontFamily:'var(--font-sans)', letterSpacing:'-0.025em' }}>
                   "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
                 </blockquote>
                 <p style={{ fontSize:13, color:'var(--text-tertiary)' }}>— Mihai D., Product Manager, Bucharest</p>
