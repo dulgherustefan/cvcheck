@@ -79,46 +79,85 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
   const isLoading = loading || googleLoading
 
   const heading: Record<Mode, string> = {
-    login: 'Sign in',
-    register: 'Create an account',
-    forgot: 'Reset your password',
+    login: 'Welcome back',
+    register: 'Create your account',
+    forgot: 'Reset password',
   }
   const subheading: Record<Mode, string> = {
-    login: 'Good to have you back.',
-    register: 'Get your CV scored.',
-    forgot: "Enter your email and we'll send you a link.",
+    login: 'Sign in to access your CV analyses and saved jobs.',
+    register: 'Get your CV scored and land more interviews.',
+    forgot: "Enter your email and we'll send a reset link.",
   }
 
   return (
     <>
       <style>{`
         @keyframes _authFadeUp {
-          from { opacity: 0; transform: translateY(10px) scale(0.985); }
+          from { opacity: 0; transform: translateY(16px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes _authFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes _authSpin   { to { transform: rotate(360deg); } }
+
+        ._auth-input {
+          transition: border-color 0.15s, box-shadow 0.15s !important;
+        }
         ._auth-input:focus {
           border-color: var(--accent) !important;
           box-shadow: 0 0 0 3px var(--accent-subtle) !important;
           outline: none !important;
         }
+        ._auth-input:disabled { opacity: 0.5; }
+
         ._auth-google:hover:not(:disabled) {
           border-color: var(--border-strong) !important;
           background: var(--bg-subtle) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px rgba(45,31,14,0.09) !important;
         }
-        ._auth-submit:hover:not(:disabled) { opacity: 0.85 !important; }
+        ._auth-google { transition: all 0.15s ease !important; }
+
+        ._auth-submit {
+          transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s !important;
+        }
+        ._auth-submit:hover:not(:disabled) {
+          opacity: 0.9 !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 14px rgba(212,98,42,0.35) !important;
+        }
+        ._auth-submit:active:not(:disabled) {
+          transform: scale(0.98) !important;
+          box-shadow: none !important;
+        }
+
+        ._auth-link {
+          transition: color 0.15s !important;
+        }
         ._auth-link:hover { color: var(--accent) !important; }
+
+        ._auth-close {
+          transition: all 0.15s !important;
+        }
         ._auth-close:hover {
           background: var(--accent-subtle) !important;
-          border-color: var(--accent) !important;
+          border-color: var(--accent-border) !important;
           color: var(--accent) !important;
+        }
+
+        ._auth-tab {
+          transition: all 0.18s ease !important;
+          font-weight: 500;
+          color: var(--text-tertiary);
+        }
+        ._auth-tab:hover:not(._auth-tab-active) {
+          color: var(--text-secondary) !important;
         }
         ._auth-tab-active {
           background: var(--bg-elevated) !important;
           color: var(--text-primary) !important;
-          box-shadow: 0 1px 4px rgba(83,74,183,0.15) !important;
-          border: 1px solid var(--border-strong) !important;
+          font-weight: 600 !important;
+          box-shadow: 0 1px 4px rgba(45,31,14,0.10) !important;
+          border: 1px solid var(--border) !important;
         }
       `}</style>
 
@@ -126,235 +165,263 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
       <div
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(26,18,9,0.55)',
+          backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 2000, padding: 20,
-          animation: '_authFadeIn 0.18s ease',
+          animation: '_authFadeIn 0.2s ease',
         }}
         onClick={close}
       >
         {/* Panel */}
         <div
           style={{
-            width: '100%', maxWidth: 380,
+            width: '100%', maxWidth: 420,
             background: 'var(--bg-elevated)',
             border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '32px 28px 26px',
-            boxShadow: 'var(--shadow-xl)',
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: '0 24px 80px rgba(45,31,14,0.22), 0 4px 16px rgba(45,31,14,0.08)',
             position: 'relative',
-            animation: '_authFadeUp 0.22s cubic-bezier(0.16,1,0.3,1)',
+            animation: '_authFadeUp 0.25s cubic-bezier(0.16,1,0.3,1)',
           }}
           onClick={e => e.stopPropagation()}
         >
-          {/* Close */}
-          <button
-            className="_auth-close"
-            onClick={close}
-            aria-label="Close"
-            style={{
-              position: 'absolute', top: 14, right: 14,
-              width: 30, height: 30,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--bg-subtle)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-tertiary)', cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}
-          >
-            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
+          {/* Top accent stripe */}
+          <div style={{
+            height: 3,
+            background: 'linear-gradient(90deg, var(--accent), #E8925A)',
+          }} />
 
-          {/* Logo + heading */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: 7,
-                background: 'var(--accent)', color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 700,
-              }}>✓</div>
-              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>CVCheck</span>
-            </div>
-            <h2 style={{
-              fontSize: 20, fontWeight: 700, letterSpacing: '-0.02em',
-              fontFamily: 'var(--font-serif)', fontStyle: 'italic',
-              color: 'var(--text-primary)', margin: '0 0 5px',
-            }}>
-              {heading[mode]}
-            </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-              {subheading[mode]}
-            </p>
-          </div>
+          <div style={{ padding: '32px 36px 30px' }}>
 
-          {/* Mode tabs (login/register only) */}
-          {mode !== 'forgot' && (
-            <div style={{
-              display: 'flex', gap: 3, background: 'var(--bg-subtle)',
-              borderRadius: 'var(--radius-md)', padding: 3, marginBottom: 20,
-            }}>
-              {(['login', 'register'] as Mode[]).map(m => (
-                <button
-                  key={m}
-                  className={mode === m ? '_auth-tab-active' : ''}
-                  onClick={() => switchMode(m)}
-                  style={{
-                    flex: 1, padding: '7px 12px',
-                    fontSize: 13, fontWeight: 500,
-                    background: 'transparent', border: 'none',
-                    borderRadius: 'calc(var(--radius-md) - 2px)',
-                    color: mode === m ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                    cursor: 'pointer', transition: 'all 0.15s',
-                  }}
-                >
-                  {m === 'login' ? 'Sign in' : 'Sign up'}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Google */}
-          {mode !== 'forgot' && (
-            <>
-              <button
-                className="_auth-google"
-                onClick={handleGoogle}
-                disabled={isLoading}
-                style={{
-                  width: '100%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  padding: '10px 14px',
-                  background: 'var(--bg)',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: 'var(--radius-md)', marginBottom: 14,
-                  color: 'var(--text-primary)', fontSize: 13, fontWeight: 500,
-                  cursor: isLoading ? 'default' : 'pointer',
-                  opacity: isLoading ? 0.55 : 1,
-                  transition: 'all 0.15s',
-                }}
-              >
-                {googleLoading ? <Spinner dark /> : (
-                  <svg width="15" height="15" viewBox="0 0 18 18" fill="none">
-                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.251 17.64 11.945 17.64 9.2z" fill="#4285F4"/>
-                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-                    <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-                  </svg>
-                )}
-                {mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
-              </button>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>or</span>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              </div>
-            </>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <Field
-              ref={emailRef}
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={setEmail}
-              autoComplete="email"
-              disabled={isLoading}
-            />
-
-            {mode !== 'forgot' && (
-              <Field
-                label="Password"
-                type="password"
-                placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
-                value={password}
-                onChange={setPassword}
-                autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                disabled={isLoading}
-              />
-            )}
-
-            {mode === 'register' && (
-              <Field
-                label="Confirm password"
-                type="password"
-                placeholder="Same again"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                autoComplete="new-password"
-                disabled={isLoading}
-              />
-            )}
-
-            {error && (
-              <p style={{
-                fontSize: 13, color: 'var(--score-low)', margin: 0,
-                padding: '8px 12px',
-                background: 'rgba(220,38,38,0.07)',
-                border: '1px solid rgba(220,38,38,0.15)',
-                borderRadius: 'var(--radius-sm)', lineHeight: 1.45,
-              }}>{error}</p>
-            )}
-
-            {success && (
-              <p style={{
-                fontSize: 13, color: 'var(--score-high)', margin: 0,
-                padding: '8px 12px',
-                background: 'rgba(22,163,74,0.07)',
-                border: '1px solid rgba(22,163,74,0.15)',
-                borderRadius: 'var(--radius-sm)', lineHeight: 1.45,
-              }}>{success}</p>
-            )}
-
+            {/* Close */}
             <button
-              type="submit"
-              className="_auth-submit"
-              disabled={isLoading}
+              className="_auth-close"
+              onClick={close}
+              aria-label="Close"
               style={{
-                marginTop: 2,
-                padding: '11px 16px',
-                background: 'var(--accent)',
-                border: 'none', borderRadius: 'var(--radius-md)',
-                color: '#fff', fontSize: 14, fontWeight: 600,
-                cursor: isLoading ? 'default' : 'pointer',
-                opacity: isLoading ? 0.6 : 1,
-                transition: 'opacity 0.15s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                position: 'absolute', top: 18, right: 18,
+                width: 32, height: 32,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                borderRadius: 8,
+                color: 'var(--text-tertiary)', cursor: 'pointer',
               }}
             >
-              {loading && <Spinner />}
-              {loading ? 'Just a moment…'
-                : mode === 'login' ? 'Sign in'
-                : mode === 'register' ? 'Create account'
-                : 'Send reset link'}
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
             </button>
-          </form>
 
-          {/* Footer links */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 8, marginTop: 16, flexWrap: 'wrap',
-          }}>
-            {mode === 'login' && (
+            {/* Logo + heading */}
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                <svg viewBox="0 0 28 28" fill="none" width="26" height="26">
+                  <rect width="28" height="28" rx="6" fill="#D4622A"/>
+                  <path d="M7 14.5L11.5 19L21 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{
+                  fontSize: 14, fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  letterSpacing: '-0.01em',
+                  fontFamily: 'var(--font-display)',
+                }}>CVCheck</span>
+              </div>
+
+              <h2 style={{
+                fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em',
+                lineHeight: 1.1,
+                fontFamily: 'var(--font-display)',
+                color: 'var(--text-heading)', margin: '0 0 8px',
+              }}>
+                {heading[mode]}
+              </h2>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.55, fontWeight: 500 }}>
+                {subheading[mode]}
+              </p>
+            </div>
+
+            {/* Mode tabs (login/register only) */}
+            {mode !== 'forgot' && (
+              <div style={{
+                display: 'flex', gap: 4, background: 'var(--bg-subtle)',
+                borderRadius: 10, padding: 4, marginBottom: 24,
+                border: '1px solid var(--border)',
+              }}>
+                {(['login', 'register'] as Mode[]).map(m => (
+                  <button
+                    key={m}
+                    className={`_auth-tab${mode === m ? ' _auth-tab-active' : ''}`}
+                    onClick={() => switchMode(m)}
+                    style={{
+                      flex: 1, padding: '8px 12px',
+                      fontSize: 13,
+                      background: 'transparent', border: 'none',
+                      borderRadius: 7,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    {m === 'login' ? 'Sign in' : 'Sign up'}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Google OAuth (login + register only) */}
+            {mode !== 'forgot' && (
               <>
-                <FooterLink onClick={() => switchMode('forgot')}>Forgot password?</FooterLink>
-                <span style={{ color: 'var(--border-strong)', fontSize: 12 }}>·</span>
-                <FooterLink onClick={() => switchMode('register')}>Create an account</FooterLink>
+                <button
+                  className="_auth-google"
+                  onClick={handleGoogle}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+                    padding: '11px 14px',
+                    background: 'var(--bg)',
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: 10, marginBottom: 16,
+                    color: 'var(--text-primary)', fontSize: 13, fontWeight: 600,
+                    cursor: isLoading ? 'default' : 'pointer',
+                    opacity: isLoading ? 0.55 : 1,
+                    fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  {googleLoading ? <Spinner dark /> : (
+                    <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908C16.658 14.251 17.64 11.945 17.64 9.2z" fill="#4285F4"/>
+                      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+                      <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                    </svg>
+                  )}
+                  {mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
+                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 500, letterSpacing: '0.04em' }}>OR</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                </div>
               </>
             )}
-            {mode === 'register' && (
-              <FooterLink onClick={() => switchMode('login')}>Already have an account?</FooterLink>
-            )}
-            {mode === 'forgot' && (
-              <FooterLink onClick={() => switchMode('login')}>← Back to sign in</FooterLink>
-            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <Field
+                ref={emailRef}
+                label="Email address"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={setEmail}
+                autoComplete="email"
+                disabled={isLoading}
+              />
+
+              {mode !== 'forgot' && (
+                <Field
+                  label="Password"
+                  type="password"
+                  placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+                  value={password}
+                  onChange={setPassword}
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                  disabled={isLoading}
+                />
+              )}
+
+              {mode === 'register' && (
+                <Field
+                  label="Confirm password"
+                  type="password"
+                  placeholder="Same again"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  autoComplete="new-password"
+                  disabled={isLoading}
+                />
+              )}
+
+              {error && (
+                <div style={{
+                  fontSize: 13, color: '#B91C1C', margin: 0,
+                  padding: '10px 14px',
+                  background: 'rgba(220,38,38,0.06)',
+                  border: '1px solid rgba(220,38,38,0.18)',
+                  borderRadius: 8, lineHeight: 1.5,
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                }}>
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div style={{
+                  fontSize: 13, color: '#15803D', margin: 0,
+                  padding: '10px 14px',
+                  background: 'rgba(22,163,74,0.06)',
+                  border: '1px solid rgba(22,163,74,0.18)',
+                  borderRadius: 8, lineHeight: 1.5,
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                }}>
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {success}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="_auth-submit"
+                disabled={isLoading}
+                style={{
+                  marginTop: 4,
+                  padding: '12px 16px',
+                  background: 'var(--accent)',
+                  border: 'none', borderRadius: 10,
+                  color: '#fff', fontSize: 14, fontWeight: 700,
+                  cursor: isLoading ? 'default' : 'pointer',
+                  opacity: isLoading ? 0.6 : 1,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  fontFamily: 'var(--font-sans)',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {loading && <Spinner />}
+                {loading ? 'Just a moment…'
+                  : mode === 'login' ? 'Sign in to CVCheck'
+                  : mode === 'register' ? 'Create account'
+                  : 'Send reset link'}
+              </button>
+            </form>
+
+            {/* Footer links */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 8, marginTop: 20, flexWrap: 'wrap',
+            }}>
+              {mode === 'login' && (
+                <>
+                  <FooterLink onClick={() => switchMode('forgot')}>Forgot password?</FooterLink>
+                  <span style={{ color: 'var(--border-strong)', fontSize: 12 }}>·</span>
+                  <FooterLink onClick={() => switchMode('register')}>New to CVCheck?</FooterLink>
+                </>
+              )}
+              {mode === 'register' && (
+                <FooterLink onClick={() => switchMode('login')}>Already have an account? Sign in</FooterLink>
+              )}
+              {mode === 'forgot' && (
+                <FooterLink onClick={() => switchMode('login')}>← Back to sign in</FooterLink>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
@@ -368,10 +435,10 @@ const Field = forwardRef<HTMLInputElement, {
   label: string; type: string; placeholder: string; value: string
   onChange: (v: string) => void; autoComplete?: string; disabled?: boolean
 }>(({ label, type, placeholder, value, onChange, autoComplete, disabled }, ref) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
     <label style={{
-      fontSize: 11, fontWeight: 600, letterSpacing: '0.04em',
-      textTransform: 'uppercase' as const, color: 'var(--text-tertiary)',
+      fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
+      color: 'var(--text-secondary)',
     }}>
       {label}
     </label>
@@ -385,16 +452,14 @@ const Field = forwardRef<HTMLInputElement, {
       autoComplete={autoComplete}
       disabled={disabled}
       style={{
-        padding: '10px 12px',
+        padding: '11px 14px',
         background: 'var(--bg)',
-        border: '1px solid var(--border-strong)',
-        borderRadius: 'var(--radius-md)',
+        border: '1.5px solid var(--border-strong)',
+        borderRadius: 10,
         color: 'var(--text-primary)',
         fontSize: 14,
         outline: 'none',
         width: '100%',
-        transition: 'border-color 0.15s, box-shadow 0.15s',
-        opacity: disabled ? 0.55 : 1,
       }}
     />
   </div>
@@ -405,7 +470,7 @@ function Spinner({ dark }: { dark?: boolean }) {
   return (
     <span style={{
       display: 'inline-block', flexShrink: 0,
-      width: 13, height: 13,
+      width: 14, height: 14,
       border: `2px solid ${dark ? 'var(--border-strong)' : 'rgba(255,255,255,0.35)'}`,
       borderTopColor: dark ? 'var(--accent)' : '#fff',
       borderRadius: '50%',
@@ -421,8 +486,8 @@ function FooterLink({ onClick, children }: { onClick: () => void; children: Reac
       onClick={onClick}
       style={{
         background: 'transparent', border: 'none', padding: 0,
-        color: 'var(--text-tertiary)', fontSize: 13,
-        cursor: 'pointer', transition: 'color 0.15s',
+        color: 'var(--text-tertiary)', fontSize: 13, fontWeight: 500,
+        cursor: 'pointer',
       }}
     >
       {children}

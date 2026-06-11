@@ -12,10 +12,10 @@ interface AccountModalProps {
   onSignOut: () => void
 }
 
-const TIER_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-  free:    { label: 'Free',    color: 'var(--text-tertiary)',  bg: 'var(--bg-subtle)',   border: 'var(--border)' },
-  pro:     { label: 'Pro',     color: 'var(--accent)',     bg: 'var(--accent-subtle)', border: 'var(--border-strong)' },
-  premium: { label: 'Premium', color: '#B8881C',               bg: 'rgba(239,159,39,0.10)', border: 'rgba(239,159,39,0.25)' },
+const TIER_META: Record<string, { label: string; color: string; bg: string; border: string; dot: string }> = {
+  free:    { label: 'Free',    color: 'var(--text-secondary)', bg: 'var(--bg-subtle)',          border: 'var(--border-strong)', dot: 'var(--text-tertiary)' },
+  pro:     { label: 'Pro',     color: 'var(--accent)',          bg: 'var(--accent-subtle)',      border: 'var(--accent-border)', dot: 'var(--accent)' },
+  premium: { label: 'Premium', color: '#92650A',                bg: 'rgba(234,179,8,0.10)',      border: 'rgba(234,179,8,0.28)', dot: '#CA8A04' },
 }
 
 export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut }: AccountModalProps) {
@@ -50,9 +50,9 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
   return (
     <>
       <style>{`
-        @keyframes _accFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes _accFadeUp {
-          from { opacity: 0; transform: translateY(10px) scale(0.985); }
+        @keyframes _accFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes _accFadeUp  {
+          from { opacity: 0; transform: translateY(14px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         ._acc-input:focus {
@@ -60,17 +60,51 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
           box-shadow: 0 0 0 3px var(--accent-subtle) !important;
           outline: none !important;
         }
+        ._acc-row {
+          transition: background 0.15s, color 0.15s !important;
+          border-radius: 10px !important;
+        }
+        ._acc-row:hover { background: var(--bg-subtle) !important; }
+        ._acc-danger:hover {
+          background: rgba(220,38,38,0.06) !important;
+          color: #DC2626 !important;
+        }
+        ._acc-close {
+          transition: all 0.15s !important;
+        }
+        ._acc-close:hover {
+          background: var(--accent-subtle) !important;
+          border-color: var(--accent-border) !important;
+          color: var(--accent) !important;
+        }
+        ._acc-upgrade-btn {
+          transition: all 0.15s !important;
+        }
+        ._acc-upgrade-btn:hover {
+          background: var(--accent) !important;
+          color: #fff !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 3px 10px rgba(212,98,42,0.30) !important;
+        }
+        ._acc-accordion {
+          transition: background 0.15s !important;
+          border-radius: 10px !important;
+        }
         ._acc-accordion:hover { background: var(--bg-subtle) !important; }
-        ._acc-signout:hover { color: #dc2626 !important; background: rgba(220,38,38,0.06) !important; }
-        ._acc-close:hover { background: var(--accent-subtle) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
-        ._acc-upgrade:hover { color: var(--accent) !important; }
+        ._acc-pw-submit {
+          transition: opacity 0.15s, transform 0.12s !important;
+        }
+        ._acc-pw-submit:hover:not(:disabled) {
+          opacity: 0.88 !important;
+          transform: translateY(-1px) !important;
+        }
       `}</style>
 
       <div
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(26,18,9,0.55)',
+          backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 2000, padding: 24,
           animation: '_accFadeIn 0.18s ease',
@@ -79,198 +113,301 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
       >
         <div
           style={{
-            width: '100%', maxWidth: 400,
+            width: '100%', maxWidth: 420,
             background: 'var(--bg-elevated)',
             border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-xl)',
-            padding: 28,
-            display: 'flex', flexDirection: 'column', gap: 0,
-            boxShadow: 'var(--shadow-xl)',
+            borderRadius: 20,
+            overflow: 'hidden',
+            boxShadow: '0 24px 80px rgba(45,31,14,0.22), 0 4px 16px rgba(45,31,14,0.08)',
             position: 'relative',
-            animation: '_accFadeUp 0.22s cubic-bezier(0.16,1,0.3,1)',
+            animation: '_accFadeUp 0.24s cubic-bezier(0.16,1,0.3,1)',
           }}
           onClick={e => e.stopPropagation()}
         >
-          {/* Close */}
-          <button
-            className="_acc-close"
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              position: 'absolute', top: 14, right: 14,
-              width: 30, height: 30,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--bg-subtle)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-tertiary)', cursor: 'pointer', transition: 'all 0.15s',
-            }}
-          >
-            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
+          {/* Top accent stripe */}
+          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)' }} />
 
-          {/* Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingRight: 32, marginBottom: 20 }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: '50%',
-              background: 'var(--accent)', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, fontWeight: 700, flexShrink: 0,
-              border: '2px solid var(--border-strong)',
-            }}>
-              {initials}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{
-                fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                marginBottom: 6,
-              }}>
-                {userEmail}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  padding: '2px 9px', borderRadius: 20,
-                  color: meta.color, background: meta.bg,
-                  border: `1px solid ${meta.border}`,
-                }}>
-                  {meta.label}
-                </span>
-                {tier !== 'premium' && (
-                  <button
-                    className="_acc-upgrade"
-                    onClick={onUpgrade}
-                    style={{
-                      fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
-                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                      transition: 'color 0.15s',
-                    }}
-                  >
-                    Upgrade →
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          <div style={{ padding: '28px 28px 24px' }}>
 
-          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
-
-          {/* Change password */}
-          <div style={{ marginBottom: 16 }}>
+            {/* Close */}
             <button
-              className="_acc-accordion"
-              onClick={() => { setShowPwForm(v => !v); setPwError(''); setPwSuccess(false) }}
+              className="_acc-close"
+              onClick={onClose}
+              aria-label="Close"
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                width: '100%', background: 'none', border: 'none',
-                padding: '9px 10px', borderRadius: 'var(--radius-md)',
-                cursor: 'pointer', transition: 'background 0.15s',
+                position: 'absolute', top: 18, right: 18,
+                width: 32, height: 32,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                borderRadius: 8,
+                color: 'var(--text-tertiary)', cursor: 'pointer',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: 9, color: 'var(--text-primary)', fontSize: 14, fontWeight: 500 }}>
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-                </svg>
-                Change password
-              </span>
-              <svg
-                width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-                style={{ color: 'var(--text-tertiary)', transform: showPwForm ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
-              >
-                <polyline points="6 9 12 15 18 9"/>
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
 
-            {showPwForm && (
-              <form onSubmit={handleChangePassword} style={{
-                display: 'flex', flexDirection: 'column', gap: 12,
-                marginTop: 10, padding: 16,
-                background: 'var(--bg-subtle)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)',
+            {/* Profile hero */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              paddingRight: 40, marginBottom: 24,
+            }}>
+              {/* Avatar */}
+              <div style={{
+                width: 52, height: 52, borderRadius: 14,
+                background: 'linear-gradient(135deg, var(--accent) 0%, #E8925A 100%)',
+                color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 18, fontWeight: 800, flexShrink: 0,
+                fontFamily: 'var(--font-display)',
+                boxShadow: '0 4px 12px rgba(212,98,42,0.30)',
               }}>
-                <PwField label="New password" placeholder="Min. 8 characters" value={pwNew} onChange={setPwNew} autoComplete="new-password"/>
-                <PwField label="Confirm password" placeholder="Same again" value={pwConfirm} onChange={setPwConfirm} autoComplete="new-password"/>
+                {initials}
+              </div>
 
-                {pwError && (
-                  <p style={{ fontSize: 12, color: 'var(--score-low)', margin: 0, padding: '8px 10px', background: 'rgba(220,38,38,0.07)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: 'var(--radius-sm)' }}>
-                    {pwError}
-                  </p>
-                )}
-                {pwSuccess && (
-                  <p style={{ fontSize: 12, color: 'var(--score-high)', margin: 0, padding: '8px 10px', background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.15)', borderRadius: 'var(--radius-sm)' }}>
-                    ✓ Password changed successfully.
-                  </p>
-                )}
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{
+                  fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  marginBottom: 8, letterSpacing: '-0.01em',
+                }}>
+                  {userEmail}
+                </div>
 
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  {/* Tier badge */}
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    padding: '3px 10px', borderRadius: 20,
+                    color: meta.color, background: meta.bg,
+                    border: `1px solid ${meta.border}`,
+                  }}>
+                    <span style={{
+                      width: 5, height: 5, borderRadius: '50%',
+                      background: meta.dot, flexShrink: 0,
+                    }} />
+                    {meta.label}
+                  </span>
+
+                  {tier !== 'premium' && (
+                    <button
+                      className="_acc-upgrade-btn"
+                      onClick={onUpgrade}
+                      style={{
+                        fontSize: 11, fontWeight: 700,
+                        color: 'var(--accent)',
+                        background: 'var(--accent-subtle)',
+                        border: '1px solid var(--accent-border)',
+                        borderRadius: 20, padding: '3px 10px',
+                        cursor: 'pointer',
+                        letterSpacing: '0.04em', textTransform: 'uppercase',
+                      }}
+                    >
+                      Upgrade
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: 'var(--border)', margin: '0 0 8px' }} />
+
+            {/* Nav rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, margin: '8px 0' }}>
+
+              {/* Change password accordion */}
+              <div>
                 <button
-                  type="submit"
-                  disabled={pwLoading}
+                  className="_acc-accordion"
+                  onClick={() => { setShowPwForm(v => !v); setPwError(''); setPwSuccess(false) }}
                   style={{
-                    padding: '10px', background: 'var(--accent)', border: 'none',
-                    borderRadius: 'var(--radius-sm)', color: '#fff',
-                    fontSize: 13, fontWeight: 600,
-                    opacity: pwLoading ? 0.6 : 1,
-                    cursor: pwLoading ? 'not-allowed' : 'pointer',
-                    transition: 'opacity 0.15s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', background: 'none', border: 'none',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
                   }}
                 >
-                  {pwLoading ? 'Saving…' : 'Save password'}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-primary)', fontSize: 14, fontWeight: 500 }}>
+                    <span style={{
+                      width: 28, height: 28,
+                      background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <svg width="13" height="13" fill="none" stroke="var(--text-secondary)" strokeWidth="1.8" viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                      </svg>
+                    </span>
+                    Change password
+                  </span>
+                  <svg
+                    width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24"
+                    style={{ transform: showPwForm ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
                 </button>
-              </form>
-            )}
+
+                {showPwForm && (
+                  <form onSubmit={handleChangePassword} style={{
+                    display: 'flex', flexDirection: 'column', gap: 12,
+                    margin: '4px 0 8px', padding: '16px',
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 12,
+                  }}>
+                    <PwField label="New password" placeholder="Min. 8 characters" value={pwNew} onChange={setPwNew} autoComplete="new-password"/>
+                    <PwField label="Confirm password" placeholder="Same again" value={pwConfirm} onChange={setPwConfirm} autoComplete="new-password"/>
+
+                    {pwError && (
+                      <div style={{
+                        fontSize: 12, color: '#B91C1C',
+                        padding: '8px 12px',
+                        background: 'rgba(220,38,38,0.06)',
+                        border: '1px solid rgba(220,38,38,0.15)',
+                        borderRadius: 8,
+                        display: 'flex', gap: 7, alignItems: 'flex-start',
+                      }}>
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink: 0, marginTop: 1 }}>
+                          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {pwError}
+                      </div>
+                    )}
+                    {pwSuccess && (
+                      <div style={{
+                        fontSize: 12, color: '#15803D',
+                        padding: '8px 12px',
+                        background: 'rgba(22,163,74,0.06)',
+                        border: '1px solid rgba(22,163,74,0.15)',
+                        borderRadius: 8,
+                        display: 'flex', gap: 7, alignItems: 'center',
+                      }}>
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Password changed successfully.
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="_acc-pw-submit"
+                      disabled={pwLoading}
+                      style={{
+                        padding: '10px', background: 'var(--accent)', border: 'none',
+                        borderRadius: 9, color: '#fff',
+                        fontSize: 13, fontWeight: 700,
+                        opacity: pwLoading ? 0.6 : 1,
+                        cursor: pwLoading ? 'not-allowed' : 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      {pwLoading ? 'Saving…' : 'Save password'}
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              {/* Saved jobs */}
+              <a
+                href="/history#saved"
+                onClick={onClose}
+                className="_acc-row"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 12px',
+                  color: 'var(--text-primary)', textDecoration: 'none',
+                  fontSize: 14, fontWeight: 500,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    width: 28, height: 28,
+                    background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="13" height="13" fill="none" stroke="var(--text-secondary)" strokeWidth="1.8" viewBox="0 0 24 24">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  </span>
+                  Saved jobs
+                </span>
+                <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </a>
+
+              {/* Analysis history */}
+              <a
+                href="/history"
+                onClick={onClose}
+                className="_acc-row"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 12px',
+                  color: 'var(--text-primary)', textDecoration: 'none',
+                  fontSize: 14, fontWeight: 500,
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    width: 28, height: 28,
+                    background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="13" height="13" fill="none" stroke="var(--text-secondary)" strokeWidth="1.8" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                  </span>
+                  Analysis history
+                </span>
+                <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </a>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
+
+            {/* Sign out */}
+            <button
+              className="_acc-row _acc-danger"
+              onClick={onSignOut}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'none', border: 'none',
+                color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500,
+                cursor: 'pointer', padding: '10px 12px',
+                width: '100%',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              <span style={{
+                width: 28, height: 28,
+                background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, transition: 'background 0.15s, border-color 0.15s',
+              }}>
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              Sign out
+            </button>
+
           </div>
-
-          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
-
-          {/* Saved jobs quick link */}
-          <a
-            href="/history#saved"
-            onClick={onClose}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '9px 10px', borderRadius: 'var(--radius-md)',
-              color: 'var(--text-primary)', textDecoration: 'none',
-              fontSize: 14, fontWeight: 500,
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-subtle)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'none'}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-              Saved jobs
-            </span>
-            <svg width="13" height="13" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" viewBox="0 0 24 24">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </a>
-
-          <div style={{ height: 1, background: 'var(--border)', margin: '0 0 16px' }} />
-
-          {/* Sign out */}
-          <button
-            className="_acc-signout"
-            onClick={onSignOut}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 9,
-              background: 'none', border: 'none',
-              color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500,
-              cursor: 'pointer', padding: '9px 10px',
-              borderRadius: 'var(--radius-md)', transition: 'all 0.15s',
-              width: '100%',
-            }}
-          >
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Sign out
-          </button>
         </div>
       </div>
     </>
@@ -282,8 +419,8 @@ function PwField({ label, placeholder, value, onChange, autoComplete }: {
   onChange: (v: string) => void; autoComplete?: string
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' as const, letterSpacing: '0.04em' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.01em' }}>
         {label}
       </label>
       <input
@@ -294,10 +431,12 @@ function PwField({ label, placeholder, value, onChange, autoComplete }: {
         style={{
           padding: '10px 12px',
           background: 'var(--bg-elevated)',
-          border: '1px solid var(--border-strong)',
-          borderRadius: 'var(--radius-md)',
+          border: '1.5px solid var(--border-strong)',
+          borderRadius: 9,
           color: 'var(--text-primary)', fontSize: 14,
-          outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
+          outline: 'none',
+          transition: 'border-color 0.15s, box-shadow 0.15s',
+          fontFamily: 'var(--font-sans)',
         }}
       />
     </div>
