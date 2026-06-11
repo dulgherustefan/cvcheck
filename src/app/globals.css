@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -9,8 +8,8 @@
 
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif: 'Satoshi', 'Inter', -apple-system, sans-serif;
+  --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'DM Sans', -apple-system, sans-serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
 
   /* ── CVCheck Light — Cream / Terracotta / Espresso ── */
@@ -20,6 +19,7 @@
   --bg-muted:    #EAE0D6;
 
   --text-primary:   #2D1F0E;
+  --text-heading:   #1A1209;
   --text-secondary: #8A7060;
   --text-tertiary:  #B5A090;
   --text-inverse:   #FFFFFF;
@@ -60,6 +60,7 @@
   --bg-muted:    #3A2516;
 
   --text-primary:   #F5EDE4;
+  --text-heading:   #F8F2EC;
   --text-secondary: #C0A890;
   --text-tertiary:  #7A5C48;
   --text-inverse:   #180E07;
