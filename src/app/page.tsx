@@ -816,7 +816,7 @@ export default function Home() {
             <h1 style={{ fontSize:'clamp(36px,5vw,58px)', fontWeight:800, lineHeight:0.95, color:'var(--text-heading)', marginBottom:20, letterSpacing:'-0.025em', fontFamily:'var(--font-display)' }}>
               Your CV, Brutally Honest.<br/>Land More Interviews.
             </h1>
-            <p style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:600, margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em', maxWidth:'60ch', margin:'0 auto 32px' }}>
+            <p style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:'60ch', margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em' }}>
               Upload your CV and get a full AI diagnosis — score, red flags, ATS gaps, and rewritten bullets — in seconds.
             </p>
 
