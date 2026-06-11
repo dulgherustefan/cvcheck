@@ -5,7 +5,7 @@ import './globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://cvcheck.app'),
   title: {
-    default: 'CVCheck — AI Feedback on Your CV & Portfolio',
+    default: 'CVCheck · Score your CV in seconds',
     template: '%s · CVCheck',
   },
   description:
