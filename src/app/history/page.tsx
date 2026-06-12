@@ -890,10 +890,7 @@ function HistoryContent() {
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
-                <rect width="28" height="28" rx="6" fill="#D4622A"/>
-                <path d="M7 14.5L11.5 19L21 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <img src="/logo.png" width="20" height="20" alt="CVCheck" style={{display:"block",borderRadius:4}}/>
               <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
                 CVCheck
               </span>
