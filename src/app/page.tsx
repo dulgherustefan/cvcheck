@@ -387,7 +387,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
           <div>
             {alertState==='subscribed'?<div style={{ fontSize:12, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}><span>✓</span> Weekly job alerts activated</div>
             :alertState==='error'?<div style={{ fontSize:12, color:'var(--score-low)' }}>Failed to subscribe.</div>
-            :<button onClick={handleAlertSubscribe} disabled={alertState==='loading'} style={{ fontSize:12, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'4px 12px', cursor:alertState==='loading'?'wait':'pointer', fontFamily:'var(--font-sans)', opacity:alertState==='loading'?0.6:1, display:'flex', alignItems:'center', gap:6 }}>
+            :<button id="alerts-trigger" onClick={handleAlertSubscribe} disabled={alertState==='loading'} style={{ fontSize:12, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'4px 12px', cursor:alertState==='loading'?'wait':'pointer', fontFamily:'var(--font-sans)', opacity:alertState==='loading'?0.6:1, display:'flex', alignItems:'center', gap:6 }}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               {alertState==='loading'?'Activating…':'Get weekly alerts'}
             </button>}
@@ -759,7 +759,15 @@ export default function Home() {
 
   const isPro = result?.tier==='pro'||result?.tier==='premium'
   const scrollToUpload = () => window.scrollTo({top:0, behavior:'smooth'})
-  const scrollToAlerts = () => document.getElementById('alerts')?.scrollIntoView({behavior:'smooth', block:'start'})
+  const scrollToAlerts = () => {
+    const trigger = document.getElementById('alerts-trigger')
+    if (trigger) {
+      trigger.scrollIntoView({behavior:'smooth', block:'center'})
+      setTimeout(() => trigger.click(), 600)
+    } else {
+      window.scrollTo({top:0, behavior:'smooth'})
+    }
+  }
 
   // Activate scroll-reveal when on idle landing
   useScrollReveal(appState === 'idle' || appState === 'error')
