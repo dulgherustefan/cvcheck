@@ -147,8 +147,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Free tier scan limit
-    if (tier === 'free') {
+    // Free tier scan limit — only for anonymous users
+    if (tier === 'free' && !userId) {
       const identifier = getIdentifier(req, userId)
       const { allowed } = await checkAndIncrementFreeLimit(identifier)
       if (!allowed) {
