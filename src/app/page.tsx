@@ -595,6 +595,99 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       </div>
 
+      {/* ── Career Story ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          </div>
+          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Career Story</h2>
+        </div>
+        {result.career_story.trajectory_detected&&(
+          <div style={{ padding:'12px 16px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)', marginBottom:12, fontSize:13, color:'var(--text-primary)', fontWeight:500, lineHeight:1.6 }}>
+            {result.career_story.trajectory_detected}
+          </div>
+        )}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {[
+            { label:'Narrative', value: result.career_story.narrative_thread?.replace(/_/g,' ') },
+            { label:'Seniority match', value: result.career_story.seniority_match?.replace(/_/g,' ') },
+            { label:'Progression', value: result.career_story.progression_clear ? 'Clear' : 'Unclear', color: result.career_story.progression_clear ? 'var(--score-high)' : 'var(--score-low)' },
+            { label:'Gaps', value: result.gaps_locked ? '—' : (result.career_story.gaps_or_transitions||'None detected') },
+          ].map(item=>(
+            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
+              <div style={{ fontSize:13, fontWeight:500, color:(item as {color?:string}).color||'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value??'—'}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Credibility ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Credibility</h2>
+        </div>
+        {result.credibility.signals_present?.length>0&&(
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-high)', marginBottom:8 }}>✓ Signals Present</div>
+            <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
+              {result.credibility.signals_present.map((s:string)=><span key={s} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(22,163,74,0.06)', border:'1px solid rgba(22,163,74,0.2)', color:'var(--score-high)', fontWeight:500 }}>{s}</span>)}
+            </div>
+          </div>
+        )}
+        {!result.missing_signals_locked&&result.credibility.signals_missing?.length>0&&(
+          <div>
+            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>What would strengthen credibility</div>
+            <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
+              {result.credibility.signals_missing.map((s:string)=><span key={s} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'var(--bg-subtle)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontWeight:500 }}>{s}</span>)}
+            </div>
+          </div>
+        )}
+        {result.credibility.notes&&<p style={{ margin:'12px 0 0', fontSize:12.5, color:'var(--text-tertiary)', lineHeight:1.6 }}>{result.credibility.notes}</p>}
+      </div>
+
+      {/* ── Format & Buzzwords ── */}
+      {(result.format?.issues?.length>0||result.buzzwords_detected?.length>0)&&(
+        <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+            </div>
+            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Format & Language</h2>
+            <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
+              <span style={{ fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, border:'1px solid var(--border)', color:'var(--text-secondary)' }}>{result.format?.length_verdict?.replace(/_/g,' ')} · {result.format?.recommended_pages}p recommended</span>
+              <span style={{ fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, border:'1px solid var(--border)', color:result.format?.scannability==='easy'?'var(--score-high)':result.format?.scannability==='hard'?'var(--score-low)':'var(--score-mid)' }}>{result.format?.scannability} to scan</span>
+            </div>
+          </div>
+          {result.format?.issues?.length>0&&(
+            <div style={{ marginBottom:12 }}>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>Format Issues</div>
+              <div style={{ display:'flex', flexDirection:'column' as const, gap:6 }}>
+                {result.format.issues.map((issue:string,i:number)=>(
+                  <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', fontSize:13, color:'var(--text-secondary)' }}>
+                    <span style={{ color:'var(--score-mid)', flexShrink:0, marginTop:1 }}>⚠</span>{issue}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {result.buzzwords_detected?.filter((b:{word:string})=>b.word).length>0&&(
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>Empty Buzzwords Detected</div>
+              <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
+                {result.buzzwords_detected.filter((b:{word:string})=>b.word).map((b:{word:string;location:string},i:number)=>(
+                  <span key={i} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(202,138,4,0.06)', border:'1px solid rgba(202,138,4,0.2)', color:'var(--score-mid)', fontWeight:500 }} title={b.location}>{b.word}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Top 3 Actions ── */}
       <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
