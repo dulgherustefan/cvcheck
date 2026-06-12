@@ -110,7 +110,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.6)',
+          background: 'rgba(26,18,9,0.55)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -124,17 +124,21 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
           style={{
             position: 'relative',
             background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--border-strong)',
+            borderRadius: 20,
             width: '100%',
             maxWidth: step === 'login' ? 440 : 580,
             maxHeight: '92vh',
             overflowY: 'auto',
-            boxShadow: '0 40px 120px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.2)',
+            boxShadow: '0 32px 80px rgba(45,31,14,0.28), 0 8px 24px rgba(45,31,14,0.12)',
             animation: 'modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             transition: 'max-width 0.3s ease',
+            overflow: 'hidden',
           }}
         >
+          {/* Terracotta stripe */}
+          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
+
           {/* Close button */}
           <button
             className="um-close"
@@ -158,16 +162,15 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
           {/* ── PLANS STEP ── */}
           {step === 'plans' && (
-            <div style={{ padding: '36px 32px 32px' }}>
+            <div style={{ padding: '32px 32px 32px' }}>
 
               {/* Header */}
               <div style={{ marginBottom: 28, paddingRight: 32 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px' }}>
                   Unlock full access
                 </p>
-                <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: '0 0 10px', lineHeight: 1.2 }}>
-                  Your free preview is ready.<br/>
-                  <span style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 400 }}>See everything</span> for €1.99.
+                <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-heading)', margin: '0 0 10px', lineHeight: 1.15, fontFamily: 'var(--font-display)' }}>
+                  Your free preview is ready. Unlock everything for €1.99.
                 </h2>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, maxWidth: 440 }}>
                   The free scan shows your overall score and a glimpse of what's holding you back.
@@ -198,8 +201,8 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   className="um-plan"
                   style={{
                     background: 'var(--bg-elevated)',
-                    border: '1.5px solid var(--border-strong)',
-                    borderRadius: 'var(--radius-lg)',
+                    border: '1.5px solid var(--accent-border)',
+                    borderRadius: 12,
                     padding: '20px 22px',
                     display: 'flex', flexDirection: 'column', gap: 14,
                     transition: 'border-color 0.2s',
@@ -213,7 +216,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       </p>
                       <span style={{
                         fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                        background: 'var(--text-primary)', color: 'var(--bg)',
+                        background: 'var(--accent)', color: '#fff',
                         padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap',
                       }}>
                         Most popular
@@ -238,10 +241,11 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     style={{
                       width: '100%', padding: '12px 16px',
                       fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
-                      color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
-                      borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
+                      color: '#fff', background: 'var(--accent)', border: 'none',
+                      borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
+                      boxShadow: '0 4px 14px rgba(212,98,42,0.35)',
                       opacity: loading && loading !== 'pro' ? 0.5 : 1,
                     }}
                   >
@@ -261,7 +265,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   style={{
                     background: 'var(--bg)',
                     border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-lg)',
+                    borderRadius: 12,
                     padding: '16px 22px',
                     display: 'flex', alignItems: 'center', gap: 16,
                     transition: 'border-color 0.2s', cursor: 'default',
@@ -290,8 +294,8 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     style={{
                       padding: '10px 18px', flexShrink: 0,
                       fontSize: 13, fontWeight: 600, letterSpacing: '-0.01em',
-                      color: 'var(--bg)', background: 'var(--text-primary)', border: 'none',
-                      borderRadius: 'var(--radius-sm)', cursor: loading ? 'not-allowed' : 'pointer',
+                      color: 'var(--accent)', background: 'transparent', border: '1.5px solid var(--accent)',
+                      borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
                       opacity: loading && loading !== 'premium' ? 0.5 : 1,
@@ -348,7 +352,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px' }}>
                   {pendingPlan === 'pro' ? 'Pro — €1.99 one-time' : 'Premium — €5.99/month'}
                 </p>
-                <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.025em', color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.25 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-heading)', margin: '0 0 8px', lineHeight: 1.25, fontFamily: 'var(--font-display)' }}>
                   Sign in to continue
                 </h2>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
@@ -425,9 +429,10 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   disabled={authLoading || googleLoading}
                   style={{
                     marginTop: 4, padding: '13px',
-                    background: 'var(--text-primary)', border: 'none',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--bg)', fontSize: 14, fontWeight: 600,
+                    background: 'var(--accent)', border: 'none',
+                    borderRadius: 8,
+                    color: '#fff', fontSize: 14, fontWeight: 700,
+                    boxShadow: '0 4px 14px rgba(212,98,42,0.30)',
                     cursor: authLoading ? 'not-allowed' : 'pointer',
                     opacity: authLoading ? 0.65 : 1,
                     transition: 'all 0.15s', fontFamily: 'var(--font-sans)',

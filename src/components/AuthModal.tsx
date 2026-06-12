@@ -193,7 +193,13 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
             background: 'linear-gradient(90deg, var(--accent), #E8925A)',
           }} />
 
-          <div style={{ padding: '32px 36px 30px' }}>
+          <div style={{ padding: '28px 36px 30px' }}>
+
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 20 }}>
+              <img src="/logo.png" width="28" height="28" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>CVCheck</span>
+            </div>
 
             {/* Close */}
             <button
@@ -217,13 +223,10 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
             {/* Logo + heading */}
             <div style={{ marginBottom: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                <svg viewBox="0 0 28 28" fill="none" width="26" height="26">
-                  <rect width="28" height="28" rx="6" fill="#D4622A"/>
-                  <path d="M7 14.5L11.5 19L21 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <img src="/logo.png" width="26" height="26" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
                 <span style={{
-                  fontSize: 14, fontWeight: 700,
-                  color: 'var(--text-primary)',
+                  fontSize: 15, fontWeight: 700,
+                  color: 'var(--accent)',
                   letterSpacing: '-0.01em',
                   fontFamily: 'var(--font-display)',
                 }}>CVCheck</span>
