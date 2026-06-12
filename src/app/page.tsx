@@ -691,21 +691,14 @@ export default function Home() {
   const [url,         setUrl]         = useState('')
   const [file,        setFile]        = useState<File|null>(null)
   const [isDragging,  setIsDragging]  = useState(false)
-  const [appState,    setAppState]    = useState<AppState>('idle')
-  const [result,      setResult]      = useState<GatedAnalysisResult|null>(null)
+  const [appData, setAppData] = useState<{ state: AppState; result: GatedAnalysisResult | null }>({ state: 'idle', result: null })
+  const appState = appData.state
+  const result   = appData.result
   const appStateRef = useRef<AppState>('idle')
   const resultRef   = useRef<GatedAnalysisResult|null>(null)
 
-  const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppState(s) }
-  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setResult(r) }
-
-  // Prevent auth re-renders from resetting result state
-  useEffect(() => {
-    if (appStateRef.current === 'result' && appState !== 'result' && resultRef.current !== null) {
-      setAppState('result')
-      setResult(resultRef.current)
-    }
-  }, [appState])
+  const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppData(prev => ({ ...prev, state: s })) }
+  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setAppData(prev => ({ ...prev, result: r })) }
   const [error,       setError]       = useState('')
   const [copied,        setCopied]        = useState(false)
   const [shareLoading,  setShareLoading]  = useState(false)
@@ -748,13 +741,13 @@ export default function Home() {
         if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
         throw new Error(data.error||'Analysis failed')
       }
-      safeSetResult(data); safeSetAppState('result'); setAnalysisCount(c=>c+1)
+      appStateRef.current = 'result'; resultRef.current = data; setAppData({ state: 'result', result: data }); setAnalysisCount(c=>c+1)
       setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
     } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); safeSetAppState('error') }
   }
 
-  const reset = () => { safeSetAppState('idle');safeSetResult(null);setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
+  const reset = () => { appStateRef.current='idle'; resultRef.current=null; setAppData({state:'idle',result:null}); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
   const copyShare = async () => {
     if (!result) return
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
