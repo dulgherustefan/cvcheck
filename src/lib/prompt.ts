@@ -234,6 +234,7 @@ FINAL RULES
 ─────────────────────────────────────────────
 - detected_domain: be specific — "Full-Stack Web Development", "B2B SaaS Sales", "UX/Product Design" — never just "Technology"
 - detected_level: "student/junior" | "mid-level" | "senior" | "executive" | "unclear"
+- rating: MUST be exactly one of: "needs_work" | "below_average" | "average" | "good" | "strong" | "excellent" — no other text, no explanations
 - Every text field must reference content actually in the CV. No assumptions, no inventions.
 - Scoring: 40–65 is realistic for most CVs. 80+ only for genuinely exceptional CVs.
 
@@ -428,6 +429,7 @@ FINAL RULES
 ─────────────────────────────────────────────
 - detected_domain: specific — "Full-Stack Web Development", "B2B SaaS Sales" — never just "Technology"
 - detected_level: "student/junior" | "mid-level" | "senior" | "executive" | "unclear"
+- rating: MUST be exactly one of: "needs_work" | "below_average" | "average" | "good" | "strong" | "excellent" — no other text, no explanations
 - Only reference content actually in the CV.
 - Scoring: 40–65 is realistic for most CVs. Do not inflate.
 
