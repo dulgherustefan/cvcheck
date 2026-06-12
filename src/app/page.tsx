@@ -691,14 +691,16 @@ export default function Home() {
   const [url,         setUrl]         = useState('')
   const [file,        setFile]        = useState<File|null>(null)
   const [isDragging,  setIsDragging]  = useState(false)
-  const [appData, setAppData] = useState<{ state: AppState; result: GatedAnalysisResult | null }>({ state: 'idle', result: null })
-  const appState = appData.state
-  const result   = appData.result
   const appStateRef = useRef<AppState>('idle')
   const resultRef   = useRef<GatedAnalysisResult|null>(null)
+  const [, forceUpdate] = useState(0)
+  const rerender = () => forceUpdate(n => n + 1)
 
-  const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppData(prev => ({ ...prev, state: s })) }
-  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setAppData(prev => ({ ...prev, result: r })) }
+  const appState = appStateRef.current
+  const result   = resultRef.current
+
+  const safeSetAppState = (s: AppState) => { appStateRef.current = s; rerender() }
+  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; rerender() }
   const [error,       setError]       = useState('')
   const [copied,        setCopied]        = useState(false)
   const [shareLoading,  setShareLoading]  = useState(false)
@@ -723,7 +725,7 @@ export default function Home() {
 
   const handleDrop = useCallback((e:DragEvent<HTMLDivElement>)=>{ e.preventDefault();setIsDragging(false); const f=e.dataTransfer.files[0]; if (f?.type==='application/pdf') setFile(f) }, [])
 
-  const submit = async () => {
+  const submit = useCallback(async () => {
     if (mode==='url'&&!url.trim()) return
     if (mode==='pdf'&&!file) return
     safeSetAppState('loading'); setError(''); safeSetResult(null)
@@ -736,20 +738,19 @@ export default function Home() {
         res=await fetch('/api/roast',{method:'POST',headers:{'Content-Type':'application/json',...(session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},body:JSON.stringify({url:url.trim()})})
       }
       const data=await res.json()
-      console.log('ROAST RESPONSE:', res.status, data)
       if (!res.ok) {
         if (res.status===403&&data.error==='free_limit_reached'){setShowUpgradeModal(true);safeSetAppState('idle');return}
         if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
         throw new Error(data.error||'Analysis failed')
       }
-      appStateRef.current = 'result'; resultRef.current = data; setAppData({ state: 'result', result: data }); setAnalysisCount(c=>c+1)
-      console.log('STATE SET TO RESULT, appData state:', appData.state)
+      appStateRef.current = 'result'; resultRef.current = data; setAnalysisCount(c=>c+1); rerender()
       setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
     } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); safeSetAppState('error') }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, url, file, session])
 
-  const reset = () => { appStateRef.current='idle'; resultRef.current=null; setAppData({state:'idle',result:null}); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
+  const reset = () => { appStateRef.current='idle'; resultRef.current=null; rerender(); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
   const copyShare = async () => {
     if (!result) return
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
