@@ -25,6 +25,41 @@ import { createSupabaseBrowser } from '@/lib/supabase'
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
 
+const MOBILE_CSS = `
+@media (max-width: 640px) {
+  .nav-links-desktop { display: none !important; }
+  .nav-btn-login { display: none !important; }
+  .nav-right { gap: 6px !important; }
+  .hero-section { padding: 48px 20px 40px !important; }
+  .hero-subtitle { font-size: 16px !important; }
+  .stats-strip { gap: 24px !important; padding-top: 24px !important; margin-top: 32px !important; }
+  .upload-url-row { flex-direction: column !important; gap: 8px !important; }
+  .upload-url-row input { width: 100% !important; box-sizing: border-box; }
+  .upload-url-row button { width: 100% !important; justify-content: center; }
+  .result-topbar { flex-wrap: wrap !important; gap: 8px !important; }
+  .result-topbar .share-btn { margin-left: 0 !important; }
+  .score-hero-inner { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; padding: 20px 20px !important; }
+  .score-breakdown-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+  .score-breakdown-inner { padding: 16px 20px !important; }
+  .first-impression-grid { grid-template-columns: 1fr !important; }
+  .impact-stats-grid { grid-template-columns: 1fr 1fr !important; }
+  .bullet-rewrite-cols { grid-template-columns: 1fr !important; }
+  .bullet-rewrite-cols > div:first-child { border-right: none !important; border-bottom: 0.5px solid var(--border) !important; }
+  .landing-section { padding: 60px 20px !important; }
+  .landing-two-col { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .landing-steps-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+  .pricing-grid { grid-template-columns: 1fr !important; }
+  .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+  .footer-inner { padding: 40px 20px 28px !important; }
+  .footer-bottom { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+  .job-filter-row { gap: 4px !important; }
+}
+@media (max-width: 400px) {
+  .landing-steps-grid { grid-template-columns: 1fr !important; }
+  .impact-stats-grid { grid-template-columns: 1fr !important; }
+}
+`
+
 function useCountUp(target: number, duration = 1200, delay = 0) {
   const [value, setValue] = useState(0)
   useEffect(() => {
@@ -154,7 +189,7 @@ function RedFlagCard({ flag, howToFixLocked, onUnlock }: { flag:{flag:string;sev
 function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
   return (
     <div style={{ borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', fontSize:12.5 }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
+      <div className="bullet-rewrite-cols" style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
         <div style={{ padding:'10px 14px', background:'rgba(220,38,38,0.04)', borderRight:'0.5px solid var(--border)' }}>
           <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-low)', marginBottom:5 }}>Before</div>
           <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.55 }}>{rewrite.original}</p>
@@ -374,7 +409,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
           {data?.detected_country&&<p style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4, marginBottom:0 }}>{ADZUNA_UI_SUPPORTED.has(data.detected_country)?`Jobs near you · ${data.detected_country.toUpperCase()}`:'Remote & global jobs matched to your profile'}</p>}
         </div>
         {data&&data.jobs.length>0&&(
-          <div style={{ display:'flex', gap:6, flexWrap:'wrap' as const }}>
+          <div className="job-filter-row" style={{ display:'flex', gap:6, flexWrap:'wrap' as const }}>
             {(['all','strong','good','partial','stretch'] as FilterType[]).map(f=>{
               const count=f==='all'?data.jobs.length:(counts[f]??0)
               return <button key={f} onClick={()=>setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--accent)':'var(--border)'}`, background:filter===f?'var(--accent)':'transparent', color:filter===f?'#fff':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>{f}{count>0?` (${count})`:''}</button>
@@ -431,7 +466,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       {/* ── Score Hero ── */}
       <div style={{ background:'var(--bg-elevated)', borderRadius:14, border:'1px solid var(--border)', boxShadow:'0 2px 16px rgba(45,31,14,0.07)', overflow:'hidden' }}>
         <div style={{ height:3, background:'linear-gradient(90deg, var(--accent), #E8925A)' }}/>
-        <div style={{ padding:'28px 32px', display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' as const }}>
+        <div className="score-hero-inner" style={{ padding:'28px 32px', display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' as const }}>
           <ScoreRing score={result.total_score}/>
           <div style={{ flex:1, minWidth:200 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' as const, marginBottom:10 }}>
@@ -443,9 +478,9 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
 
         {/* Score dimensions strip */}
-        <div style={{ borderTop:'1px solid var(--border)', padding:'20px 32px' }} ref={barsRef}>
+        <div className="score-breakdown-inner" style={{ borderTop:'1px solid var(--border)', padding:'20px 32px' }} ref={barsRef}>
           <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--text-tertiary)', marginBottom:14 }}>Score Breakdown</div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 40px' }}>
+          <div className="score-breakdown-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 40px' }}>
             {SCORE_DIMENSIONS.map(({key,label,max,desc})=>(
               <DimensionBar key={key} label={label} score={(result.scores as unknown as Record<string,number>)[key]??0} max={max} desc={desc} locked={false} onUnlock={unlock}/>
             ))}
@@ -479,7 +514,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           <p style={{ margin:0, fontSize:14, color:'var(--text-primary)', fontStyle:'italic', lineHeight:1.65 }}>"{result.first_impression.what_recruiter_sees}"</p>
           <p style={{ margin:'6px 0 0', fontSize:11, color:'var(--text-tertiary)' }}>what a recruiter sees in 7 seconds</p>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+        <div className="first-impression-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
           {[
             { label:'Tone', value: result.first_impression.tone_signal },
             { label:'Summary', value: result.first_impression.summary_verdict },
@@ -505,7 +540,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
 
         {/* Bullet stats */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:14 }}>
+        <div className="impact-stats-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:14 }}>
           {[
             { label:'With metrics', value:result.impact.bullets_with_metrics, color:'var(--score-high)' },
             { label:'Without metrics', value:result.impact.bullets_without_metrics, color:'var(--score-low)' },
@@ -987,6 +1022,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column' as const, background:'var(--bg)', fontFamily:'var(--font-sans)' }}>
+      <style dangerouslySetInnerHTML={{ __html: MOBILE_CSS }} />
 
       {showAuthModal    && <AuthModal onClose={()=>setShowAuthModal(false)}/>}
       {showUpgradeModal && <UpgradeModal onClose={()=>setShowUpgradeModal(false)} roastId={result?.analysis_id} userId={user?.id} userEmail={user?.email}/>}
@@ -999,7 +1035,7 @@ export default function Home() {
           <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
           CVCheck
         </div>
-        <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
+        <ul className="nav-links-desktop" style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
             <li key={href}><button onClick={()=>{
               const el = document.querySelector(href)
@@ -1008,12 +1044,12 @@ export default function Home() {
             }} className='nav-link' style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <div className="nav-right" style={{ display:'flex', alignItems:'center', gap:8 }}>
           {!authLoading&&(user?(
             <AccountDropdown user={user} tier={tier} onOpenAccount={()=>setShowAccountModal(true)} onOpenPlans={()=>setShowPlansModal(true)} onSignOut={handleSignOut}/>
           ):(
             <>
-              <button onClick={()=>setShowAuthModal(true)} className='btn-outline' style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
+              <button onClick={()=>setShowAuthModal(true)} className='btn-outline nav-btn-login' style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
               <button onClick={()=>setShowAuthModal(true)} className='btn-primary' style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign up</button>
             </>
           ))}
@@ -1024,12 +1060,12 @@ export default function Home() {
       <main style={{ flex:1 }}>
 
         {/* HERO */}
-        <section style={{ background:'var(--bg-elevated)', padding:'80px 40px 60px', textAlign:'center' as const }}>
+        <section className="hero-section" style={{ background:'var(--bg-elevated)', padding:'80px 40px 60px', textAlign:'center' as const }}>
           <div style={S.wrap}>
             <h1 style={{ fontSize:'clamp(36px,5vw,58px)', fontWeight:800, lineHeight:0.95, color:'var(--text-heading)', marginBottom:20, letterSpacing:'-0.025em', fontFamily:'var(--font-display)' }}>
               Your CV, Brutally Honest.<br/>Land More Interviews.
             </h1>
-            <p style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:'60ch', margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em' }}>
+            <p className="hero-subtitle" style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:'60ch', margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em' }}>
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
             </p>
 
@@ -1044,7 +1080,7 @@ export default function Home() {
               </div>
               <div style={{ padding:20 }}>
                 {mode==='url'&&(
-                  <div style={{ display:'flex', gap:8 }}>
+                  <div className="upload-url-row" style={{ display:'flex', gap:8 }}>
                     <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} style={{ flex:1, padding:'10px 14px', fontSize:13, border:'0.5px solid var(--border-strong)', borderRadius:5, background:'var(--bg)', color:'var(--text-primary)', fontFamily:'var(--font-sans)', outline:'none' }} autoComplete="off" spellCheck={false}/>
                     <button onClick={submit} disabled={!url.trim()||appState==='loading'} style={{ padding:'10px 20px', background:'var(--accent)', color:'#fff', border:'none', borderRadius:5, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)', opacity:!url.trim()||appState==='loading'?0.4:1, display:'flex', alignItems:'center', gap:6, whiteSpace:'nowrap' as const }}>
                       Analyze <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -1092,7 +1128,7 @@ export default function Home() {
             </div>
 
             {/* Stats strip */}
-            <div style={{ display:'flex', justifyContent:'center', gap:48, flexWrap:'wrap' as const, marginTop:48, paddingTop:32, borderTop:'0.5px solid var(--border)' }}>
+            <div className="stats-strip" style={{ display:'flex', justifyContent:'center', gap:48, flexWrap:'wrap' as const, marginTop:48, paddingTop:32, borderTop:'0.5px solid var(--border)' }}>
               {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'"consider improving" in your feedback'}].map(s=>(
                 <div key={s.num} style={{ textAlign:'center' as const }}>
                   <div style={{ fontSize:28, fontWeight:800, color:'var(--accent)', letterSpacing:'-1px', lineHeight:1 }}>{s.num}</div>
@@ -1122,7 +1158,7 @@ export default function Home() {
         {/* RESULTS */}
         {appState==='result'&&result&&(
           <section id="result-section" style={{ background:'var(--bg)', padding:'32px 0 60px' }}>
-            <div style={{ maxWidth:800, margin:'0 auto 20px', padding:'0 20px', display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' as const }}>
+            <div className="result-topbar" style={{ maxWidth:800, margin:'0 auto 20px', padding:'0 20px', display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' as const }}>
               <button onClick={reset} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                 New analysis
@@ -1134,7 +1170,7 @@ export default function Home() {
                 </button>
               )}
               {!user&&<button onClick={()=>setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign in to save</button>}
-              <button onClick={copyShare} disabled={shareLoading} style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', opacity:shareLoading?0.6:1 }}>
+              <button onClick={copyShare} disabled={shareLoading} className="share-btn" style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', opacity:shareLoading?0.6:1 }}>
                 {copied?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Link copied!</>:shareLoading?<>Generating…</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share score</>}
               </button>
             </div>
@@ -1149,7 +1185,7 @@ export default function Home() {
         {(appState==='idle'||appState==='error')&&(<>
 
           {/* ── Feature 1: CV Analysis ── */}
-          <section id="analysis" style={{ background:'var(--bg-elevated)', padding:'96px 40px 80px' }}>
+          <section id="analysis" className="landing-section" style={{ background:'var(--bg-elevated)', padding:'96px 40px 80px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>AI CV Analysis</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:640, margin:'0 auto 16px' }}>Every recruiter bias, every ATS gap. Exposed.</h2>
@@ -1228,7 +1264,7 @@ export default function Home() {
           </section>
 
           {/* ── Feature 2: Job Tracker ── */}
-          <section id="jobs" style={{ background:'var(--bg)', padding:'96px 40px 80px' }}>
+          <section id="jobs" className="landing-section" style={{ background:'var(--bg)', padding:'96px 40px 80px' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Matching</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit, with a score to prove it.</h2>
@@ -1362,7 +1398,7 @@ export default function Home() {
           </section>
 
           {/* ── Job Domain Examples ── */}
-          <section style={{ background:'var(--bg-subtle)', padding:'80px 40px', borderTop:'0.5px solid var(--border)' }}>
+          <section className="landing-section" style={{ background:'var(--bg-subtle)', padding:'80px 40px', borderTop:'0.5px solid var(--border)' }}>
             <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
               <h2 style={{ fontSize:'clamp(24px,3vw,36px)', fontWeight:800, color:'var(--text-heading)', letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:12 }}>Works for every domain and level.</h2>
               <p style={{ fontSize:15, color:'var(--text-secondary)', marginBottom:36, fontWeight:500 }}>CVCheck detects your field and seniority automatically.</p>
@@ -1381,7 +1417,7 @@ export default function Home() {
               <h2 style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:12, maxWidth:520, margin:'0 auto 12px' }}>No tricks. No "contact us."</h2>
               <p style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:420, margin:'0 auto 56px', fontWeight:500 }}>Start free. Pay once for Pro. Subscribe for unlimited.</p>
 
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, textAlign:'left' as const }}>
+              <div className="pricing-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, textAlign:'left' as const }}>
                 {([
                   { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Career trajectory','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaAction:scrollToUpload, ctaStyle:{background:'transparent',color:'var(--accent)',border:'2px solid var(--accent)'} },
                   { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','AI bullet rewrites on your text','How-to-fix for every red flag','Missing ATS keywords','Career gap analysis','Top 3 actions with how-to + examples'], cta:'Get Pro — €1.99',   ctaAction:()=>setShowUpgradeModal(true), ctaStyle:{background:'var(--accent)',color:'#fff',border:'none'} },
@@ -1409,7 +1445,7 @@ export default function Home() {
           </section>
 
           {/* ── Testimonial ── */}
-          <section style={{ background:'var(--bg)', padding:'96px 40px', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
+          <section className="landing-section" style={{ background:'var(--bg)', padding:'96px 40px', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
             <div style={{ maxWidth:680, margin:'0 auto' }}>
               <h2 style={{ fontSize:'clamp(26px,3vw,38px)', fontWeight:800, color:'var(--text-heading)', letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:40 }}>The most honest feedback your CV will ever get.</h2>
               <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border)', padding:'40px 44px', boxShadow:'0 8px 40px rgba(45,31,14,0.08)' }}>
@@ -1430,8 +1466,8 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer style={{ background:'var(--text-primary)', padding:'60px 40px 36px' }}>
-        <div style={{ maxWidth:1100, margin:'0 auto' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40, marginBottom:48 }}>
+        <div className="footer-inner" style={{ maxWidth:1100, margin:'0 auto' }}>
+          <div className="footer-grid" style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40, marginBottom:48 }}>
             <div>
               <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:18, fontWeight:700, color:'#fff', marginBottom:14 }}>
                 <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
@@ -1452,7 +1488,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ borderTop:'1px solid #3D2910', paddingTop:24, display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:12, color:'#5A3C20' }}>
+          <div className="footer-bottom" style={{ borderTop:'1px solid #3D2910', paddingTop:24, display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:12, color:'#5A3C20' }}>
             <span>© 2026 CVCheck · cvcheck.app</span>
             <div style={{ display:'flex', gap:20 }}>
               <Link href="/privacy" style={{ color:'#5A3C20', textDecoration:'none' }}>Privacy</Link>
