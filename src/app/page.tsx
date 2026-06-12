@@ -691,16 +691,25 @@ export default function Home() {
   const [url,         setUrl]         = useState('')
   const [file,        setFile]        = useState<File|null>(null)
   const [isDragging,  setIsDragging]  = useState(false)
+  const [appState, setAppState] = useState<AppState>('idle')
+  const [result, setResult]     = useState<GatedAnalysisResult|null>(null)
   const appStateRef = useRef<AppState>('idle')
   const resultRef   = useRef<GatedAnalysisResult|null>(null)
-  const [, forceUpdate] = useState(0)
-  const rerender = () => forceUpdate(n => n + 1)
 
-  const appState = appStateRef.current
-  const result   = resultRef.current
+  // Sync refs on every render so they're always current
+  appStateRef.current = appState
+  resultRef.current   = result
 
-  const safeSetAppState = (s: AppState) => { appStateRef.current = s; rerender() }
-  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; rerender() }
+  const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppState(s) }
+  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setResult(r) }
+
+  // Guard: if auth re-render resets state, restore from refs
+  useEffect(() => {
+    if (appStateRef.current === 'result' && appState !== 'result') {
+      setAppState('result')
+      if (resultRef.current) setResult(resultRef.current)
+    }
+  })
   const [error,       setError]       = useState('')
   const [copied,        setCopied]        = useState(false)
   const [shareLoading,  setShareLoading]  = useState(false)
@@ -743,14 +752,14 @@ export default function Home() {
         if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
         throw new Error(data.error||'Analysis failed')
       }
-      appStateRef.current = 'result'; resultRef.current = data; setAnalysisCount(c=>c+1); rerender()
-      setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
+      appStateRef.current = 'result'; resultRef.current = data; setResult(data); setAppState('result'); setAnalysisCount(c=>c+1)
+      setTimeout(() => { const el = document.getElementById('result-section'); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); else window.scrollTo({top:0, behavior:'smooth'}) }, 100)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
     } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); safeSetAppState('error') }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, url, file, session])
 
-  const reset = () => { appStateRef.current='idle'; resultRef.current=null; rerender(); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
+  const reset = () => { appStateRef.current='idle'; resultRef.current=null; setAppState('idle'); setResult(null); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
   const copyShare = async () => {
     if (!result) return
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
@@ -931,7 +940,7 @@ export default function Home() {
 
         {/* RESULTS */}
         {appState==='result'&&result&&(
-          <section style={{ background:'var(--bg)', padding:'32px 0 60px' }}>
+          <section id="result-section" style={{ background:'var(--bg)', padding:'32px 0 60px' }}>
             <div style={{ maxWidth:800, margin:'0 auto 20px', padding:'0 20px', display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' as const }}>
               <button onClick={reset} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
