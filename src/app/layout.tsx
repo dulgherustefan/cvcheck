@@ -5,16 +5,32 @@ import './globals.css'
 export const metadata: Metadata = {
   metadataBase: new URL('https://cvcheck.app'),
   title: {
-    default: 'CVCheck · Score your CV in seconds',
+    default: 'CVCheck · Free CV Checker & AI Feedback',
     template: '%s · CVCheck',
   },
   description:
-    'Upload your CV or paste a link. Get an instant AI score, detailed diagnosis, rewritten bullets, and matched jobs in under 30 seconds. Free to try.',
+    'Free CV checker powered by AI. Upload your CV and get a score out of 100, fix red flags, rewrite weak bullets, and find matching jobs — in under 30 seconds.',
   keywords: [
-    'cv checker', 'cv feedback', 'ai cv review', 'resume score',
-    'cv score', 'cv analysis', 'ats checker', 'resume feedback',
-    'ai resume checker', 'check my cv', 'cv checker online free',
-    'job matching cv', 'cv red flags', 'resume bullet rewrite',
+    // High-volume direct intent
+    'free cv checker', 'cv checker free', 'check my cv', 'cv checker online',
+    'free resume checker', 'resume checker free', 'check my resume',
+    // ATS-specific (very high search volume)
+    'ats resume checker', 'ats cv checker', 'ats checker free', 'ats resume scan',
+    'ats score checker', 'ats friendly resume checker',
+    // Score/grade intent
+    'cv score', 'resume score', 'rate my resume', 'resume grader', 'cv grader',
+    'resume score checker', 'score my resume',
+    // Review/feedback intent
+    'cv review free', 'resume review free', 'ai cv review', 'ai resume review',
+    'cv feedback', 'resume feedback', 'instant cv feedback',
+    // Fix/improve intent
+    'how to improve cv', 'cv improvement tool', 'resume optimizer free',
+    'cv optimizer', 'resume bullet rewrite', 'improve my cv',
+    // Job matching
+    'cv job matching', 'resume job matching', 'job match cv',
+    // Long-tail
+    'cv checker online free no signup', 'ai powered cv checker',
+    'free resume analysis', 'cv analysis tool free',
   ],
   authors: [{ name: 'CVCheck' }],
   creator: 'CVCheck',
@@ -30,23 +46,23 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://cvcheck.app',
     siteName: 'CVCheck',
-    title: 'CVCheck — AI Feedback on Your CV & Portfolio',
+    title: 'CVCheck · Free CV Checker & AI Feedback',
     description:
-      'Instant AI score for your CV or portfolio. See what\'s holding you back and get specific improvements in seconds.',
+      'Get an honest AI score for your CV — free. See exactly what recruiters notice, what to fix, and land more interviews.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'CVCheck — AI CV Feedback',
+        alt: 'CVCheck — Free AI CV Checker',
       },
     ],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CVCheck — Honest AI Feedback on Your CV',
-    description: 'Score your CV out of 100 in seconds. See exactly what to fix.',
+    title: 'CVCheck · Free CV Checker',
+    description: 'Score your CV out of 100 for free. See exactly what to fix and get more interviews.',
     images: ['/og-image.png'],
   },
 }
@@ -57,7 +73,7 @@ const schemaOrg = {
   name: 'CVCheck',
   url: 'https://cvcheck.app',
   description:
-    'AI-powered CV and portfolio feedback tool. Get a score out of 100, detailed observations, and specific improvements.',
+    'Free AI-powered CV checker. Get a score out of 100, see red flags, rewrite weak bullets, and match with relevant jobs.',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   offers: [
@@ -66,21 +82,21 @@ const schemaOrg = {
       name: 'Free',
       price: '0',
       priceCurrency: 'EUR',
-      description: 'One free CV analysis with overall score',
+      description: 'Free CV check with overall score, first impression, red flags, and ATS verdict',
     },
     {
       '@type': 'Offer',
       name: 'Pro',
       price: '1.99',
       priceCurrency: 'EUR',
-      description: 'Full analysis with 7 dimensions, bullet rewrites, red flag fixes, ATS keywords, and priority actions — one-time payment',
+      description: 'Full CV analysis with bullet rewrites, red flag fixes, missing ATS keywords, and priority actions — one-time payment',
     },
     {
       '@type': 'Offer',
       name: 'Premium',
       price: '5.99',
       priceCurrency: 'EUR',
-      description: 'Unlimited analyses, full job matching with fit scores, and weekly job alerts',
+      description: 'Unlimited CV checks, full job matching with fit scores, and weekly job alert emails',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
         price: '5.99',
@@ -90,20 +106,20 @@ const schemaOrg = {
     },
   ],
   featureList: [
-    'CV score out of 100',
+    'Free CV score out of 100',
+    'Free ATS compatibility check',
     '7 detailed scoring dimensions',
     'First impression analysis',
     'Red flag detection with severity',
-    'ATS compatibility verdict',
     'AI bullet rewrites on your actual text (Pro)',
     'How to fix every red flag (Pro)',
-    'Missing ATS keywords for your domain (Pro)',
-    'Career gap & seniority analysis (Pro)',
-    'Top 3 priority actions with how-to + examples (Pro)',
-    'Job matching from Adzuna + Remotive (Premium)',
-    'Fit score 0–100 per job with strengths & gaps (Premium)',
+    'Missing ATS keywords for your field (Pro)',
+    'Career gap and seniority analysis (Pro)',
+    'Top 3 priority actions with examples (Pro)',
+    'Job matching from Adzuna and Remotive (Premium)',
+    'Fit score per job with strengths and gaps (Premium)',
     'Weekly job alert emails (Premium)',
-    'Unlimited analyses (Premium)',
+    'Unlimited CV checks (Premium)',
   ],
 }
 
