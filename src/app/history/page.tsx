@@ -144,11 +144,12 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
       className="_hist-card"
       style={{
         display: 'flex', alignItems: 'center', gap: 16,
-        width: '100%', padding: '18px 20px',
+        width: '100%', padding: '20px 22px',
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: 14,
         cursor: 'pointer', textAlign: 'left',
+        boxShadow: '0 1px 4px rgba(45,31,14,0.05)',
         transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
       }}
     >
@@ -861,13 +862,12 @@ function HistoryContent() {
       {/* Header */}
       <header style={{
         borderBottom: '1px solid var(--border)',
-        background: 'color-mix(in srgb, var(--bg-elevated) 92%, transparent)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'var(--bg-elevated)',
         position: 'sticky', top: 0, zIndex: 100,
+        boxShadow: '0 1px 0 var(--border)',
       }}>
         {/* Accent stripe */}
-        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)' }} />
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
         <div style={{
           maxWidth: 860, margin: '0 auto',
           padding: '0 32px',
@@ -890,8 +890,8 @@ function HistoryContent() {
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <img src="/logo.png" width="20" height="20" alt="CVCheck" style={{display:"block",borderRadius:4}}/>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
+              <img src="/logo.png" width="24" height="24" alt="CVCheck" style={{display:"block",borderRadius:5}}/>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
                 CVCheck
               </span>
             </div>
@@ -911,15 +911,15 @@ function HistoryContent() {
       <main style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '48px 32px' }}>
 
         {/* Page title */}
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 36 }}>
           <h1 style={{
-            fontSize: 32, fontWeight: 800, color: 'var(--text-heading)',
-            margin: '0 0 4px', letterSpacing: '-0.03em',
-            fontFamily: 'var(--font-display)', lineHeight: 1.1,
+            fontSize: 36, fontWeight: 800, color: 'var(--text-heading)',
+            margin: '0 0 6px', letterSpacing: '-0.03em',
+            fontFamily: 'var(--font-display)', lineHeight: 1.05,
           }}>
             History
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: '0 0 24px', fontWeight: 500 }}>
+          <p style={{ fontSize: 15, color: 'var(--text-tertiary)', margin: '0 0 28px', fontWeight: 500 }}>
             Your CV analyses and saved job applications.
           </p>
 
