@@ -787,7 +787,7 @@ export default function Home() {
       {/* NAVBAR */}
       <nav style={S.nav}>
         <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:18, fontWeight:700, color:'var(--accent)' }}>
-          <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
+          <img src="/logo.png" width="40" height="40" alt="CVCheck" style={{display:'block'}} />
           CVCheck
         </div>
         <ul style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
@@ -1226,7 +1226,7 @@ export default function Home() {
           <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40, marginBottom:48 }}>
             <div>
               <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:18, fontWeight:700, color:'#fff', marginBottom:14 }}>
-                <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
+                <img src="/logo.png" width="40" height="40" alt="CVCheck" style={{display:'block'}} />
                 CVCheck
               </div>
               <p style={{ fontSize:13, color:'#8A6848', lineHeight:1.6 }}>AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>
