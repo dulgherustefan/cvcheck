@@ -758,7 +758,9 @@ export default function Home() {
   }
 
   const isPro = result?.tier==='pro'||result?.tier==='premium'
-  const scrollToUpload = () => document.getElementById('upload')?.scrollIntoView({behavior:'smooth'})
+  const scrollToUpload = () => document.getElementById('upload')?.scrollIntoView({behavior:'smooth', block:'start'})
+  const scrollToJobs = () => document.getElementById('jobs')?.scrollIntoView({behavior:'smooth'})
+  const scrollToAlerts = () => document.getElementById('alerts')?.scrollIntoView({behavior:'smooth'})
 
   // Activate scroll-reveal when on idle landing
   useScrollReveal(appState === 'idle' || appState === 'error')
@@ -1024,7 +1026,7 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Matching</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit, with a score to prove it.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:19, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px', fontWeight:500 }}>CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToJobs} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↓</button>
 
               {/* Big job card mockup */}
               <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
@@ -1093,7 +1095,7 @@ export default function Home() {
               <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'#fff', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Alerts</div>
               <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
               <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'rgba(255,255,255,0.8)', lineHeight:1.65, maxWidth:480, margin:'0 auto 32px', fontWeight:500 }}>Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden', transition:'opacity 0.15s, transform 0.12s' }}>Enable Job Alerts ↑</button>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden', transition:'opacity 0.15s, transform 0.12s' }}>Enable Job Alerts ↓</button>
 
               {/* Email mockup */}
               <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ maxWidth:560, margin:'0 auto', background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid rgba(255,255,255,0.2)', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', overflow:'hidden', textAlign:'left' as const }}>
