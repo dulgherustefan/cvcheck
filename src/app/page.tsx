@@ -736,12 +736,14 @@ export default function Home() {
         res=await fetch('/api/roast',{method:'POST',headers:{'Content-Type':'application/json',...(session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},body:JSON.stringify({url:url.trim()})})
       }
       const data=await res.json()
+      console.log('ROAST RESPONSE:', res.status, data)
       if (!res.ok) {
         if (res.status===403&&data.error==='free_limit_reached'){setShowUpgradeModal(true);safeSetAppState('idle');return}
         if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
         throw new Error(data.error||'Analysis failed')
       }
       appStateRef.current = 'result'; resultRef.current = data; setAppData({ state: 'result', result: data }); setAnalysisCount(c=>c+1)
+      console.log('STATE SET TO RESULT, appData state:', appData.state)
       setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
     } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); safeSetAppState('error') }
