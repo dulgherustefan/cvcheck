@@ -8,6 +8,7 @@ export interface FirstImpression {
   current_title: string
   recommended_title: string
   summary_verdict: 'missing' | 'generic' | 'decent' | 'strong'
+  tone_signal: 'passive' | 'confident' | 'mixed'
   passes_7_second_test: boolean
 }
 
@@ -33,6 +34,7 @@ export interface ATSAnalysis {
   title_is_searchable: boolean
   formatting_issues: string[]        // Pro only
   missing_keywords: string[]         // Pro only
+  stale_tech: string[]               // visible in free
   notes: string
 }
 
@@ -47,6 +49,7 @@ export interface RedFlag {
 export interface CareerStory {
   trajectory_detected: string        // "Junior Dev → Senior → seeking management"
   progression_clear: boolean
+  narrative_thread: 'coherent' | 'fragmented' | 'pivoting'
   gaps_or_transitions: string        // Pro only
   seniority_match: 'matches' | 'overqualified' | 'underqualified' | 'unclear'
 }
