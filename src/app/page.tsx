@@ -701,7 +701,7 @@ export default function Home() {
 
   // Prevent auth re-renders from resetting result state
   useEffect(() => {
-    if (appStateRef.current === 'result' && appState !== 'result') {
+    if (appStateRef.current === 'result' && appState !== 'result' && resultRef.current !== null) {
       setAppState('result')
       setResult(resultRef.current)
     }
