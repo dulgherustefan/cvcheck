@@ -423,90 +423,147 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
   const unlock = () => setShowUpgradeModal(true)
   const barsRef = useAnimatedBars()
 
+  const scoreColor = result.total_score >= 80 ? 'var(--score-high)' : result.total_score >= 60 ? 'var(--score-mid)' : 'var(--score-low)'
+
   return (
-    <div style={{ maxWidth:800, margin:'0 auto', padding:'0 20px', display:'flex', flexDirection:'column' as const, gap:20 }}>
-      {/* Score hero */}
-      <div style={{ display:'flex', alignItems:'center', gap:28, padding:'28px 32px', background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', boxShadow:'var(--shadow-md)' }}>
-        <ScoreRing score={result.total_score}/>
-        <div style={{ flex:1 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' as const, marginBottom:8 }}>
-            <span style={{ fontSize:12, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', padding:'3px 10px', borderRadius:3, color:RATING_COLORS[result.rating], background:`${RATING_COLORS[result.rating]}08`, border:`0.5px solid ${RATING_COLORS[result.rating]}30` }}>{RATING_LABELS[result.rating]}</span>
-            {result.detected_domain&&result.detected_domain!=='Unknown'&&<span style={{ fontSize:10, fontWeight:600, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--text-tertiary)', padding:'2px 8px', border:'0.5px solid var(--border)', borderRadius:3 }}>{LEVEL_LABELS[result.detected_level]} · {result.detected_domain}</span>}
+    <div style={{ maxWidth:860, margin:'0 auto', padding:'0 20px', display:'flex', flexDirection:'column' as const, gap:16 }}>
+
+      {/* ── Score Hero ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:14, border:'1px solid var(--border)', boxShadow:'0 2px 16px rgba(45,31,14,0.07)', overflow:'hidden' }}>
+        <div style={{ height:3, background:'linear-gradient(90deg, var(--accent), #E8925A)' }}/>
+        <div style={{ padding:'28px 32px', display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' as const }}>
+          <ScoreRing score={result.total_score}/>
+          <div style={{ flex:1, minWidth:200 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' as const, marginBottom:10 }}>
+              <span style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', padding:'4px 12px', borderRadius:20, color:RATING_COLORS[result.rating], background:`${RATING_COLORS[result.rating]}12`, border:`1px solid ${RATING_COLORS[result.rating]}30` }}>{RATING_LABELS[result.rating]}</span>
+              {result.detected_domain&&result.detected_domain!=='Unknown'&&<span style={{ fontSize:11, fontWeight:500, color:'var(--text-tertiary)', padding:'4px 10px', border:'1px solid var(--border)', borderRadius:20 }}>{LEVEL_LABELS[result.detected_level]} · {result.detected_domain}</span>}
+            </div>
+            <p style={{ margin:0, fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.65, fontWeight:500 }}>{result.summary}</p>
           </div>
-          <p style={{ margin:0, fontSize:14, color:'var(--text-secondary)', lineHeight:1.65 }}>{result.summary}</p>
+        </div>
+
+        {/* Score dimensions strip */}
+        <div style={{ borderTop:'1px solid var(--border)', padding:'20px 32px' }} ref={barsRef}>
+          <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--text-tertiary)', marginBottom:14 }}>Score Breakdown</div>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 40px' }}>
+            {SCORE_DIMENSIONS.map(({key,label,max,desc})=>(
+              <DimensionBar key={key} label={label} score={(result.scores as unknown as Record<string,number>)[key]??0} max={max} desc={desc} locked={false} onUnlock={unlock}/>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* First Impression */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
-        <h2 style={{ fontSize:15, fontWeight:700, color:'var(--text-primary)', marginBottom:14, letterSpacing:'-0.01em' }}>First Impression</h2>
-        <div style={{ padding:'14px 18px', borderRadius:6, border:`0.5px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.25)':'rgba(220,38,38,0.25)'}`, background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.04)':'rgba(220,38,38,0.04)' }}>
-          <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', marginBottom:7 }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</div>
-          <p style={{ margin:0, fontSize:13, color:'var(--text-primary)', fontStyle:'italic', lineHeight:1.6 }}>"{result.first_impression.what_recruiter_sees}"</p>
-          <p style={{ margin:'6px 0 0', fontSize:11.5, color:'var(--text-tertiary)' }}>what a recruiter understands in 7 seconds</p>
+      {/* ── Quick Win ── */}
+      {result.quick_win && (
+        <div style={{ background:'var(--accent-subtle)', borderRadius:12, border:'1px solid var(--accent-border)', padding:'16px 20px', display:'flex', gap:14, alignItems:'flex-start' }}>
+          <div style={{ width:32, height:32, borderRadius:8, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <svg width="15" height="15" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div>
+            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--accent)', marginBottom:5 }}>Quick Win</div>
+            <p style={{ margin:0, fontSize:14, color:'var(--text-primary)', lineHeight:1.6, fontWeight:500 }}>{result.quick_win}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Score Breakdown */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }} ref={barsRef}>
-        <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', marginBottom:4, letterSpacing:'-0.02em' }}>Score Breakdown</h2>
-        {SCORE_DIMENSIONS.map(({key,label,max,desc})=>(
-          <DimensionBar key={key} label={label} score={(result.scores as unknown as Record<string,number>)[key]??0} max={max} desc={desc} locked={false} onUnlock={unlock}/>
-        ))}
-      </div>
-
-      {/* Impact */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Impact & Achievements</h2>
-          {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>}
+      {/* ── First Impression ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7"/></svg>
+          </div>
+          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>First Impression</h2>
+          <span style={{ marginLeft:'auto', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.2)':'rgba(220,38,38,0.2)'}` }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</span>
         </div>
-        <div style={{ display:'flex', gap:0, borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', marginBottom:10 }}>
-          {[{label:'With metrics',value:result.impact.bullets_with_metrics,color:'var(--score-high)'},{label:'Without metrics',value:result.impact.bullets_without_metrics,color:'var(--score-low)'}].map((s,i)=>(
-            <div key={i} style={{ flex:1, padding:'14px 18px', borderRight:i===0?'0.5px solid var(--border)':'none' }}>
-              <div style={{ fontSize:22, fontWeight:800, color:s.color, letterSpacing:'-1.5px' }}>{s.value}</div>
-              <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:2 }}>{s.label}</div>
+        <div style={{ padding:'14px 18px', borderRadius:8, border:'1px solid var(--border)', background:'var(--bg)', marginBottom:12 }}>
+          <p style={{ margin:0, fontSize:14, color:'var(--text-primary)', fontStyle:'italic', lineHeight:1.65 }}>"{result.first_impression.what_recruiter_sees}"</p>
+          <p style={{ margin:'6px 0 0', fontSize:11, color:'var(--text-tertiary)' }}>what a recruiter sees in 7 seconds</p>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {[
+            { label:'Tone', value: result.first_impression.tone_signal },
+            { label:'Summary', value: result.first_impression.summary_verdict },
+          ].map(item=>(
+            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
+              <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value?.replace(/_/g,' ')??'—'}</div>
             </div>
           ))}
-          <div style={{ flex:2, padding:'14px 18px' }}>
-            <div style={{ fontSize:11.5, fontWeight:600, color:'var(--text-primary)', marginBottom:3 }}>Pattern</div>
-            <div style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>{result.impact.dominant_pattern}</div>
-          </div>
         </div>
-        {result.rewrites_locked?<LockedPreview count={Math.min(result.impact.bullets_without_metrics||2,3)} label="bullet rewrites ready" sublabel="Your weakest bullets rewritten with Action + Result + Numbers" onUnlock={unlock}/>:(
-          <div style={{ display:'flex', flexDirection:'column' as const, gap:8 }}>
-            {result.impact.rewrites.map((rw,i)=><BulletRewriteCard key={i} rewrite={rw}/>)}
-          </div>
-        )}
       </div>
 
-      {/* ATS */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      {/* ── Impact & Achievements ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>ATS Compatibility</h2>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Impact & Achievements</h2>
+          </div>
+          {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>}
+        </div>
+
+        {/* Bullet stats */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:14 }}>
+          {[
+            { label:'With metrics', value:result.impact.bullets_with_metrics, color:'var(--score-high)' },
+            { label:'Without metrics', value:result.impact.bullets_without_metrics, color:'var(--score-low)' },
+            { label:'Verb quality', value:result.impact.action_verb_quality?.replace(/_/g,' ')??'—', color:'var(--text-primary)', text:true },
+          ].map((s,i)=>(
+            <div key={i} style={{ padding:'12px 16px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)', textAlign:'center' as const }}>
+              <div style={{ fontSize:s.text?14:22, fontWeight:800, color:s.color, letterSpacing:s.text?'-0.01em':'-1.5px', textTransform:s.text?'capitalize' as const:'none' as const }}>{s.value}</div>
+              <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:3 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {result.rewrites_locked
+          ? <LockedPreview count={Math.min(result.impact.bullets_without_metrics||2,3)} label="bullet rewrites ready" sublabel="Your weakest bullets rewritten with Action + Result + Numbers" onUnlock={unlock}/>
+          : <div style={{ display:'flex', flexDirection:'column' as const, gap:8 }}>{result.impact.rewrites.map((rw,i)=><BulletRewriteCard key={i} rewrite={rw}/>)}</div>
+        }
+      </div>
+
+      {/* ── ATS ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </div>
+            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>ATS Compatibility</h2>
+          </div>
           {result.keywords_locked&&<UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>}
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
-          <span style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', padding:'4px 10px', borderRadius:3, color:ATS_VERDICT_COLORS[result.ats.verdict], background:`${ATS_VERDICT_COLORS[result.ats.verdict]}10`, border:`0.5px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30` }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexWrap:'wrap' as const }}>
+          <span style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', padding:'4px 12px', borderRadius:20, color:ATS_VERDICT_COLORS[result.ats.verdict], background:`${ATS_VERDICT_COLORS[result.ats.verdict]}12`, border:`1px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30` }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
           <span style={{ fontSize:12, color:'var(--text-secondary)' }}>Title searchable: <span style={{ fontWeight:600, color:result.ats.title_is_searchable?'var(--score-high)':'var(--score-low)' }}>{result.ats.title_is_searchable?'Yes':'No'}</span></span>
+          {result.ats.notes&&<span style={{ fontSize:12, color:'var(--text-tertiary)', flex:'1 1 100%', marginTop:2 }}>{result.ats.notes}</span>}
         </div>
-        {result.keywords_locked?<LockedPreview count="5" label="missing ATS keywords for your domain" sublabel="The exact terms recruiters search that aren't in your CV" onUnlock={unlock}/>:(
-          result.ats.missing_keywords.length>0&&(
-            <div>
-              <div style={{ fontSize:11, color:'var(--text-tertiary)', marginBottom:7 }}>Missing keywords</div>
-              <div style={{ display:'flex', flexWrap:'wrap' as const, gap:5 }}>
-                {result.ats.missing_keywords.map(kw=><span key={kw} style={{ fontSize:11.5, padding:'3px 10px', borderRadius:3, background:'rgba(220,38,38,0.06)', border:'0.5px solid rgba(220,38,38,0.2)', color:'var(--score-low)' }}>{kw}</span>)}
+        {result.keywords_locked
+          ? <LockedPreview count="5" label="missing ATS keywords for your domain" sublabel="The exact terms recruiters search that aren't in your CV" onUnlock={unlock}/>
+          : result.ats.missing_keywords.length>0&&(
+              <div>
+                <div style={{ fontSize:11, fontWeight:600, color:'var(--text-tertiary)', marginBottom:8, textTransform:'uppercase' as const, letterSpacing:'0.07em' }}>Missing Keywords</div>
+                <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
+                  {result.ats.missing_keywords.map(kw=><span key={kw} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.2)', color:'var(--score-low)', fontWeight:500 }}>{kw}</span>)}
+                </div>
               </div>
-            </div>
-          )
-        )}
+            )
+        }
       </div>
 
-      {/* Red Flags */}
+      {/* ── Red Flags ── */}
       {result.red_flags.length>0&&(
-        <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Red Flags</h2>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <div style={{ width:28, height:28, borderRadius:7, background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <svg width="13" height="13" fill="none" stroke="var(--score-low)" strokeWidth="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Red Flags</h2>
+              <span style={{ fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:20, background:'rgba(220,38,38,0.08)', color:'var(--score-low)', border:'1px solid rgba(220,38,38,0.15)' }}>{result.red_flags.length}</span>
+            </div>
             {result.how_to_fix_locked&&<UnlockBtn label="Unlock fixes — €1.99" onClick={unlock}/>}
           </div>
           <div style={{ display:'flex', flexDirection:'column' as const, gap:8 }}>
@@ -515,10 +572,38 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       )}
 
-      {/* Top 3 Actions */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:8, border:'0.5px solid var(--border)', padding:'20px 24px' }}>
+      {/* ── Career Story ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          </div>
+          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Career Story</h2>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          {[
+            { label:'Trajectory', value: result.career_story.trajectory_detected },
+            { label:'Narrative', value: result.career_story.narrative_thread?.replace(/_/g,' ') },
+            { label:'Seniority match', value: result.career_story.seniority_match?.replace(/_/g,' ') },
+            { label:'Progression', value: result.career_story.progression_clear ? 'Clear' : 'Unclear' },
+          ].map(item=>(
+            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
+              <div style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value??'—'}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Top 3 Actions ── */}
+      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', letterSpacing:'-0.02em' }}>Top 3 Actions</h2>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:28, height:28, borderRadius:7, background:'var(--accent-subtle)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Top 3 Priority Actions</h2>
+          </div>
           {result.actions_locked&&<UnlockBtn label="Unlock how-to + examples — €1.99" onClick={unlock}/>}
         </div>
         <div style={{ display:'flex', flexDirection:'column' as const, gap:10 }}>
@@ -526,15 +611,17 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       </div>
 
+      {/* ── Upgrade CTA (free users) ── */}
       {!isPro&&(
-        <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:8, padding:36, display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' as const }}>
+        <div style={{ background:'linear-gradient(135deg, var(--bg-elevated) 0%, var(--accent-subtle) 100%)', border:'1px solid var(--accent-border)', borderRadius:14, padding:'28px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' as const, position:'relative' as const, overflow:'hidden' }}>
+          <div style={{ position:'absolute' as const, top:0, left:0, right:0, height:3, background:'linear-gradient(90deg, var(--accent), #E8925A)' }}/>
           <div>
-            <p style={{ fontSize:16.5, fontWeight:700, color:'var(--text-primary)', margin:'0 0 6px', letterSpacing:'-0.04em' }}>You're missing the part that actually helps.</p>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.65, margin:0, maxWidth:360 }}>Pro shows your bullet rewrites, how to fix every red flag, ATS keywords, and 3 priority actions. €1.99, once.</p>
+            <p style={{ fontSize:17, fontWeight:800, color:'var(--text-heading)', margin:'0 0 6px', letterSpacing:'-0.03em', fontFamily:'var(--font-display)' }}>You're missing the part that actually helps.</p>
+            <p style={{ fontSize:13.5, color:'var(--text-secondary)', lineHeight:1.65, margin:0, maxWidth:380 }}>Pro shows your bullet rewrites, how to fix every red flag, ATS keywords, and 3 priority actions with examples. €1.99, once.</p>
           </div>
           <div style={{ display:'flex', flexDirection:'column' as const, gap:8, flexShrink:0 }}>
-            <button onClick={()=>setShowUpgradeModal(true)} style={{ padding:'11px 22px', fontSize:13.5, fontWeight:600, color:'#fff', background:'var(--accent)', border:'none', borderRadius:4, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Unlock Pro — €1.99</button>
-            <button onClick={()=>setShowPlansModal(true)} style={{ padding:'11px 22px', fontSize:13.5, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border-strong)', borderRadius:4, cursor:'pointer', fontFamily:'var(--font-sans)' }}>See all plans</button>
+            <button onClick={()=>setShowUpgradeModal(true)} style={{ padding:'12px 24px', fontSize:14, fontWeight:700, color:'#fff', background:'var(--accent)', border:'none', borderRadius:8, cursor:'pointer', fontFamily:'var(--font-sans)', boxShadow:'0 4px 14px rgba(212,98,42,0.35)' }}>Unlock Pro — €1.99</button>
+            <button onClick={()=>setShowPlansModal(true)} style={{ padding:'11px 22px', fontSize:13, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:8, cursor:'pointer', fontFamily:'var(--font-sans)' }}>See all plans</button>
           </div>
         </div>
       )}
@@ -545,6 +632,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
     </div>
   )
 }
+
 
 const PLAN_DEFS = {
   free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats — bullets with/without metrics','Red flag count + severity','ATS verdict','Career trajectory + format verdict','History saved (requires account)'] },
