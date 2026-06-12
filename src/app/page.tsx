@@ -693,6 +693,19 @@ export default function Home() {
   const [isDragging,  setIsDragging]  = useState(false)
   const [appState,    setAppState]    = useState<AppState>('idle')
   const [result,      setResult]      = useState<GatedAnalysisResult|null>(null)
+  const appStateRef = useRef<AppState>('idle')
+  const resultRef   = useRef<GatedAnalysisResult|null>(null)
+
+  const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppState(s) }
+  const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setResult(r) }
+
+  // Prevent auth re-renders from resetting result state
+  useEffect(() => {
+    if (appStateRef.current === 'result' && appState !== 'result') {
+      setAppState('result')
+      setResult(resultRef.current)
+    }
+  }, [appState])
   const [error,       setError]       = useState('')
   const [copied,        setCopied]        = useState(false)
   const [shareLoading,  setShareLoading]  = useState(false)
@@ -720,7 +733,7 @@ export default function Home() {
   const submit = async () => {
     if (mode==='url'&&!url.trim()) return
     if (mode==='pdf'&&!file) return
-    setAppState('loading'); setError(''); setResult(null)
+    safeSetAppState('loading'); setError(''); safeSetResult(null)
     try {
       let res:Response
       if (mode==='pdf'&&file) {
@@ -731,17 +744,17 @@ export default function Home() {
       }
       const data=await res.json()
       if (!res.ok) {
-        if (res.status===403&&data.error==='free_limit_reached'){setShowUpgradeModal(true);setAppState('idle');return}
-        if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);setAppState('error');return}
+        if (res.status===403&&data.error==='free_limit_reached'){setShowUpgradeModal(true);safeSetAppState('idle');return}
+        if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
         throw new Error(data.error||'Analysis failed')
       }
-      setResult(data); setAppState('result'); setAnalysisCount(c=>c+1)
+      safeSetResult(data); safeSetAppState('result'); setAnalysisCount(c=>c+1)
       setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
-    } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); setAppState('error') }
+    } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); safeSetAppState('error') }
   }
 
-  const reset     = () => { setAppState('idle');setResult(null);setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
+  const reset = () => { safeSetAppState('idle');safeSetResult(null);setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
   const copyShare = async () => {
     if (!result) return
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
@@ -760,7 +773,15 @@ export default function Home() {
 
   const isPro = result?.tier==='pro'||result?.tier==='premium'
   const scrollToUpload = () => window.scrollTo({top:0, behavior:'smooth'})
-  const scrollToAlerts = () => window.scrollTo({top:0, behavior:'smooth'})
+  const scrollToAlerts = () => {
+    const trigger = document.getElementById('alerts-trigger')
+    if (trigger) {
+      trigger.scrollIntoView({behavior:'smooth', block:'center'})
+      setTimeout(() => trigger.click(), 600)
+    } else {
+      window.scrollTo({top:0, behavior:'smooth'})
+    }
+  }
 
   // Activate scroll-reveal when on idle landing
   useScrollReveal(appState === 'idle' || appState === 'error')
