@@ -736,6 +736,7 @@ export default function Home() {
         throw new Error(data.error||'Analysis failed')
       }
       setResult(data); setAppState('result'); setAnalysisCount(c=>c+1)
+      setTimeout(() => window.scrollTo({top: 0, behavior: 'smooth'}), 50)
       if (!user) setPendingSave(data); else setSavedToHistory(true)
     } catch (err) { setError(err instanceof Error?err.message:'Something went wrong'); setAppState('error') }
   }
@@ -759,15 +760,7 @@ export default function Home() {
 
   const isPro = result?.tier==='pro'||result?.tier==='premium'
   const scrollToUpload = () => window.scrollTo({top:0, behavior:'smooth'})
-  const scrollToAlerts = () => {
-    const trigger = document.getElementById('alerts-trigger')
-    if (trigger) {
-      trigger.scrollIntoView({behavior:'smooth', block:'center'})
-      setTimeout(() => trigger.click(), 600)
-    } else {
-      window.scrollTo({top:0, behavior:'smooth'})
-    }
-  }
+  const scrollToAlerts = () => window.scrollTo({top:0, behavior:'smooth'})
 
   // Activate scroll-reveal when on idle landing
   useScrollReveal(appState === 'idle' || appState === 'error')

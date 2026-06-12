@@ -30,9 +30,9 @@ const nextConfig = {
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' https://js.stripe.com",   // unsafe-inline needed for Next.js inline scripts
-              "style-src 'self' 'unsafe-inline'",                           // unsafe-inline needed for CSS-in-JS / inline styles
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
+              "font-src 'self' data: https://fonts.gstatic.com",
               // Adzuna, Remotive, Jobicy, The Muse, Arbeitnow are fetched server-side only —
               // they must NOT appear here (adding them lets any XSS exfiltrate data to those domains)
               "connect-src 'self' https://*.supabase.co https://api.stripe.com",
