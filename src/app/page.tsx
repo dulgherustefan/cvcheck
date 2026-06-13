@@ -1358,7 +1358,7 @@ export default function Home() {
             </div>
             {[
               { title:'Product', links:[{label:'CV Analysis',href:'/#analysis'},{label:'Job Matching',href:'/#jobs'},{label:'Job Alerts',href:'/#alerts'},{label:'Pricing',href:'/#pricing'}] },
-              { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'}] },
+              { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'},{label:'FAQ',href:'/faq'}] },
               { title:'Support', links:[{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
             ].map(col=>(
               <div key={col.title}>
