@@ -860,3 +860,186 @@ input, textarea { font-family: var(--font-sans); }
   .analysis-mockup-grid { grid-template-columns: 1fr; }
   .analysis-mockup-left { border-right: none; border-bottom: 0.5px solid var(--border); }
 }
+
+/* ─── Score Ring ─── */
+.score-ring-arc {
+  transition: stroke-dasharray 1.1s cubic-bezier(0.22,1,0.36,1);
+}
+.score-ring-num[data-score-color="high"] { color: var(--score-high); }
+.score-ring-num[data-score-color="mid"]  { color: var(--score-mid); }
+.score-ring-num[data-score-color="low"]  { color: var(--score-low); }
+
+/* ─── Dimension Bar ─── */
+.dim-bar-locked { cursor: pointer; }
+.dim-bar-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.dim-bar-label-locked { color: transparent; text-shadow: 0 0 8px var(--text-secondary); user-select: none; }
+.dim-bar-score { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.dim-bar-max { font-size: 11px; color: var(--text-tertiary); }
+.dim-bar-fill-locked { background: var(--border) !important; }
+.dim-bar-fill[data-score-level="high"] { background: var(--score-high); }
+.dim-bar-fill[data-score-level="mid"]  { background: var(--score-mid); }
+.dim-bar-fill[data-score-level="low"]  { background: var(--score-low); }
+
+/* ─── Red Flag Card ─── */
+.flag-card[data-severity="high"]   { background: rgba(220,38,38,0.05);  border: 0.5px solid rgba(220,38,38,0.25); }
+.flag-card[data-severity="medium"] { background: rgba(202,138,4,0.05);  border: 0.5px solid rgba(202,138,4,0.25); }
+.flag-card[data-severity="low"]    { background: rgba(22,163,74,0.05);  border: 0.5px solid rgba(22,163,74,0.25); }
+
+.flag-severity-badge {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.09em; padding: 2px 7px; border-radius: 2px;
+  flex-shrink: 0; margin-top: 1px;
+}
+.flag-severity-badge[data-severity="high"]   { color: #DC2626; background: rgba(220,38,38,0.12); border: 0.5px solid rgba(220,38,38,0.30); }
+.flag-severity-badge[data-severity="medium"] { color: #CA8A04; background: rgba(202,138,4,0.12);  border: 0.5px solid rgba(202,138,4,0.30); }
+.flag-severity-badge[data-severity="low"]    { color: #16A34A; background: rgba(22,163,74,0.12);  border: 0.5px solid rgba(22,163,74,0.30); }
+
+/* ─── Bullet Rewrite ─── */
+.bullet-original  { margin: 0; color: var(--text-secondary); line-height: 1.55; }
+.bullet-rewritten { margin: 0; color: var(--text-primary); font-weight: 500; line-height: 1.55; }
+.bullet-why-label { font-weight: 600; color: var(--text-secondary); }
+
+/* ─── Action Card ─── */
+.action-locked-text { font-size: 12px; color: var(--text-tertiary); }
+
+/* ─── Fit Badge ─── */
+.fit-badge-strong  { color: var(--score-high);  background: rgba(22,163,74,0.15);  border-color: rgba(22,163,74,0.40); }
+.fit-badge-good    { color: #65A30D;             background: rgba(101,163,13,0.15); border-color: rgba(101,163,13,0.40); }
+.fit-badge-partial { color: var(--score-mid);   background: rgba(202,138,4,0.15);  border-color: rgba(202,138,4,0.40); }
+.fit-badge-stretch { color: var(--score-low);   background: rgba(220,38,38,0.15);  border-color: rgba(220,38,38,0.40); }
+
+/* ─── Job Card ─── */
+.job-desc-clamped  { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.job-desc-expanded { display: block; overflow: visible; }
+.icon-success { color: var(--score-high); flex-shrink: 0; }
+.icon-danger  { color: var(--score-low);  flex-shrink: 0; }
+.icon-warning { color: var(--score-mid);  flex-shrink: 0; margin-top: 1px; }
+
+.job-save-btn.job-save-active   { border: 0.5px solid var(--accent) !important; background: var(--accent-subtle); color: var(--accent); }
+.job-apply-btn.job-apply-active { border: 0.5px solid var(--score-high) !important; background: rgba(22,163,74,0.08); color: var(--score-high); }
+.job-btn-wait { cursor: wait; }
+
+/* ─── Alerts Button ─── */
+.jobs-alert-btn-loading { opacity: 0.6; cursor: wait; }
+
+/* ─── Rating Badges ─── */
+.rating-badge-needs_work    { color: var(--score-low);  background: rgba(220,38,38,0.08);  border: 1px solid rgba(220,38,38,0.20); }
+.rating-badge-below_average { color: var(--score-low);  background: rgba(220,38,38,0.08);  border: 1px solid rgba(220,38,38,0.20); }
+.rating-badge-average       { color: var(--score-mid);  background: rgba(202,138,4,0.08);  border: 1px solid rgba(202,138,4,0.20); }
+.rating-badge-good          { color: var(--score-mid);  background: rgba(202,138,4,0.08);  border: 1px solid rgba(202,138,4,0.20); }
+.rating-badge-strong        { color: var(--score-high); background: rgba(22,163,74,0.08);  border: 1px solid rgba(22,163,74,0.20); }
+.rating-badge-excellent      { color: var(--score-high); background: rgba(22,163,74,0.08);  border: 1px solid rgba(22,163,74,0.20); }
+
+/* ─── First Impression Badge ─── */
+.fi-test-badge { margin-left: auto; }
+.fi-test-pass { color: var(--score-high); background: rgba(22,163,74,0.08);  border: 1px solid rgba(22,163,74,0.20); }
+.fi-test-fail { color: var(--score-low);  background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.20); }
+
+/* ─── Impact Stats ─── */
+.impact-stat-value {
+  font-size: 22px; font-weight: 800; letter-spacing: -1.5px;
+}
+.impact-stat-value-text {
+  font-size: 14px; letter-spacing: -0.01em; text-transform: capitalize;
+}
+.impact-stat-value[data-color="success"] { color: var(--score-high); }
+.impact-stat-value[data-color="danger"]  { color: var(--score-low); }
+.impact-stat-value[data-color="primary"] { color: var(--text-primary); }
+
+/* ─── ATS ─── */
+.ats-verdict-pass         { color: var(--score-high); background: rgba(22,163,74,0.12);  border: 1px solid rgba(22,163,74,0.30); }
+.ats-verdict-partial      { color: var(--score-mid);  background: rgba(202,138,4,0.12);  border: 1px solid rgba(202,138,4,0.30); }
+.ats-verdict-fail         { color: var(--score-low);  background: rgba(220,38,38,0.12);  border: 1px solid rgba(220,38,38,0.30); }
+.ats-verdict-not_assessed { color: var(--text-tertiary); background: var(--bg-muted); border: 1px solid var(--border); }
+.text-success { font-weight: 600; color: var(--score-high); }
+.text-danger  { font-weight: 600; color: var(--score-low); }
+
+/* ─── Career Story ─── */
+.info-cell-value.text-success { color: var(--score-high); }
+.info-cell-value.text-danger  { color: var(--score-low); }
+
+/* ─── Format ─── */
+.format-scan-easy { color: var(--score-high); }
+.format-scan-mid  { color: var(--score-mid); }
+.format-scan-hard { color: var(--score-low); }
+
+/* ─── Plans Modal ─── */
+.plan-tier-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+.plan-tier-free    { color: var(--text-tertiary); }
+.plan-tier-pro     { color: var(--text-primary); }
+.plan-tier-premium { color: var(--score-high); }
+
+/* ─── Account Dropdown ─── */
+.account-toggle-open { background: var(--bg-subtle); }
+.account-chevron { transition: transform 0.15s; }
+.account-chevron-open { transform: rotate(180deg); }
+.dropdown-tier-free    { color: var(--text-tertiary); }
+.dropdown-tier-pro     { color: var(--text-primary); }
+.dropdown-tier-premium { color: var(--score-high); }
+
+/* ─── Navbar ─── */
+.logo-img { display: block; }
+.nav-link {
+  font-size: 14px; background: none; border: none; cursor: pointer;
+  font-family: var(--font-sans); font-weight: 500; letter-spacing: -0.01em;
+}
+
+/* ─── Drop Zone / Upload ─── */
+.file-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.file-size { font-size: 11px; color: var(--text-tertiary); }
+.file-clear-btn { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-tertiary); padding: 4px; }
+.drop-zone-icon { margin-bottom: 8px; }
+.upload-submit-full { width: 100%; justify-content: center; padding: 11px; border-radius: 5px; }
+.upload-submit-disabled { opacity: 0.38; cursor: not-allowed; }
+.error-icon { flex-shrink: 0; margin-top: 1px; }
+.footer-upgrade-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--accent); font-family: var(--font-sans); font-size: inherit; text-decoration: underline;
+}
+
+/* ─── Loading Steps ─── */
+.loading-step { font-size: 13px; color: var(--text-tertiary); opacity: 0.25; }
+.loading-step-active  { color: var(--text-secondary); opacity: 1; }
+.loading-step-pending { opacity: 0.25; }
+.loading-step-dot-active { background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
+
+/* ─── Share Button ─── */
+.topbar-btn-loading { opacity: 0.6; }
+
+/* ─── Landing Sections ─── */
+.landing-section-elevated { background: var(--bg-elevated); }
+.landing-section-base     { background: var(--bg); }
+.section-h2-wide    { max-width: 640px; }
+.section-h2-medium  { max-width: 600px; }
+.section-h2-alerts  { color: #fff; max-width: 580px; }
+.section-h2-steps   { max-width: 560px; }
+.section-h2-pricing { max-width: 520px; }
+.section-h2-inverse { color: #fff; }
+
+/* ─── Mockup Bars ─── */
+.lmock-bar-fill { width: var(--bar-pct, 0%); }
+
+/* ─── Mockup Job Rows ─── */
+.lmockup-job-row-top  { background: var(--accent-subtle); }
+.lmockup-job-avatar-top { background: var(--accent); color: #fff; }
+.lmock-job-co { font-size: 11px; color: var(--text-secondary); }
+.lmock-job-sal { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+.lmockup-fit-high { background: rgba(22,163,74,0.1);  color: var(--score-high); }
+.lmockup-fit-mid  { background: rgba(202,138,4,0.1);  color: var(--score-mid); }
+
+/* ─── Skill Bars (mockup) ─── */
+.skill-bar-row    { margin-bottom: 7px; }
+.skill-bar-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+.skill-pct-low    { color: var(--score-low); font-weight: 600; }
+.skill-pct-high   { color: var(--score-high); font-weight: 600; }
+.skill-bar-track  { height: 4px; background: var(--bg-muted); border-radius: 2px; }
+.skill-bar-fill   { height: 4px; border-radius: 2px; width: var(--skill-pct, 0%); }
+.skill-bar-fill-low  { background: var(--score-low); }
+.skill-bar-fill-high { background: var(--accent); }
+
+/* ─── Pricing ─── */
+.pricing-plan-label-featured { color: var(--accent); }
+.pricing-plan-label-normal   { color: var(--text-tertiary); }
+
+/* ─── Testimonial ─── */
+.testimonial-rating-num { color: var(--text-secondary); }

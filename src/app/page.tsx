@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
-import type React from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -83,10 +82,10 @@ function ScoreRing({ score }: { score: number }) {
       <svg width="136" height="136" viewBox="0 0 136 136">
         <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
         <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5" opacity="0.08" strokeDasharray={`${circ} 0`} transform="rotate(-90 68 68)"/>
-        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)" style={{ transition:'stroke-dasharray 1.1s cubic-bezier(0.22,1,0.36,1)' }}/>
+        <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)" className="score-ring-arc"/>
       </svg>
       <div className="score-ring-center">
-        <span className="score-ring-num" style={{ color }}>{displayScore}</span>
+        <span className="score-ring-num" data-score-color={score >= 66 ? 'high' : score >= 40 ? 'mid' : 'low'}>{displayScore}</span>
         <span className="score-ring-denom">/100</span>
       </div>
     </div>
@@ -113,16 +112,16 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: { label:str
   const pct = (score / max) * 100
   const color = pct >= 66 ? 'var(--score-high)' : pct >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
   return (
-    <div className="dim-bar-wrap" style={{ cursor:locked?'pointer':'default' }} onClick={locked?onUnlock:undefined}>
+    <div className={`dim-bar-wrap ${locked ? 'dim-bar-locked' : ''}`} onClick={locked?onUnlock:undefined}>
       <div className="dim-bar-row">
         <div>
-          <span style={{ fontSize:13, fontWeight:600, color:locked?'transparent':'var(--text-primary)', textShadow:locked?'0 0 8px var(--text-secondary)':'none', userSelect:locked?'none':'auto' }}>{label}</span>
+          <span className={`dim-bar-label ${locked ? 'dim-bar-label-locked' : ''}`}>{label}</span>
           <span className="dim-bar-desc">{desc}</span>
         </div>
-        {locked ? <LockIcon/> : <span style={{ fontSize:13, fontWeight:700, color }}>{score}<span style={{ fontSize:11, color:'var(--text-tertiary)' }}>/{max}</span></span>}
+        {locked ? <LockIcon/> : <span className="dim-bar-score">{score}<span className="dim-bar-max">/{max}</span></span>}
       </div>
       <div className="dim-bar-track">
-        <div data-bar-pct={locked?60:pct} className="dim-bar-fill" style={{ background:locked?'var(--border)':color }}/>
+        <div data-bar-pct={locked?60:pct} className={`dim-bar-fill ${locked ? 'dim-bar-fill-locked' : ''}`} data-score-level={locked ? '' : pct >= 66 ? 'high' : pct >= 40 ? 'mid' : 'low'}/>
       </div>
     </div>
   )
@@ -132,14 +131,14 @@ function RedFlagCard({ flag, howToFixLocked, onUnlock }: { flag:{flag:string;sev
   const color = RED_FLAG_COLORS[flag.severity]
   const label = RED_FLAG_LABELS[flag.severity]
   return (
-    <div className="flag-card" style={{ background:`${color}05`, border:`0.5px solid ${color}25` }}>
+    <div className="flag-card" data-severity={flag.severity}>
       <div className="flag-card-row">
-        <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.09em', padding:'2px 7px', borderRadius:2, color, background:`${color}12`, border:`0.5px solid ${color}30`, flexShrink:0, marginTop:1 }}>{label}</span>
+        <span className="flag-severity-badge" data-severity={flag.severity}>{label}</span>
         <span className="flag-card-text">{flag.flag}</span>
       </div>
       {howToFixLocked ? (
         <div onClick={onUnlock} className="flag-how-locked">
-          <span className="flag-how-blurred">Add a one-line note explaining the gap.</span>
+          <span className="flag-how-blurred">Review the context and add specific evidence.</span>
           <span className="flag-how-lock"><LockIcon size={10}/></span>
         </div>
       ) : flag.how_to_fix ? (
@@ -155,15 +154,15 @@ function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
       <div className="bullet-rewrite-cols">
         <div className="bullet-before">
           <div className="bullet-label bullet-label-before">Before</div>
-          <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.55 }}>{rewrite.original}</p>
+          <p className="bullet-original">{rewrite.original}</p>
         </div>
         <div className="bullet-after">
           <div className="bullet-label bullet-label-after">After</div>
-          <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500, lineHeight:1.55 }}>{rewrite.rewritten}</p>
+          <p className="bullet-rewritten">{rewrite.rewritten}</p>
         </div>
       </div>
       <div className="bullet-why">
-        <p className="bullet-why-text"><span style={{ fontWeight:600, color:'var(--text-secondary)' }}>Why: </span>{rewrite.why}</p>
+        <p className="bullet-why-text"><span className="bullet-why-label">Why: </span>{rewrite.why}</p>
       </div>
     </div>
   )
@@ -181,7 +180,7 @@ function ActionCard({ action, index, detailsLocked, onUnlock }: { action:Priorit
       </div>
       {detailsLocked ? (
         <div onClick={onUnlock} className="action-locked">
-          <LockIcon size={10}/><span style={{ fontSize:12, color:'var(--text-tertiary)' }}>Unlock steps and example (Pro)</span>
+          <LockIcon size={10}/><span className="action-locked-text">Unlock steps and example (Pro)</span>
         </div>
       ) : (
         <div className="action-how">
@@ -214,7 +213,7 @@ const FIT_COLORS: Record<string,string> = { strong:'var(--score-high)', good:'#6
 function FitBadge({ label, score }: { label:string; score:number }) {
   const color = FIT_COLORS[label] ?? 'var(--text-secondary)'
   return (
-    <span className="fit-badge" style={{ color, background:`${color}15`, borderColor:`${color}40` }}>
+    <span className={`fit-badge fit-badge-${label}`}>
       {score}% · {label}
     </span>
   )
@@ -266,18 +265,18 @@ function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange 
         </div>
         {fit&&<FitBadge label={fit.fit_label} score={fit.fit_score}/>}
       </div>
-      <p className="job-desc" style={{ display:'-webkit-box', WebkitLineClamp:expanded?undefined:3, WebkitBoxOrient:'vertical', overflow:expanded?'visible':'hidden' }}>{listing.description}</p>
+      <p className={`job-desc ${expanded ? 'job-desc-expanded' : 'job-desc-clamped'}`}>{listing.description}</p>
       {listing.description.length>200&&<button className="job-show-more" onClick={()=>setExpanded(e=>!e)}>{expanded?'Show less':'Show more'}</button>}
       {fit&&fit.strengths&&fit.strengths.length>0&&(
         <div className="job-section">
           <div className="job-section-label job-section-label-success">Why you're a good fit</div>
-          {fit.strengths.map((s,i)=><div key={i} className="job-section-row"><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
+          {fit.strengths.map((s,i)=><div key={i} className="job-section-row"><span className="icon-success">✓</span>{s}</div>)}
         </div>
       )}
       {fit&&fit.gaps&&fit.gaps.length>0&&(
         <div className="job-section">
           <div className="job-section-label job-section-label-muted">What you're missing</div>
-          {fit.gaps.map((gap,i)=><div key={i} className="job-section-row"><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{gap}</div>)}
+          {fit.gaps.map((gap,i)=><div key={i} className="job-section-row"><span className="icon-danger">✕</span>{gap}</div>)}
         </div>
       )}
       {fitLocked&&fit&&(
@@ -287,8 +286,8 @@ function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange 
       )}
       <div className="job-actions">
         <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" className="job-view-btn">View job →</a>
-        <button onClick={()=>!saving&&handleSave('saved')} className="job-save-btn" style={{ border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background:saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color:saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor:saving?'wait':'pointer' }}>{saved==='saved'?'★':'☆'}</button>
-        <button onClick={()=>!saving&&handleSave('applied')} className="job-apply-btn" style={{ border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background:saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color:saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor:saving?'wait':'pointer' }}>{saved==='applied'?'✓ Applied':'Applied?'}</button>
+        <button onClick={()=>!saving&&handleSave('saved')} className={`job-save-btn ${saved==='saved'?'job-save-active':''} ${saving?'job-btn-wait':''}`}>{saved==='saved'?'★':'☆'}</button>
+        <button onClick={()=>!saving&&handleSave('applied')} className={`job-apply-btn ${saved==='applied'?'job-apply-active':''} ${saving?'job-btn-wait':''}`}>{saved==='applied'?'✓ Applied':'Applied?'}</button>
       </div>
     </div>
   )
@@ -390,7 +389,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
           <div>
             {alertState==='subscribed'?<div className="jobs-alert-success"><span>✓</span> Weekly job alerts activated</div>
             :alertState==='error'?<div className="jobs-alert-error">Failed to subscribe.</div>
-            :<button id="alerts-trigger" onClick={handleAlertSubscribe} disabled={alertState==='loading'} className="jobs-alert-btn" style={{ opacity:alertState==='loading'?0.6:1, cursor:alertState==='loading'?'wait':'pointer' }}>
+            :<button id="alerts-trigger" onClick={handleAlertSubscribe} disabled={alertState==='loading'} className={`jobs-alert-btn ${alertState==='loading'?'jobs-alert-btn-loading':''}`}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               {alertState==='loading'?'Activating…':'Get weekly alerts'}
             </button>}
@@ -436,7 +435,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           <ScoreRing score={result.total_score}/>
           <div className="score-hero-meta">
             <div className="score-hero-badges">
-              <span className="rating-badge" style={{ color:RATING_COLORS[result.rating], background:`${RATING_COLORS[result.rating]}12`, border:`1px solid ${RATING_COLORS[result.rating]}30` }}>{RATING_LABELS[result.rating]}</span>
+              <span className={`rating-badge rating-badge-${result.rating}`}>{RATING_LABELS[result.rating]}</span>
               {result.detected_domain&&result.detected_domain!=='Unknown'&&<span className="domain-badge">{LEVEL_LABELS[result.detected_level]} · {result.detected_domain}</span>}
             </div>
             <p className="score-hero-summary">{result.summary}</p>
@@ -470,7 +469,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7"/></svg>
           </div>
           <h2 className="panel-h2">First Impression</h2>
-          <span className="rating-badge" style={{ marginLeft:'auto', color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.2)':'rgba(220,38,38,0.2)'}` }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</span>
+          <span className={`rating-badge fi-test-badge ${result.first_impression.passes_7_second_test?'fi-test-pass':'fi-test-fail'}`}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</span>
         </div>
         <div className="fi-recruiter-box">
           <p className="fi-quote">"{result.first_impression.what_recruiter_sees}"</p>
@@ -501,12 +500,12 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
         <div className="impact-stats-grid">
           {[
-            { label:'With metrics', value:result.impact.bullets_with_metrics, color:'var(--score-high)' },
-            { label:'Without metrics', value:result.impact.bullets_without_metrics, color:'var(--score-low)' },
-            { label:'Verb quality', value:result.impact.action_verb_quality?.replace(/_/g,' ')??'—', color:'var(--text-primary)', text:true },
+            { label:'With metrics', value:result.impact.bullets_with_metrics, colorClass:'success', text:false },
+            { label:'Without metrics', value:result.impact.bullets_without_metrics, colorClass:'danger', text:false },
+            { label:'Verb quality', value:result.impact.action_verb_quality?.replace(/_/g,' ')??'—', colorClass:'primary', text:true },
           ].map((s,i)=>(
             <div key={i} className="impact-stat">
-              <div style={{ fontSize:s.text?14:22, fontWeight:800, color:s.color, letterSpacing:s.text?'-0.01em':'-1.5px', textTransform:s.text?'capitalize':'none' }}>{s.value}</div>
+              <div className={`impact-stat-value ${s.text?'impact-stat-value-text':''}`} data-color={s.colorClass}>{s.value}</div>
               <div className="impact-stat-label">{s.label}</div>
             </div>
           ))}
@@ -528,8 +527,8 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           {result.keywords_locked&&<UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>}
         </div>
         <div className="ats-meta">
-          <span className="ats-verdict" style={{ color:ATS_VERDICT_COLORS[result.ats.verdict], background:`${ATS_VERDICT_COLORS[result.ats.verdict]}12`, border:`1px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30` }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
-          <span className="ats-searchable">Title searchable: <span style={{ fontWeight:600, color:result.ats.title_is_searchable?'var(--score-high)':'var(--score-low)' }}>{result.ats.title_is_searchable?'Yes':'No'}</span></span>
+          <span className={`ats-verdict ats-verdict-${result.ats.verdict}`}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
+          <span className="ats-searchable">Title searchable: <span className={result.ats.title_is_searchable?'text-success':'text-danger'}>{result.ats.title_is_searchable?'Yes':'No'}</span></span>
           {result.ats.notes&&<span className="ats-notes">{result.ats.notes}</span>}
         </div>
         {result.keywords_locked
@@ -584,7 +583,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           ].map(item=>(
             <div key={item.label} className="info-cell">
               <div className="info-cell-label">{item.label}</div>
-              <div className="info-cell-value" style={{ color:(item as {color?:string}).color||'var(--text-primary)' }}>{item.value??'—'}</div>
+              <div className={`info-cell-value ${(item as {color?:string}).color==='var(--score-high)'?'text-success':(item as {color?:string}).color==='var(--score-low)'?'text-danger':''}`}>{item.value??'—'}</div>
             </div>
           ))}
         </div>
@@ -625,7 +624,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             <h2 className="panel-h2">Format & Language</h2>
             <div className="format-badges">
               <span className="format-badge">{result.format?.length_verdict?.replace(/_/g,' ')} · {result.format?.recommended_pages}p recommended</span>
-              <span className="format-badge" style={{ color:result.format?.scannability==='easy'?'var(--score-high)':result.format?.scannability==='hard'?'var(--score-low)':'var(--score-mid)' }}>{result.format?.scannability} to scan</span>
+              <span className={`format-badge format-scan-${result.format?.scannability==='easy'?'easy':result.format?.scannability==='hard'?'hard':'mid'}`}>{result.format?.scannability} to scan</span>
             </div>
           </div>
           {result.format?.issues?.length>0&&(
@@ -634,7 +633,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
               <div>
                 {result.format.issues.map((issue:string,i:number)=>(
                   <div key={i} className="format-issue-row">
-                    <span style={{ color:'var(--score-mid)', flexShrink:0, marginTop:1 }}>⚠</span>{issue}
+                    <span className="icon-warning">⚠</span>{issue}
                   </div>
                 ))}
               </div>
@@ -725,7 +724,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
               <div key={pk} className={`plan-card ${pk==='pro'?'plan-card-featured':'plan-card-normal'}`}>
                 <div className="plan-card-header">
                   <div className="plan-card-labels">
-                    <span style={{ fontSize:11, fontWeight:700, color:pk==='pro'?'var(--text-primary)':pk==='premium'?'var(--score-high)':'var(--text-tertiary)', textTransform:'uppercase', letterSpacing:'0.07em' }}>{p.label}</span>
+                    <span className={`plan-tier-label plan-tier-${pk}`}>{p.label}</span>
                     {pk==='pro'&&<span className="plan-badge-popular">Popular</span>}
                     {isCurrent&&<span className="plan-badge-current">Current</span>}
                   </div>
@@ -750,7 +749,6 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
 }
 
 const TIER_META:Record<string,{label:string;color:string}> = { free:{label:'Free',color:'var(--text-tertiary)'}, pro:{label:'Pro',color:'var(--text-primary)'}, premium:{label:'Premium',color:'var(--score-high)'} }
-const ddItem:React.CSSProperties = { display:'flex', alignItems:'center', gap:9, width:'100%', padding:'9px 16px', background:'transparent', border:'none', color:'var(--text-secondary)', fontSize:12.5, cursor:'pointer', textAlign:'left', fontFamily:'var(--font-sans)' }
 
 function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: { user:{email?:string}; tier:string; onOpenAccount:()=>void; onOpenPlans:()=>void; onSignOut:()=>void }) {
   const [open, setOpen] = useState(false)
@@ -764,25 +762,25 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   }, [])
   return (
     <div ref={ref} className="account-dropdown">
-      <button onClick={()=>setOpen(v=>!v)} className="account-toggle" style={{ background:open?'var(--bg-subtle)':'transparent' }}>
+      <button onClick={()=>setOpen(v=>!v)} className={`account-toggle ${open?'account-toggle-open':''}`}>
         <span className="account-avatar">{initials}</span>
         <span className="account-email">{user.email?.split('@')[0]}</span>
-        <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+        <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" className={`account-chevron ${open?'account-chevron-open':''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open&&(
         <div className="dropdown-menu">
           <div className="dropdown-header">
             <div className="dropdown-email">{user.email}</div>
-            <div className="dropdown-tier" style={{ color:meta.color }}>{meta.label} plan</div>
+            <div className={`dropdown-tier dropdown-tier-${tier}`}>{meta.label} plan</div>
           </div>
           <div className="dropdown-section">
-            <button className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
-            <button className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
-            <button className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
-            <button className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
+            <button className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
+            <button className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
+            <button className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
+            <button className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
           </div>
           <div className="dropdown-section dropdown-divider">
-            <button className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}} style={{...ddItem,color:'#ef4444'}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
+            <button className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
           </div>
         </div>
       )}
@@ -940,12 +938,12 @@ export default function Home() {
 
       <nav className="navbar">
         <div className="navbar-logo">
-          <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
+          <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
           CVCheck
         </div>
         <ul className="navbar-links nav-links-desktop">
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>{ const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}) } else { router.push(`/${href}`) } }} className="nav-link" style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
+            <li key={href}><button onClick={()=>{ const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}) } else { router.push(`/${href}`) } }} className="nav-link">{label}</button></li>
           ))}
         </ul>
         <div className="navbar-right">
@@ -997,35 +995,35 @@ export default function Home() {
                         <div className="drop-zone-file-row">
                           <svg width="20" height="20" fill="none" stroke="var(--score-high)" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                           <div className="file-name-col">
-                            <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)' }}>{file.name}</div>
-                            <div style={{ fontSize:11, color:'var(--text-tertiary)' }}>{(file.size/1024).toFixed(0)} KB · PDF ready</div>
+                            <div className="file-name">{file.name}</div>
+                            <div className="file-size">{(file.size/1024).toFixed(0)} KB · PDF ready</div>
                           </div>
-                          <button onClick={e=>{e.stopPropagation();setFile(null)}} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', color:'var(--text-tertiary)', padding:4 }}>
+                          <button onClick={e=>{e.stopPropagation();setFile(null)}} className="file-clear-btn">
                             <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           </button>
                         </div>
                       ):(
                         <>
-                          <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" style={{ marginBottom:8 }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" className="drop-zone-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                           <div className="drop-zone-hint">Drop your CV here</div>
                           <div className="drop-zone-sub">or click to browse · PDF · max 5 MB</div>
                         </>
                       )}
                     </div>
-                    <button onClick={submit} disabled={!file||appState==='loading'} className="upload-submit" style={{ width:'100%', justifyContent:'center', padding:'11px', borderRadius:5, opacity:!file||appState==='loading'?0.38:1, cursor:file&&appState!=='loading'?'pointer':'not-allowed' }}>
+                    <button onClick={submit} disabled={!file||appState==='loading'} className={`upload-submit upload-submit-full ${(!file||appState==='loading')?'upload-submit-disabled':''}`}>
                       Analyze my CV <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
                   </>
                 )}
                 {(appState==='error'||appState==='idle')&&error&&(
                   <div className="error-box">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="error-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     {error}
                   </div>
                 )}
               </div>
               <div className="upload-footer">
-                {tier==='free'&&analysisCount>=1?<>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
+                {tier==='free'&&analysisCount>=1?<>Used your free scan · <button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
               </div>
             </div>
 
@@ -1046,8 +1044,8 @@ export default function Home() {
             <p className="loading-title">Analyzing your CV…</p>
             <div className="loading-steps">
               {LOADING_STEPS.map((step,i)=>(
-                <div key={step} className="loading-step" style={{ fontSize:13, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)', opacity:i<=loadingStep?1:0.25 }}>
-                  <div className="loading-step-dot" style={{ background:i===loadingStep?'var(--accent)':'var(--border)', animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
+                <div key={step} className={`loading-step ${i===loadingStep?'loading-step-active':''} ${i>loadingStep?'loading-step-pending':''}`}>
+                  <div className={`loading-step-dot ${i===loadingStep?'loading-step-dot-active':''}`}/>
                   {step}
                 </div>
               ))}
@@ -1069,7 +1067,7 @@ export default function Home() {
                 </button>
               )}
               {!user&&<button onClick={()=>setShowAuthModal(true)} className="topbar-btn">Sign in to save</button>}
-              <button onClick={copyShare} disabled={shareLoading} className="topbar-btn topbar-btn-share share-btn" style={{ marginLeft:'auto', opacity:shareLoading?0.6:1 }}>
+              <button onClick={copyShare} disabled={shareLoading} className={`topbar-btn topbar-btn-share share-btn ${shareLoading?'topbar-btn-loading':''}`}>
                 {copied?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Link copied!</>:shareLoading?<>Generating…</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share score</>}
               </button>
             </div>
@@ -1079,10 +1077,10 @@ export default function Home() {
 
         {(appState==='idle'||appState==='error')&&(<>
 
-          <section id="analysis" className="landing-section" style={{ background:'var(--bg-elevated)' }}>
+          <section id="analysis" className="landing-section landing-section-elevated">
             <div className="section-wrap-md">
               <div data-sr data-sr-delay="0" className="eyebrow-badge">AI CV Analysis</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ maxWidth:640 }}>Every recruiter bias, every ATS gap. Exposed.</h2>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-wide">Every recruiter bias, every ATS gap. Exposed.</h2>
               <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">Analyze My CV for Free ↑</button>
 
@@ -1114,7 +1112,7 @@ export default function Home() {
                     {[{label:'First Impression',pct:73},{label:'Impact & Achievements',pct:68},{label:'ATS Compatibility',pct:70},{label:'Red Flags',pct:70},{label:'Career Story',pct:60}].map(d=>(
                       <div key={d.label} className="lmock-bar-row">
                         <div className="lmock-bar-header"><span>{d.label}</span><span className="lmock-bar-pct">{d.pct}%</span></div>
-                        <div className="lmock-bar-track"><div className="lmock-bar-fill" style={{ width:`${d.pct}%` }}/></div>
+                        <div className="lmock-bar-track"><div className="lmock-bar-fill" style={{ ['--bar-pct' as string]:`${d.pct}%` }}/></div>
                       </div>
                     ))}
                   </div>
@@ -1135,7 +1133,7 @@ export default function Home() {
                     <div>
                       <div className="section-label">ATS Keywords</div>
                       <div className="keyword-list">
-                        {['Figma ✓','UX Research ✓','Prototyping ✓'].map(k=><span key={k} className="keyword-tag" style={{ background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', color:'var(--accent)', fontWeight:600 }}>{k}</span>)}
+                        {['Figma ✓','UX Research ✓','Prototyping ✓'].map(k=><span key={k} className="keyword-tag keyword-present">{k}</span>)}
                         {['Design Systems ✗','A/B Testing ✗'].map(k=><span key={k} className="keyword-tag keyword-missing">{k}</span>)}
                       </div>
                     </div>
@@ -1154,10 +1152,10 @@ export default function Home() {
             </div>
           </section>
 
-          <section id="jobs" className="landing-section" style={{ background:'var(--bg)' }}>
+          <section id="jobs" className="landing-section landing-section-base">
             <div className="section-wrap-md">
               <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Matching</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ maxWidth:600 }}>Jobs that actually fit, with a score to prove it.</h2>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-medium">Jobs that actually fit, with a score to prove it.</h2>
               <p data-sr data-sr-delay="0.16" className="section-body">CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">See My Matched Jobs ↑</button>
               <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
@@ -1179,14 +1177,14 @@ export default function Home() {
                       {init:'ZL',title:'UX Design Lead',co:'Zalando',loc:'Berlin, DE',sal:'€70k–90k',fit:74,isTop:false},
                       {init:'MZ',title:'Design Lead',co:'Monzo',loc:'London, UK',sal:'€85k–105k',fit:91,isTop:false},
                     ].map((j,i)=>(
-                      <div key={j.title} className="lmockup-job-row" style={{ background:j.isTop?'var(--accent-subtle)':'transparent' }}>
-                        <div className="lmockup-job-avatar" style={{ background:j.isTop?'var(--accent)':'var(--bg-muted)', color:j.isTop?'#fff':'var(--text-tertiary)' }}>{j.init}</div>
+                      <div key={j.title} className={`lmockup-job-row ${j.isTop?'lmockup-job-row-top':''}`}>
+                        <div className={`lmockup-job-avatar ${j.isTop?'lmockup-job-avatar-top':''}`}>{j.init}</div>
                         <div className="job-card-meta">
                           <div className="job-title">{j.title}</div>
-                          <div style={{ fontSize:11, color:'var(--text-secondary)' }}>{j.co} · {j.loc}</div>
-                          <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:2 }}>{j.sal}</div>
+                          <div className="lmock-job-co">{j.co} · {j.loc}</div>
+                          <div className="lmock-job-sal">{j.sal}</div>
                         </div>
-                        <span className="lmockup-fit-pct" style={{ background:j.fit>=80?'rgba(22,163,74,0.1)':'rgba(202,138,4,0.1)', color:j.fit>=80?'var(--score-high)':'var(--score-mid)' }}>{j.fit}%</span>
+                        <span className={`lmockup-fit-pct ${j.fit>=80?'lmockup-fit-high':'lmockup-fit-mid'}`}>{j.fit}%</span>
                       </div>
                     ))}
                   </div>
@@ -1198,18 +1196,18 @@ export default function Home() {
                     </div>
                     <div className="lmock-detail-section">
                       <div className="subsection-label-success">✓ Strengths</div>
-                      {['Strong portfolio & Figma proficiency','User research background matches'].map(s=><div key={s} className="job-section-row"><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
+                      {['Strong portfolio & Figma proficiency','User research background matches'].map(s=><div key={s} className="job-section-row"><span className="icon-success">✓</span>{s}</div>)}
                     </div>
                     <div className="lmock-detail-section">
                       <div className="subsection-label-muted">Gaps</div>
-                      {['Design Systems exp. needed','A/B Testing not mentioned'].map(s=><div key={s} className="job-section-row"><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{s}</div>)}
+                      {['Design Systems exp. needed','A/B Testing not mentioned'].map(s=><div key={s} className="job-section-row"><span className="icon-danger">✕</span>{s}</div>)}
                     </div>
                     <div>
                       <div className="subsection-label-muted">Skill Match</div>
                       {[{label:'Figma',pct:92},{label:'Design Systems',pct:38},{label:'User Research',pct:80}].map(s=>(
-                        <div key={s.label} style={{ marginBottom:7 }}>
-                          <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-secondary)', marginBottom:2 }}><span>{s.label}</span><span style={{ color:s.pct<50?'var(--score-low)':'var(--score-high)', fontWeight:600 }}>{s.pct}%</span></div>
-                          <div style={{ height:4, background:'var(--bg-muted)', borderRadius:2 }}><div style={{ height:4, borderRadius:2, background:s.pct<50?'var(--score-low)':'var(--accent)', width:`${s.pct}%` }}/></div>
+                        <div key={s.label} className="skill-bar-row">
+                          <div className="skill-bar-header"><span>{s.label}</span><span className={s.pct<50?'skill-pct-low':'skill-pct-high'}>{s.pct}%</span></div>
+                          <div className="skill-bar-track"><div className={`skill-bar-fill ${s.pct<50?'skill-bar-fill-low':'skill-bar-fill-high'}`} style={{ ['--skill-pct' as string]:`${s.pct}%` }}/></div>
                         </div>
                       ))}
                     </div>
@@ -1222,7 +1220,7 @@ export default function Home() {
           <section id="alerts" className="section-alerts">
             <div className="section-wrap-md">
               <div data-sr data-sr-delay="0" className="eyebrow-badge-inverse">Job Alerts</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ color:'#fff', maxWidth:580 }}>New matched jobs in your inbox every Monday.</h2>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-inverse section-h2-alerts">New matched jobs in your inbox every Monday.</h2>
               <p data-sr data-sr-delay="0.16" className="alerts-subtitle">Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
               <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn section-btn-inverse">Enable Job Alerts ↓</button>
 
@@ -1264,7 +1262,7 @@ export default function Home() {
           <section className="steps-section">
             <div className="section-wrap-md">
               <div className="eyebrow-badge">How it works</div>
-              <h2 className="section-h2" style={{ maxWidth:560 }}>Done before your coffee gets cold.</h2>
+              <h2 className="section-h2 section-h2-steps">Done before your coffee gets cold.</h2>
 
               <div className="steps-grid steps-grid-mt">
                 {[
@@ -1299,7 +1297,7 @@ export default function Home() {
           <section id="pricing" className="pricing-section">
             <div className="section-wrap-md">
               <div className="eyebrow-badge">Pricing</div>
-              <h2 className="section-h2" style={{ maxWidth:520 }}>No tricks. No "contact us."</h2>
+              <h2 className="section-h2 section-h2-pricing">No tricks. No "contact us."</h2>
               <p className="pricing-intro">Start free. Pay once for Pro. Subscribe for unlimited.</p>
 
               <div className="pricing-grid">
@@ -1310,7 +1308,7 @@ export default function Home() {
                 ] as const).map((p,i)=>(
                   <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
                     {p.badge&&<div className="pricing-badge">{p.badge}</div>}
-                    <div className="pricing-plan-label" style={{ color:p.badge?'var(--accent)':'var(--text-tertiary)' }}>{p.label}</div>
+                    <div className={`pricing-plan-label ${p.badge?'pricing-plan-label-featured':'pricing-plan-label-normal'}`}>{p.label}</div>
                     <div className="pricing-price">
                       <span className="pricing-price-num">{p.price}</span>
                       <span className="pricing-period">{p.period}</span>
@@ -1336,7 +1334,7 @@ export default function Home() {
                 <div className="testimonial-stars">
                   {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
                 </div>
-                <p className="testimonial-rating">Rated <strong style={{ color:'var(--text-secondary)' }}>4.9</strong> by early users</p>
+                <p className="testimonial-rating">Rated <strong className="testimonial-rating-num">4.9</strong> by early users</p>
                 <blockquote className="testimonial-quote">
                   "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
                 </blockquote>
@@ -1353,7 +1351,7 @@ export default function Home() {
           <div className="footer-grid">
             <div>
               <div className="footer-logo">
-                <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
+                <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
                 CVCheck
               </div>
               <p className="footer-desc">AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>
