@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
+import { HeroDotGrid } from '@/components/HeroDotGrid'
+import { RotatingText } from '@/components/RotatingText'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -962,9 +964,10 @@ export default function Home() {
       <main className="page-main">
 
         <section className="section-hero">
+          <HeroDotGrid />
           <div className="section-wrap">
             <h1 className="hero-h1">
-              Your CV, Brutally Honest.<br/>Land More Interviews.
+              Your CV, <RotatingText texts={['Brutally Honest.', 'Scored /100.', 'ATS-Checked.', 'Interview-Ready.']} /><br/>Land More Interviews.
             </h1>
             <p className="hero-p">
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
