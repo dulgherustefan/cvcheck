@@ -1112,7 +1112,7 @@ export default function Home() {
                     {[{label:'First Impression',pct:73},{label:'Impact & Achievements',pct:68},{label:'ATS Compatibility',pct:70},{label:'Red Flags',pct:70},{label:'Career Story',pct:60}].map(d=>(
                       <div key={d.label} className="lmock-bar-row">
                         <div className="lmock-bar-header"><span>{d.label}</span><span className="lmock-bar-pct">{d.pct}%</span></div>
-                        <div className="lmock-bar-track"><div className="lmock-bar-fill" style={{ ['--bar-pct' as string]:`${d.pct}%` }}/></div>
+                        <div className="lmock-bar-track"><div className={`lmock-bar-fill pct-${Math.round(d.pct/5)*5}`}/></div>
                       </div>
                     ))}
                   </div>
@@ -1207,7 +1207,7 @@ export default function Home() {
                       {[{label:'Figma',pct:92},{label:'Design Systems',pct:38},{label:'User Research',pct:80}].map(s=>(
                         <div key={s.label} className="skill-bar-row">
                           <div className="skill-bar-header"><span>{s.label}</span><span className={s.pct<50?'skill-pct-low':'skill-pct-high'}>{s.pct}%</span></div>
-                          <div className="skill-bar-track"><div className={`skill-bar-fill ${s.pct<50?'skill-bar-fill-low':'skill-bar-fill-high'}`} style={{ ['--skill-pct' as string]:`${s.pct}%` }}/></div>
+                          <div className="skill-bar-track"><div className={`skill-bar-fill ${s.pct<50?'skill-bar-fill-low':'skill-bar-fill-high'} pct-${Math.round(s.pct/5)*5}`}/></div>
                         </div>
                       ))}
                     </div>
@@ -1370,7 +1370,7 @@ export default function Home() {
             ))}
           </div>
           <div className="footer-bottom">
-            <span>© 2026 CVCheck · cvcheck.app</span>
+            <span>© 2025-2026 CVCheck · cvcheck.app</span>
             <div className="footer-bottom-links">
               <Link href="/privacy" className="footer-bottom-link">Privacy</Link>
               <Link href="/terms" className="footer-bottom-link">Terms</Link>
