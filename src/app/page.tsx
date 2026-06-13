@@ -1384,5 +1384,3 @@ export default function Home() {
     </div>
   )
 }
-ENDTSX
-echo "Done writing page.tsx"
