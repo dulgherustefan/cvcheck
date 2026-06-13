@@ -25,41 +25,6 @@ import { createSupabaseBrowser } from '@/lib/supabase'
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
 
-const MOBILE_CSS = `
-@media (max-width: 640px) {
-  .nav-links-desktop { display: none !important; }
-  .nav-btn-login { display: none !important; }
-  .nav-right { gap: 6px !important; }
-  .hero-section { padding: 48px 20px 40px !important; }
-  .hero-subtitle { font-size: 16px !important; }
-  .stats-strip { gap: 24px !important; padding-top: 24px !important; margin-top: 32px !important; }
-  .upload-url-row { flex-direction: column !important; gap: 8px !important; }
-  .upload-url-row input { width: 100% !important; box-sizing: border-box; }
-  .upload-url-row button { width: 100% !important; justify-content: center; }
-  .result-topbar { flex-wrap: wrap !important; gap: 8px !important; }
-  .result-topbar .share-btn { margin-left: 0 !important; }
-  .score-hero-inner { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; padding: 20px 20px !important; }
-  .score-breakdown-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
-  .score-breakdown-inner { padding: 16px 20px !important; }
-  .first-impression-grid { grid-template-columns: 1fr !important; }
-  .impact-stats-grid { grid-template-columns: 1fr 1fr !important; }
-  .bullet-rewrite-cols { grid-template-columns: 1fr !important; }
-  .bullet-rewrite-cols > div:first-child { border-right: none !important; border-bottom: 0.5px solid var(--border) !important; }
-  .landing-section { padding: 60px 20px !important; }
-  .landing-two-col { grid-template-columns: 1fr !important; gap: 32px !important; }
-  .landing-steps-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
-  .pricing-grid { grid-template-columns: 1fr !important; }
-  .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
-  .footer-inner { padding: 40px 20px 28px !important; }
-  .footer-bottom { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
-  .job-filter-row { gap: 4px !important; }
-}
-@media (max-width: 400px) {
-  .landing-steps-grid { grid-template-columns: 1fr !important; }
-  .impact-stats-grid { grid-template-columns: 1fr !important; }
-}
-`
-
 function useCountUp(target: number, duration = 1200, delay = 0) {
   const [value, setValue] = useState(0)
   useEffect(() => {
@@ -114,15 +79,15 @@ function ScoreRing({ score }: { score: number }) {
   const dash = (animPct / 100) * circ
   const displayScore = useCountUp(score, 1100, 120)
   return (
-    <div style={{ position:'relative', width:136, height:136, flexShrink:0 }}>
+    <div className="score-ring-wrap">
       <svg width="136" height="136" viewBox="0 0 136 136">
         <circle cx="68" cy="68" r={r} fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
         <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5" opacity="0.08" strokeDasharray={`${circ} 0`} transform="rotate(-90 68 68)"/>
         <circle cx="68" cy="68" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${dash} ${circ}`} transform="rotate(-90 68 68)" style={{ transition:'stroke-dasharray 1.1s cubic-bezier(0.22,1,0.36,1)' }}/>
       </svg>
-      <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center' as const }}>
-        <span style={{ fontSize:28, fontWeight:800, color, display:'block', letterSpacing:'-1px', lineHeight:1 }}>{displayScore}</span>
-        <span style={{ fontSize:12, color:'var(--text-tertiary)', fontWeight:500 }}>/100</span>
+      <div className="score-ring-center">
+        <span className="score-ring-num" style={{ color }}>{displayScore}</span>
+        <span className="score-ring-denom">/100</span>
       </div>
     </div>
   )
@@ -138,7 +103,7 @@ function LockIcon({ size = 11 }: { size?: number }) {
 
 function UnlockBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, fontWeight:600, color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'4px 10px', cursor:'pointer', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>
+    <button onClick={onClick} className="unlock-btn">
       <LockIcon size={9}/> {label}
     </button>
   )
@@ -148,16 +113,16 @@ function DimensionBar({ label, score, max, desc, locked, onUnlock }: { label:str
   const pct = (score / max) * 100
   const color = pct >= 66 ? 'var(--score-high)' : pct >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
   return (
-    <div style={{ display:'flex', flexDirection:'column' as const, gap:6, padding:'12px 0', borderBottom:'0.5px solid var(--border)', cursor:locked?'pointer':'default' }} onClick={locked?onUnlock:undefined}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+    <div className="dim-bar-wrap" style={{ cursor:locked?'pointer':'default' }} onClick={locked?onUnlock:undefined}>
+      <div className="dim-bar-row">
         <div>
-          <span style={{ fontSize:13, fontWeight:600, color:locked?'transparent':'var(--text-primary)', textShadow:locked?'0 0 8px var(--text-secondary)':'none', userSelect:locked?'none' as const:'auto' as const }}>{label}</span>
-          <span style={{ fontSize:11, color:'var(--text-tertiary)', marginLeft:8 }}>{desc}</span>
+          <span style={{ fontSize:13, fontWeight:600, color:locked?'transparent':'var(--text-primary)', textShadow:locked?'0 0 8px var(--text-secondary)':'none', userSelect:locked?'none':'auto' }}>{label}</span>
+          <span className="dim-bar-desc">{desc}</span>
         </div>
         {locked ? <LockIcon/> : <span style={{ fontSize:13, fontWeight:700, color }}>{score}<span style={{ fontSize:11, color:'var(--text-tertiary)' }}>/{max}</span></span>}
       </div>
-      <div style={{ height:4, background:'var(--bg-muted)', borderRadius:2 }}>
-        <div data-bar-pct={locked?60:pct} style={{ height:4, borderRadius:2, background:locked?'var(--border)':color, transition:'width 0.8s cubic-bezier(0.22,1,0.36,1)' }}/>
+      <div className="dim-bar-track">
+        <div data-bar-pct={locked?60:pct} className="dim-bar-fill" style={{ background:locked?'var(--border)':color }}/>
       </div>
     </div>
   )
@@ -167,20 +132,18 @@ function RedFlagCard({ flag, howToFixLocked, onUnlock }: { flag:{flag:string;sev
   const color = RED_FLAG_COLORS[flag.severity]
   const label = RED_FLAG_LABELS[flag.severity]
   return (
-    <div style={{ padding:'12px 16px', borderRadius:6, background:`${color}05`, border:`0.5px solid ${color}25`, display:'flex', flexDirection:'column' as const, gap:6 }}>
-      <div style={{ display:'flex', alignItems:'flex-start', gap:9 }}>
-        <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', padding:'2px 7px', borderRadius:2, color, background:`${color}12`, border:`0.5px solid ${color}30`, flexShrink:0, marginTop:1 }}>{label}</span>
-        <span style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', letterSpacing:'-0.02em', lineHeight:1.4 }}>{flag.flag}</span>
+    <div className="flag-card" style={{ background:`${color}05`, border:`0.5px solid ${color}25` }}>
+      <div className="flag-card-row">
+        <span style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.09em', padding:'2px 7px', borderRadius:2, color, background:`${color}12`, border:`0.5px solid ${color}30`, flexShrink:0, marginTop:1 }}>{label}</span>
+        <span className="flag-card-text">{flag.flag}</span>
       </div>
       {howToFixLocked ? (
-        <div onClick={onUnlock} style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer', paddingLeft:2 }}>
-          <span style={{ fontSize:12, color:'var(--text-secondary)', filter:'blur(4px)', userSelect:'none' as const, flex:1, pointerEvents:'none' }}>Add a one-line note explaining the gap.</span>
-          <span style={{ color:'var(--text-tertiary)', flexShrink:0 }}><LockIcon size={10}/></span>
+        <div onClick={onUnlock} className="flag-how-locked">
+          <span className="flag-how-blurred">Add a one-line note explaining the gap.</span>
+          <span className="flag-how-lock"><LockIcon size={10}/></span>
         </div>
       ) : flag.how_to_fix ? (
-        <p style={{ fontSize:12, color:'var(--text-secondary)', margin:0, lineHeight:1.55, paddingLeft:2 }}>
-          <span style={{ fontWeight:600, color:'var(--text-tertiary)', textTransform:'uppercase' as const, fontSize:9, letterSpacing:'0.08em' }}>Fix · </span>{flag.how_to_fix}
-        </p>
+        <p className="flag-how-text"><span className="flag-how-prefix">Fix · </span>{flag.how_to_fix}</p>
       ) : null}
     </div>
   )
@@ -188,19 +151,19 @@ function RedFlagCard({ flag, howToFixLocked, onUnlock }: { flag:{flag:string;sev
 
 function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
   return (
-    <div style={{ borderRadius:6, border:'0.5px solid var(--border)', overflow:'hidden', fontSize:12.5 }}>
-      <div className="bullet-rewrite-cols" style={{ display:'grid', gridTemplateColumns:'1fr 1fr' }}>
-        <div style={{ padding:'10px 14px', background:'rgba(220,38,38,0.04)', borderRight:'0.5px solid var(--border)' }}>
-          <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-low)', marginBottom:5 }}>Before</div>
+    <div className="bullet-rewrite">
+      <div className="bullet-rewrite-cols">
+        <div className="bullet-before">
+          <div className="bullet-label bullet-label-before">Before</div>
           <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.55 }}>{rewrite.original}</p>
         </div>
-        <div style={{ padding:'10px 14px', background:'rgba(22,163,74,0.04)' }}>
-          <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--score-high)', marginBottom:5 }}>After</div>
+        <div className="bullet-after">
+          <div className="bullet-label bullet-label-after">After</div>
           <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500, lineHeight:1.55 }}>{rewrite.rewritten}</p>
         </div>
       </div>
-      <div style={{ padding:'8px 14px', background:'var(--bg-subtle)', borderTop:'0.5px solid var(--border)' }}>
-        <p style={{ margin:0, fontSize:11.5, color:'var(--text-tertiary)', lineHeight:1.5 }}><span style={{ fontWeight:600, color:'var(--text-secondary)' }}>Why: </span>{rewrite.why}</p>
+      <div className="bullet-why">
+        <p className="bullet-why-text"><span style={{ fontWeight:600, color:'var(--text-secondary)' }}>Why: </span>{rewrite.why}</p>
       </div>
     </div>
   )
@@ -208,22 +171,22 @@ function BulletRewriteCard({ rewrite }: { rewrite: BulletRewrite }) {
 
 function ActionCard({ action, index, detailsLocked, onUnlock }: { action:PriorityAction; index:number; detailsLocked:boolean; onUnlock:()=>void }) {
   return (
-    <div style={{ padding:'16px 18px', borderRadius:6, border:'0.5px solid var(--border)', background:'var(--bg-elevated)', display:'flex', flexDirection:'column' as const, gap:8 }}>
-      <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-        <span style={{ fontSize:10, fontWeight:800, color:'var(--text-tertiary)', flexShrink:0, marginTop:1, letterSpacing:'0.04em', fontFamily:'var(--font-mono)' }}>{String(index+1).padStart(2,'0')}</span>
-        <div style={{ flex:1 }}>
-          <p style={{ margin:0, fontSize:13.5, fontWeight:600, color:'var(--text-primary)', letterSpacing:'-0.02em', lineHeight:1.35 }}>{action.action}</p>
-          <p style={{ margin:'4px 0 0', fontSize:12, color:'var(--text-secondary)', lineHeight:1.5 }}>{action.why_it_matters}</p>
+    <div className="action-card">
+      <div className="action-card-top">
+        <span className="action-num">{String(index+1).padStart(2,'0')}</span>
+        <div className="action-card-body">
+          <p className="action-title">{action.action}</p>
+          <p className="action-why">{action.why_it_matters}</p>
         </div>
       </div>
       {detailsLocked ? (
-        <div onClick={onUnlock} style={{ padding:'8px 12px', borderRadius:5, border:'0.5px dashed var(--border)', background:'var(--bg-subtle)', cursor:'pointer', display:'flex', alignItems:'center', gap:8 }}>
+        <div onClick={onUnlock} className="action-locked">
           <LockIcon size={10}/><span style={{ fontSize:12, color:'var(--text-tertiary)' }}>Unlock steps and example (Pro)</span>
         </div>
       ) : (
-        <div style={{ display:'flex', flexDirection:'column' as const, gap:6, paddingLeft:20 }}>
-          {action.how && <p style={{ margin:0, fontSize:12.5, color:'var(--text-primary)', lineHeight:1.6, borderLeft:'2px solid var(--accent-border)', paddingLeft:10 }}>{action.how}</p>}
-          {action.example && <p style={{ margin:0, fontSize:12, color:'var(--text-tertiary)', lineHeight:1.55, fontStyle:'italic' }}>{action.example}</p>}
+        <div className="action-how">
+          {action.how && <p className="action-how-text">{action.how}</p>}
+          {action.example && <p className="action-how-example">{action.example}</p>}
         </div>
       )}
     </div>
@@ -232,24 +195,29 @@ function ActionCard({ action, index, detailsLocked, onUnlock }: { action:Priorit
 
 function LockedPreview({ count, label, sublabel, onUnlock }: { count?:number|string; label:string; sublabel:string; onUnlock:()=>void }) {
   return (
-    <div onClick={onUnlock} style={{ padding:'14px 18px', borderRadius:6, border:'0.5px solid var(--border)', background:'var(--bg-subtle)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        {count !== undefined && <span style={{ fontSize:20, fontWeight:800, color:'var(--text-primary)', letterSpacing:'-1px', lineHeight:1 }}>{count}</span>}
+    <div onClick={onUnlock} className="locked-preview">
+      <div className="locked-preview-inner">
+        {count !== undefined && <span className="locked-preview-count">{count}</span>}
         <div>
-          <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', marginBottom:2 }}>{label}</div>
-          <div style={{ fontSize:11.5, color:'var(--text-tertiary)' }}>{sublabel}</div>
+          <div className="locked-preview-label">{label}</div>
+          <div className="locked-preview-sub">{sublabel}</div>
         </div>
       </div>
-      <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0, fontSize:11.5, fontWeight:600, color:'var(--accent)', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'4px 10px', whiteSpace:'nowrap' as const }}>
+      <div className="locked-preview-btn">
         Unlock — €1.99 <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
   )
 }
+
 const FIT_COLORS: Record<string,string> = { strong:'var(--score-high)', good:'#65A30D', partial:'var(--score-mid)', stretch:'var(--score-low)' }
 function FitBadge({ label, score }: { label:string; score:number }) {
   const color = FIT_COLORS[label] ?? 'var(--text-secondary)'
-  return <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:700, letterSpacing:'0.05em', textTransform:'uppercase' as const, color, background:`${color}15`, border:`0.5px solid ${color}40`, borderRadius:3, padding:'2px 8px' }}>{score}% · {label}</span>
+  return (
+    <span className="fit-badge" style={{ color, background:`${color}15`, borderColor:`${color}40` }}>
+      {score}% · {label}
+    </span>
+  )
 }
 
 function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange }: { job:JobMatchType; fitLocked:boolean; onUnlock:()=>void; token:string|null; initialStatus?:'none'|'saved'|'applied'; onSaveChange?:(id:string,status:'none'|'saved'|'applied')=>void }) {
@@ -286,41 +254,41 @@ function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange 
   }
 
   return (
-    <div style={{ border:`0.5px solid ${fit?.fit_label==='strong'?'rgba(22,163,74,0.3)':'var(--border)'}`, borderRadius:8, padding:'18px 20px', background:'var(--bg-elevated)', display:'flex', flexDirection:'column' as const, gap:10 }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12 }}>
-        <div style={{ flex:1, minWidth:0 }}>
-          <div style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', lineHeight:1.3 }}>{listing.title}</div>
-          <div style={{ fontSize:12, color:'var(--text-secondary)', marginTop:3, display:'flex', gap:6, flexWrap:'wrap' as const, alignItems:'center' }}>
+    <div className={`job-card ${fit?.fit_label==='strong'?'job-card-strong':'job-card-normal'}`}>
+      <div className="job-card-top">
+        <div className="job-card-meta">
+          <div className="job-title">{listing.title}</div>
+          <div className="job-sub">
             <span>{listing.company}</span>
-            {listing.location&&<><span style={{ color:'var(--border-strong)' }}>·</span><span>{listing.location}</span></>}
-            {salary&&<><span style={{ color:'var(--border-strong)' }}>·</span><span style={{ color:'var(--text-primary)', fontWeight:600 }}>{salary}</span></>}
+            {listing.location&&<><span className="job-sub-dot">·</span><span>{listing.location}</span></>}
+            {salary&&<><span className="job-sub-dot">·</span><span className="job-salary">{salary}</span></>}
           </div>
         </div>
         {fit&&<FitBadge label={fit.fit_label} score={fit.fit_score}/>}
       </div>
-      <p style={{ fontSize:12, color:'var(--text-secondary)', lineHeight:1.6, margin:0, display:'-webkit-box' as const, WebkitLineClamp:expanded?undefined:3, WebkitBoxOrient:'vertical' as const, overflow:expanded?'visible':'hidden' }}>{listing.description}</p>
-      {listing.description.length>200&&<button onClick={()=>setExpanded(e=>!e)} style={{ alignSelf:'flex-start', fontSize:11, color:'var(--text-tertiary)', background:'none', border:'none', cursor:'pointer', padding:0, fontFamily:'var(--font-sans)' }}>{expanded?'Show less':'Show more'}</button>}
+      <p className="job-desc" style={{ display:'-webkit-box', WebkitLineClamp:expanded?undefined:3, WebkitBoxOrient:'vertical', overflow:expanded?'visible':'hidden' }}>{listing.description}</p>
+      {listing.description.length>200&&<button className="job-show-more" onClick={()=>setExpanded(e=>!e)}>{expanded?'Show less':'Show more'}</button>}
       {fit&&fit.strengths&&fit.strengths.length>0&&(
-        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10, display:'flex', flexDirection:'column' as const, gap:5 }}>
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--score-high)' }}>Why you're a good fit</div>
-          {fit.strengths.map((s,i)=><div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
+        <div className="job-section">
+          <div className="job-section-label job-section-label-success">Why you're a good fit</div>
+          {fit.strengths.map((s,i)=><div key={i} className="job-section-row"><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
         </div>
       )}
       {fit&&fit.gaps&&fit.gaps.length>0&&(
-        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10, display:'flex', flexDirection:'column' as const, gap:5 }}>
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' as const, color:'var(--text-tertiary)' }}>What you're missing</div>
-          {fit.gaps.map((gap,i)=><div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7, fontSize:12, color:'var(--text-secondary)' }}><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{gap}</div>)}
+        <div className="job-section">
+          <div className="job-section-label job-section-label-muted">What you're missing</div>
+          {fit.gaps.map((gap,i)=><div key={i} className="job-section-row"><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{gap}</div>)}
         </div>
       )}
       {fitLocked&&fit&&(
-        <div style={{ borderTop:'0.5px solid var(--border)', paddingTop:10 }}>
-          <button onClick={onUnlock} style={{ fontSize:12, fontWeight:600, color:'var(--accent)', background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:4, padding:'5px 12px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Unlock skill gaps & full analysis</button>
+        <div className="job-section">
+          <button onClick={onUnlock} className="job-unlock-btn">Unlock skill gaps & full analysis</button>
         </div>
       )}
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:2 }}>
-        <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" style={{ flex:1, textAlign:'center' as const, fontSize:12, fontWeight:600, color:'var(--text-primary)', background:'var(--bg-muted)', border:'0.5px solid var(--border-strong)', borderRadius:4, padding:'6px 12px', textDecoration:'none' }}>View job →</a>
-        <button onClick={()=>!saving&&handleSave('saved')} style={{ fontSize:13, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background:saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color:saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor:saving?'wait':'pointer', fontFamily:'var(--font-sans)', transition:'all 0.15s' }}>{saved==='saved'?'★':'☆'}</button>
-        <button onClick={()=>!saving&&handleSave('applied')} style={{ fontSize:11, fontWeight:600, padding:'5px 10px', borderRadius:4, border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background:saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color:saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor:saving?'wait':'pointer', fontFamily:'var(--font-sans)', transition:'all 0.15s' }}>{saved==='applied'?'✓ Applied':'Applied?'}</button>
+      <div className="job-actions">
+        <a href={listing.redirect_url} target="_blank" rel="noopener noreferrer" className="job-view-btn">View job →</a>
+        <button onClick={()=>!saving&&handleSave('saved')} className="job-save-btn" style={{ border:`0.5px solid ${saved==='saved'?'var(--accent)':'var(--border)'}`, background:saved==='saved'?'var(--accent-subtle)':'var(--bg-muted)', color:saved==='saved'?'var(--accent)':'var(--text-tertiary)', cursor:saving?'wait':'pointer' }}>{saved==='saved'?'★':'☆'}</button>
+        <button onClick={()=>!saving&&handleSave('applied')} className="job-apply-btn" style={{ border:`0.5px solid ${saved==='applied'?'var(--score-high)':'var(--border)'}`, background:saved==='applied'?'rgba(22,163,74,0.08)':'var(--bg-muted)', color:saved==='applied'?'var(--score-high)':'var(--text-tertiary)', cursor:saving?'wait':'pointer' }}>{saved==='applied'?'✓ Applied':'Applied?'}</button>
       </div>
     </div>
   )
@@ -401,49 +369,49 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
   const FREE_LIMIT = 2
 
   return (
-    <div style={{ marginTop:32 }}>
-      <div style={{ marginBottom:16, display:'flex', justifyContent:'space-between', alignItems:'flex-end', flexWrap:'wrap' as const, gap:12 }}>
+    <div className="jobs-wrap">
+      <div className="jobs-header">
         <div>
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' as const, color:'var(--text-tertiary)', marginBottom:5 }}>Job Matches</div>
-          <h2 style={{ fontSize:'clamp(18px,2.5vw,24px)', fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.5px' }}>Roles that fit your profile</h2>
-          {data?.detected_country&&<p style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4, marginBottom:0 }}>{ADZUNA_UI_SUPPORTED.has(data.detected_country)?`Jobs near you · ${data.detected_country.toUpperCase()}`:'Remote & global jobs matched to your profile'}</p>}
+          <div className="jobs-title-eyebrow">Job Matches</div>
+          <h2 className="jobs-title">Roles that fit your profile</h2>
+          {data?.detected_country&&<p className="jobs-subtitle">{ADZUNA_UI_SUPPORTED.has(data.detected_country)?`Jobs near you · ${data.detected_country.toUpperCase()}`:'Remote & global jobs matched to your profile'}</p>}
         </div>
         {data&&data.jobs.length>0&&(
-          <div className="job-filter-row" style={{ display:'flex', gap:6, flexWrap:'wrap' as const }}>
+          <div className="job-filter-row">
             {(['all','strong','good','partial','stretch'] as FilterType[]).map(f=>{
               const count=f==='all'?data.jobs.length:(counts[f]??0)
-              return <button key={f} onClick={()=>setFilter(f)} style={{ fontSize:11, fontWeight:600, letterSpacing:'0.04em', textTransform:'uppercase' as const, padding:'4px 10px', borderRadius:4, border:`0.5px solid ${filter===f?'var(--accent)':'var(--border)'}`, background:filter===f?'var(--accent)':'transparent', color:filter===f?'#fff':'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>{f}{count>0?` (${count})`:''}</button>
+              return <button key={f} onClick={()=>setFilter(f)} className={`job-filter-btn ${filter===f?'job-filter-active':'job-filter-inactive'}`}>{f}{count>0?` (${count})`:''}</button>
             })}
           </div>
         )}
       </div>
       {state==='done'&&data&&(
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+        <div className="jobs-toolbar">
           <div>
-            {alertState==='subscribed'?<div style={{ fontSize:12, color:'var(--score-high)', display:'flex', alignItems:'center', gap:5 }}><span>✓</span> Weekly job alerts activated</div>
-            :alertState==='error'?<div style={{ fontSize:12, color:'var(--score-low)' }}>Failed to subscribe.</div>
-            :<button id="alerts-trigger" onClick={handleAlertSubscribe} disabled={alertState==='loading'} style={{ fontSize:12, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'4px 12px', cursor:alertState==='loading'?'wait':'pointer', fontFamily:'var(--font-sans)', opacity:alertState==='loading'?0.6:1, display:'flex', alignItems:'center', gap:6 }}>
+            {alertState==='subscribed'?<div className="jobs-alert-success"><span>✓</span> Weekly job alerts activated</div>
+            :alertState==='error'?<div className="jobs-alert-error">Failed to subscribe.</div>
+            :<button id="alerts-trigger" onClick={handleAlertSubscribe} disabled={alertState==='loading'} className="jobs-alert-btn" style={{ opacity:alertState==='loading'?0.6:1, cursor:alertState==='loading'?'wait':'pointer' }}>
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               {alertState==='loading'?'Activating…':'Get weekly alerts'}
             </button>}
           </div>
-          <button onClick={()=>{ try{sessionStorage.removeItem(CACHE_KEY);sessionStorage.removeItem(SAVED_CACHE_KEY)}catch{};fetchJobs() }} style={{ fontSize:11, color:'var(--text-tertiary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'3px 10px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>↻ Refresh</button>
+          <button onClick={()=>{ try{sessionStorage.removeItem(CACHE_KEY);sessionStorage.removeItem(SAVED_CACHE_KEY)}catch{};fetchJobs() }} className="jobs-refresh-btn">↻ Refresh</button>
         </div>
       )}
-      {state==='loading'&&<div style={{ fontSize:13, color:'var(--text-secondary)', padding:'16px 0', display:'flex', alignItems:'center', gap:8 }}><div style={{ width:14, height:14, borderRadius:'50%', border:'1.5px solid var(--border)', borderTopColor:'var(--text-primary)', animation:'spin 0.7s linear infinite' }}/>Finding matching jobs…</div>}
-      {state==='error'&&<div style={{ fontSize:13, color:'var(--score-low)', padding:'10px 14px', border:'0.5px solid var(--score-low)', borderRadius:6, maxWidth:400 }}>{errMsg}<button onClick={fetchJobs} style={{ marginLeft:12, fontSize:12, color:'var(--text-primary)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline', fontFamily:'var(--font-sans)' }}>Retry</button></div>}
+      {state==='loading'&&<div className="jobs-loading"><div className="jobs-loading-spinner"/>Finding matching jobs…</div>}
+      {state==='error'&&<div className="jobs-error">{errMsg}<button onClick={fetchJobs} className="jobs-retry">Retry</button></div>}
       {state==='done'&&data&&(
-        <div style={{ display:'flex', flexDirection:'column' as const, gap:12 }}>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:12 }}>
+        <div className="jobs-more-list">
+          <div className="jobs-grid">
             {filteredJobs.slice(0,isPremium?filteredJobs.length:FREE_LIMIT).map(job=>(
               <JobCard key={job.listing.id} job={job} fitLocked={data.fit_locked} onUnlock={onUnlock} token={token} initialStatus={savedStatuses[job.listing.id]} onSaveChange={handleSaveChange}/>
             ))}
           </div>
           {!isPremium&&filteredJobs.length>FREE_LIMIT&&(
-            <div style={{ border:'0.5px dashed var(--accent-border)', borderRadius:8, padding:'28px 24px', background:'linear-gradient(135deg,rgba(212,98,42,0.06) 0%,rgba(212,98,42,0.02) 100%)', display:'flex', flexDirection:'column' as const, alignItems:'center', gap:12, textAlign:'center' as const }}>
-              <p style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px' }}>{filteredJobs.length-FREE_LIMIT} more matching jobs</p>
-              <p style={{ fontSize:12, color:'var(--text-tertiary)', margin:0 }}>Unlock all matches + skill gap analysis for every role</p>
-              <button onClick={onUnlock} style={{ fontSize:13, fontWeight:700, color:'#fff', background:'var(--accent)', border:'none', borderRadius:4, padding:'9px 24px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Unlock with Premium — €5.99/mo</button>
+            <div className="jobs-locked-cta">
+              <p className="jobs-unlock-title">{filteredJobs.length-FREE_LIMIT} more matching jobs</p>
+              <p className="jobs-unlock-sub">Unlock all matches + skill gap analysis for every role</p>
+              <button onClick={onUnlock} className="jobs-unlock-premium">Unlock with Premium — €5.99/mo</button>
             </div>
           )}
         </div>
@@ -451,6 +419,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
     </div>
   )
 }
+
 function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
   result:GatedAnalysisResult; isPro:boolean; user:{email?:string}|null; token:string|null
   setShowUpgradeModal:(v:boolean)=>void; setShowPlansModal:(v:boolean)=>void; setShowAuthModal:(v:boolean)=>void
@@ -458,29 +427,24 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
   const unlock = () => setShowUpgradeModal(true)
   const barsRef = useAnimatedBars()
 
-  const scoreColor = result.total_score >= 80 ? 'var(--score-high)' : result.total_score >= 60 ? 'var(--score-mid)' : 'var(--score-low)'
-
   return (
-    <div style={{ maxWidth:860, margin:'0 auto', padding:'0 20px', display:'flex', flexDirection:'column' as const, gap:16 }}>
+    <div className="result-content">
 
-      {/* ── Score Hero ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:14, border:'1px solid var(--border)', boxShadow:'0 2px 16px rgba(45,31,14,0.07)', overflow:'hidden' }}>
-        <div style={{ height:3, background:'linear-gradient(90deg, var(--accent), #E8925A)' }}/>
-        <div className="score-hero-inner" style={{ padding:'28px 32px', display:'flex', alignItems:'center', gap:32, flexWrap:'wrap' as const }}>
+      <div className="score-card">
+        <div className="score-card-stripe"/>
+        <div className="score-hero-inner">
           <ScoreRing score={result.total_score}/>
-          <div style={{ flex:1, minWidth:200 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' as const, marginBottom:10 }}>
-              <span style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', padding:'4px 12px', borderRadius:20, color:RATING_COLORS[result.rating], background:`${RATING_COLORS[result.rating]}12`, border:`1px solid ${RATING_COLORS[result.rating]}30` }}>{RATING_LABELS[result.rating]}</span>
-              {result.detected_domain&&result.detected_domain!=='Unknown'&&<span style={{ fontSize:11, fontWeight:500, color:'var(--text-tertiary)', padding:'4px 10px', border:'1px solid var(--border)', borderRadius:20 }}>{LEVEL_LABELS[result.detected_level]} · {result.detected_domain}</span>}
+          <div className="score-hero-meta">
+            <div className="score-hero-badges">
+              <span className="rating-badge" style={{ color:RATING_COLORS[result.rating], background:`${RATING_COLORS[result.rating]}12`, border:`1px solid ${RATING_COLORS[result.rating]}30` }}>{RATING_LABELS[result.rating]}</span>
+              {result.detected_domain&&result.detected_domain!=='Unknown'&&<span className="domain-badge">{LEVEL_LABELS[result.detected_level]} · {result.detected_domain}</span>}
             </div>
-            <p style={{ margin:0, fontSize:14.5, color:'var(--text-secondary)', lineHeight:1.65, fontWeight:500 }}>{result.summary}</p>
+            <p className="score-hero-summary">{result.summary}</p>
           </div>
         </div>
-
-        {/* Score dimensions strip */}
-        <div className="score-breakdown-inner" style={{ borderTop:'1px solid var(--border)', padding:'20px 32px' }} ref={barsRef}>
-          <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--text-tertiary)', marginBottom:14 }}>Score Breakdown</div>
-          <div className="score-breakdown-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px 40px' }}>
+        <div className="score-breakdown-inner" ref={barsRef}>
+          <div className="score-breakdown-label">Score Breakdown</div>
+          <div className="score-breakdown-grid">
             {SCORE_DIMENSIONS.map(({key,label,max,desc})=>(
               <DimensionBar key={key} label={label} score={(result.scores as unknown as Record<string,number>)[key]??0} max={max} desc={desc} locked={false} onUnlock={unlock}/>
             ))}
@@ -488,222 +452,188 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       </div>
 
-      {/* ── Quick Win ── */}
       {result.quick_win && (
-        <div style={{ background:'var(--accent-subtle)', borderRadius:12, border:'1px solid var(--accent-border)', padding:'16px 20px', display:'flex', gap:14, alignItems:'flex-start' }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+        <div className="quick-win">
+          <div className="quick-win-icon">
             <svg width="15" height="15" fill="none" stroke="#fff" strokeWidth="2.2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           </div>
           <div>
-            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', color:'var(--accent)', marginBottom:5 }}>Quick Win</div>
-            <p style={{ margin:0, fontSize:14, color:'var(--text-primary)', lineHeight:1.6, fontWeight:500 }}>{result.quick_win}</p>
+            <div className="quick-win-label">Quick Win</div>
+            <p className="quick-win-text">{result.quick_win}</p>
           </div>
         </div>
       )}
 
-      {/* ── First Impression ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-icon">
             <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7"/></svg>
           </div>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>First Impression</h2>
-          <span style={{ marginLeft:'auto', fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.2)':'rgba(220,38,38,0.2)'}` }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</span>
+          <h2 className="panel-h2">First Impression</h2>
+          <span className="rating-badge" style={{ marginLeft:'auto', color:result.first_impression.passes_7_second_test?'var(--score-high)':'var(--score-low)', background:result.first_impression.passes_7_second_test?'rgba(22,163,74,0.08)':'rgba(220,38,38,0.08)', border:`1px solid ${result.first_impression.passes_7_second_test?'rgba(22,163,74,0.2)':'rgba(220,38,38,0.2)'}` }}>{result.first_impression.passes_7_second_test?'✓ Passes 7-second test':'✗ Fails 7-second test'}</span>
         </div>
-        <div style={{ padding:'14px 18px', borderRadius:8, border:'1px solid var(--border)', background:'var(--bg)', marginBottom:12 }}>
-          <p style={{ margin:0, fontSize:14, color:'var(--text-primary)', fontStyle:'italic', lineHeight:1.65 }}>"{result.first_impression.what_recruiter_sees}"</p>
-          <p style={{ margin:'6px 0 0', fontSize:11, color:'var(--text-tertiary)' }}>what a recruiter sees in 7 seconds</p>
+        <div className="fi-recruiter-box">
+          <p className="fi-quote">"{result.first_impression.what_recruiter_sees}"</p>
+          <p className="fi-quote-sub">what a recruiter sees in 7 seconds</p>
         </div>
-        <div className="first-impression-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+        <div className="grid-2">
           {[
             { label:'Tone', value: result.first_impression.tone_signal },
             { label:'Summary', value: result.first_impression.summary_verdict },
           ].map(item=>(
-            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
-              <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value?.replace(/_/g,' ')??'—'}</div>
+            <div key={item.label} className="info-cell">
+              <div className="info-cell-label">{item.label}</div>
+              <div className="info-cell-value">{item.value?.replace(/_/g,' ')??'—'}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Impact & Achievements ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header-between">
+          <div className="panel-header panel-header-sub">
+            <div className="panel-icon">
               <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Impact & Achievements</h2>
+            <h2 className="panel-h2">Impact & Achievements</h2>
           </div>
           {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>}
         </div>
-
-        {/* Bullet stats */}
-        <div className="impact-stats-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:14 }}>
+        <div className="impact-stats-grid">
           {[
             { label:'With metrics', value:result.impact.bullets_with_metrics, color:'var(--score-high)' },
             { label:'Without metrics', value:result.impact.bullets_without_metrics, color:'var(--score-low)' },
             { label:'Verb quality', value:result.impact.action_verb_quality?.replace(/_/g,' ')??'—', color:'var(--text-primary)', text:true },
           ].map((s,i)=>(
-            <div key={i} style={{ padding:'12px 16px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)', textAlign:'center' as const }}>
-              <div style={{ fontSize:s.text?14:22, fontWeight:800, color:s.color, letterSpacing:s.text?'-0.01em':'-1.5px', textTransform:s.text?'capitalize' as const:'none' as const }}>{s.value}</div>
-              <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:3 }}>{s.label}</div>
+            <div key={i} className="impact-stat">
+              <div style={{ fontSize:s.text?14:22, fontWeight:800, color:s.color, letterSpacing:s.text?'-0.01em':'-1.5px', textTransform:s.text?'capitalize':'none' }}>{s.value}</div>
+              <div className="impact-stat-label">{s.label}</div>
             </div>
           ))}
         </div>
-
         {result.rewrites_locked
           ? <LockedPreview count={Math.min(result.impact.bullets_without_metrics||2,3)} label="bullet rewrites ready" sublabel="Your weakest bullets rewritten with Action + Result + Numbers" onUnlock={unlock}/>
-          : <div style={{ display:'flex', flexDirection:'column' as const, gap:8 }}>{result.impact.rewrites.map((rw,i)=><BulletRewriteCard key={i} rewrite={rw}/>)}</div>
+          : <div className="impact-rewrites-list">{result.impact.rewrites.map((rw,i)=><BulletRewriteCard key={i} rewrite={rw}/>)}</div>
         }
       </div>
 
-      {/* ── ATS ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header-between">
+          <div className="panel-header panel-header-sub">
+            <div className="panel-icon">
               <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
             </div>
-            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>ATS Compatibility</h2>
+            <h2 className="panel-h2">ATS Compatibility</h2>
           </div>
           {result.keywords_locked&&<UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>}
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12, flexWrap:'wrap' as const }}>
-          <span style={{ fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.09em', padding:'4px 12px', borderRadius:20, color:ATS_VERDICT_COLORS[result.ats.verdict], background:`${ATS_VERDICT_COLORS[result.ats.verdict]}12`, border:`1px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30` }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
-          <span style={{ fontSize:12, color:'var(--text-secondary)' }}>Title searchable: <span style={{ fontWeight:600, color:result.ats.title_is_searchable?'var(--score-high)':'var(--score-low)' }}>{result.ats.title_is_searchable?'Yes':'No'}</span></span>
-          {result.ats.notes&&<span style={{ fontSize:12, color:'var(--text-tertiary)', flex:'1 1 100%', marginTop:2 }}>{result.ats.notes}</span>}
+        <div className="ats-meta">
+          <span className="ats-verdict" style={{ color:ATS_VERDICT_COLORS[result.ats.verdict], background:`${ATS_VERDICT_COLORS[result.ats.verdict]}12`, border:`1px solid ${ATS_VERDICT_COLORS[result.ats.verdict]}30` }}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
+          <span className="ats-searchable">Title searchable: <span style={{ fontWeight:600, color:result.ats.title_is_searchable?'var(--score-high)':'var(--score-low)' }}>{result.ats.title_is_searchable?'Yes':'No'}</span></span>
+          {result.ats.notes&&<span className="ats-notes">{result.ats.notes}</span>}
         </div>
         {result.keywords_locked
           ? <LockedPreview count="5" label="missing ATS keywords for your domain" sublabel="The exact terms recruiters search that aren't in your CV" onUnlock={unlock}/>
           : result.ats.missing_keywords.length>0&&(
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:'var(--text-tertiary)', marginBottom:8, textTransform:'uppercase' as const, letterSpacing:'0.07em' }}>Missing Keywords</div>
-                <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
-                  {result.ats.missing_keywords.map(kw=><span key={kw} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.2)', color:'var(--score-low)', fontWeight:500 }}>{kw}</span>)}
+                <div className="subsection-label">Missing Keywords</div>
+                <div className="keyword-list">
+                  {result.ats.missing_keywords.map(kw=><span key={kw} className="keyword-tag keyword-missing">{kw}</span>)}
                 </div>
               </div>
             )
         }
       </div>
 
-      {/* ── Red Flags ── */}
       {result.red_flags.length>0&&(
-        <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ width:28, height:28, borderRadius:7, background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div className="panel">
+          <div className="panel-header-between">
+            <div className="panel-header panel-header-sub">
+              <div className="panel-icon-danger">
                 <svg width="13" height="13" fill="none" stroke="var(--score-low)" strokeWidth="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </div>
-              <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Red Flags</h2>
-              <span style={{ fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:20, background:'rgba(220,38,38,0.08)', color:'var(--score-low)', border:'1px solid rgba(220,38,38,0.15)' }}>{result.red_flags.length}</span>
+              <h2 className="panel-h2">Red Flags</h2>
+              <span className="flag-count">{result.red_flags.length}</span>
             </div>
             {result.how_to_fix_locked&&<UnlockBtn label="Unlock fixes — €1.99" onClick={unlock}/>}
           </div>
-          <div style={{ display:'flex', flexDirection:'column' as const, gap:8 }}>
+          <div className="red-flags-list">
             {result.red_flags.map((flag,i)=><RedFlagCard key={i} flag={flag} howToFixLocked={result.how_to_fix_locked} onUnlock={unlock}/>)}
           </div>
         </div>
       )}
 
-      {/* ── Career Story ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-          </div>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Career Story</h2>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-          {[
-            { label:'Trajectory', value: result.career_story.trajectory_detected },
-            { label:'Narrative', value: result.career_story.narrative_thread?.replace(/_/g,' ') },
-            { label:'Seniority match', value: result.career_story.seniority_match?.replace(/_/g,' ') },
-            { label:'Progression', value: result.career_story.progression_clear ? 'Clear' : 'Unclear' },
-          ].map(item=>(
-            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
-              <div style={{ fontSize:13, fontWeight:500, color:'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value??'—'}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Career Story ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-icon">
             <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
           </div>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Career Story</h2>
+          <h2 className="panel-h2">Career Story</h2>
         </div>
         {result.career_story.trajectory_detected&&(
-          <div style={{ padding:'12px 16px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)', marginBottom:12, fontSize:13, color:'var(--text-primary)', fontWeight:500, lineHeight:1.6 }}>
+          <div className="trajectory-box">
             {result.career_story.trajectory_detected}
           </div>
         )}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+        <div className="grid-2">
           {[
             { label:'Narrative', value: result.career_story.narrative_thread?.replace(/_/g,' ') },
             { label:'Seniority match', value: result.career_story.seniority_match?.replace(/_/g,' ') },
             { label:'Progression', value: result.career_story.progression_clear ? 'Clear' : 'Unclear', color: result.career_story.progression_clear ? 'var(--score-high)' : 'var(--score-low)' },
             { label:'Gaps', value: result.gaps_locked ? '—' : (result.career_story.gaps_or_transitions||'None detected') },
           ].map(item=>(
-            <div key={item.label} style={{ padding:'10px 14px', borderRadius:8, background:'var(--bg-subtle)', border:'1px solid var(--border)' }}>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:4 }}>{item.label}</div>
-              <div style={{ fontSize:13, fontWeight:500, color:(item as {color?:string}).color||'var(--text-primary)', textTransform:'capitalize' as const }}>{item.value??'—'}</div>
+            <div key={item.label} className="info-cell">
+              <div className="info-cell-label">{item.label}</div>
+              <div className="info-cell-value" style={{ color:(item as {color?:string}).color||'var(--text-primary)' }}>{item.value??'—'}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Credibility ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-          <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header">
+          <div className="panel-icon">
             <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
-          <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Credibility</h2>
+          <h2 className="panel-h2">Credibility</h2>
         </div>
         {result.credibility.signals_present?.length>0&&(
-          <div style={{ marginBottom:12 }}>
-            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--score-high)', marginBottom:8 }}>✓ Signals Present</div>
-            <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
-              {result.credibility.signals_present.map((s:string)=><span key={s} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(22,163,74,0.06)', border:'1px solid rgba(22,163,74,0.2)', color:'var(--score-high)', fontWeight:500 }}>{s}</span>)}
+          <div className="credibility-present">
+            <div className="subsection-label-success">✓ Signals Present</div>
+            <div className="keyword-list">
+              {result.credibility.signals_present.map((s:string)=><span key={s} className="keyword-tag keyword-present">{s}</span>)}
             </div>
           </div>
         )}
         {!result.missing_signals_locked&&result.credibility.signals_missing?.length>0&&(
           <div>
-            <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>What would strengthen credibility</div>
-            <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
-              {result.credibility.signals_missing.map((s:string)=><span key={s} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'var(--bg-subtle)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontWeight:500 }}>{s}</span>)}
+            <div className="subsection-label-muted">What would strengthen credibility</div>
+            <div className="keyword-list">
+              {result.credibility.signals_missing.map((s:string)=><span key={s} className="keyword-tag keyword-neutral">{s}</span>)}
             </div>
           </div>
         )}
-        {result.credibility.notes&&<p style={{ margin:'12px 0 0', fontSize:12.5, color:'var(--text-tertiary)', lineHeight:1.6 }}>{result.credibility.notes}</p>}
+        {result.credibility.notes&&<p className="credibility-notes">{result.credibility.notes}</p>}
       </div>
 
-      {/* ── Format & Buzzwords ── */}
       {(result.format?.issues?.length>0||result.buzzwords_detected?.length>0)&&(
-        <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-            <div style={{ width:28, height:28, borderRadius:7, background:'var(--bg-subtle)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div className="panel">
+          <div className="panel-header">
+            <div className="panel-icon">
               <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
             </div>
-            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Format & Language</h2>
-            <div style={{ marginLeft:'auto', display:'flex', gap:8 }}>
-              <span style={{ fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, border:'1px solid var(--border)', color:'var(--text-secondary)' }}>{result.format?.length_verdict?.replace(/_/g,' ')} · {result.format?.recommended_pages}p recommended</span>
-              <span style={{ fontSize:11, fontWeight:600, padding:'3px 10px', borderRadius:20, border:'1px solid var(--border)', color:result.format?.scannability==='easy'?'var(--score-high)':result.format?.scannability==='hard'?'var(--score-low)':'var(--score-mid)' }}>{result.format?.scannability} to scan</span>
+            <h2 className="panel-h2">Format & Language</h2>
+            <div className="format-badges">
+              <span className="format-badge">{result.format?.length_verdict?.replace(/_/g,' ')} · {result.format?.recommended_pages}p recommended</span>
+              <span className="format-badge" style={{ color:result.format?.scannability==='easy'?'var(--score-high)':result.format?.scannability==='hard'?'var(--score-low)':'var(--score-mid)' }}>{result.format?.scannability} to scan</span>
             </div>
           </div>
           {result.format?.issues?.length>0&&(
-            <div style={{ marginBottom:12 }}>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>Format Issues</div>
-              <div style={{ display:'flex', flexDirection:'column' as const, gap:6 }}>
+            <div className="format-issue-list">
+              <div className="subsection-label-muted">Format Issues</div>
+              <div>
                 {result.format.issues.map((issue:string,i:number)=>(
-                  <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', fontSize:13, color:'var(--text-secondary)' }}>
+                  <div key={i} className="format-issue-row">
                     <span style={{ color:'var(--score-mid)', flexShrink:0, marginTop:1 }}>⚠</span>{issue}
                   </div>
                 ))}
@@ -712,10 +642,10 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           )}
           {result.buzzwords_detected?.filter((b:{word:string})=>b.word).length>0&&(
             <div>
-              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--text-tertiary)', marginBottom:8 }}>Empty Buzzwords Detected</div>
-              <div style={{ display:'flex', flexWrap:'wrap' as const, gap:6 }}>
+              <div className="subsection-label-muted">Empty Buzzwords Detected</div>
+              <div className="keyword-list">
                 {result.buzzwords_detected.filter((b:{word:string})=>b.word).map((b:{word:string;location:string},i:number)=>(
-                  <span key={i} style={{ fontSize:12, padding:'4px 12px', borderRadius:20, background:'rgba(202,138,4,0.06)', border:'1px solid rgba(202,138,4,0.2)', color:'var(--score-mid)', fontWeight:500 }} title={b.location}>{b.word}</span>
+                  <span key={i} className="keyword-tag keyword-warning" title={b.location}>{b.word}</span>
                 ))}
               </div>
             </div>
@@ -723,44 +653,41 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       )}
 
-      {/* ── Top 3 Actions ── */}
-      <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'1px solid var(--border)', padding:'20px 24px' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:7, background:'var(--accent-subtle)', border:'1px solid var(--accent-border)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div className="panel">
+        <div className="panel-header-between">
+          <div className="panel-header panel-header-sub">
+            <div className="panel-icon-accent">
               <svg width="13" height="13" fill="none" stroke="var(--accent)" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
             </div>
-            <h2 style={{ fontSize:14, fontWeight:700, color:'var(--text-primary)', margin:0, letterSpacing:'-0.01em' }}>Top 3 Priority Actions</h2>
+            <h2 className="panel-h2">Top 3 Priority Actions</h2>
           </div>
           {result.actions_locked&&<UnlockBtn label="Unlock how-to + examples — €1.99" onClick={unlock}/>}
         </div>
-        <div style={{ display:'flex', flexDirection:'column' as const, gap:10 }}>
+        <div className="top-3-list">
           {result.top_3_actions.map((action,i)=><ActionCard key={i} action={action} index={i} detailsLocked={result.actions_locked} onUnlock={unlock}/>)}
         </div>
       </div>
 
-      {/* ── Upgrade CTA (free users) ── */}
       {!isPro&&(
-        <div style={{ background:'linear-gradient(135deg, var(--bg-elevated) 0%, var(--accent-subtle) 100%)', border:'1px solid var(--accent-border)', borderRadius:14, padding:'28px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:24, flexWrap:'wrap' as const, position:'relative' as const, overflow:'hidden' }}>
-          <div style={{ position:'absolute' as const, top:0, left:0, right:0, height:3, background:'linear-gradient(90deg, var(--accent), #E8925A)' }}/>
+        <div className="upgrade-cta">
+          <div className="upgrade-cta-stripe"/>
           <div>
-            <p style={{ fontSize:17, fontWeight:800, color:'var(--text-heading)', margin:'0 0 6px', letterSpacing:'-0.03em', fontFamily:'var(--font-display)' }}>You're missing the part that actually helps.</p>
-            <p style={{ fontSize:13.5, color:'var(--text-secondary)', lineHeight:1.65, margin:0, maxWidth:380 }}>Pro shows your bullet rewrites, how to fix every red flag, ATS keywords, and 3 priority actions with examples. €1.99, once.</p>
+            <p className="upgrade-cta-title">You're missing the part that actually helps.</p>
+            <p className="upgrade-cta-body">Pro shows your bullet rewrites, how to fix every red flag, ATS keywords, and 3 priority actions with examples. €1.99, once.</p>
           </div>
-          <div style={{ display:'flex', flexDirection:'column' as const, gap:8, flexShrink:0 }}>
-            <button onClick={()=>setShowUpgradeModal(true)} style={{ padding:'12px 24px', fontSize:14, fontWeight:700, color:'#fff', background:'var(--accent)', border:'none', borderRadius:8, cursor:'pointer', fontFamily:'var(--font-sans)', boxShadow:'0 4px 14px rgba(212,98,42,0.35)' }}>Unlock Pro — €1.99</button>
-            <button onClick={()=>setShowPlansModal(true)} style={{ padding:'11px 22px', fontSize:13, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:8, cursor:'pointer', fontFamily:'var(--font-sans)' }}>See all plans</button>
+          <div className="upgrade-cta-actions">
+            <button onClick={()=>setShowUpgradeModal(true)} className="upgrade-btn-primary">Unlock Pro — €1.99</button>
+            <button onClick={()=>setShowPlansModal(true)} className="upgrade-btn-secondary">See all plans</button>
           </div>
         </div>
       )}
 
       <JobMatchesSection result={result} token={token} isPremium={result.tier==='premium'||result.tier==='pro'} onUnlock={()=>setShowPlansModal(true)}/>
 
-      {!user&&<div style={{ textAlign:'center' as const, padding:16, fontSize:12, color:'var(--text-tertiary)' }}><button onClick={()=>setShowAuthModal(true)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline', padding:0 }}>Sign in</button> to save this to your history. Free for all accounts.</div>}
+      {!user&&<div className="signin-prompt"><button onClick={()=>setShowAuthModal(true)} className="signin-link">Sign in</button> to save this to your history. Free for all accounts.</div>}
     </div>
   )
 }
-
 
 const PLAN_DEFS = {
   free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats — bullets with/without metrics','Red flag count + severity','ATS verdict','Career trajectory + format verdict','History saved (requires account)'] },
@@ -780,38 +707,38 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
     } catch { setBuying(null) }
   }
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:'20px 16px' }} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{ background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:12, width:'100%', maxWidth:500, maxHeight:'92vh', overflowY:'auto', boxShadow:'0 32px 100px rgba(0,0,0,0.28)' }}>
-        <div style={{ padding:'24px 26px 20px', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
+    <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="plans-modal">
+        <div className="plans-modal-header">
           <div>
-            <h2 style={{ fontSize:17, fontWeight:700, color:'var(--text-primary)', margin:'0 0 4px', letterSpacing:'-0.04em' }}>Plans</h2>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0 }}>See your score free. Pay €1.99 once to fix it.</p>
+            <h2 className="plans-modal-title">Plans</h2>
+            <p className="plans-modal-sub">See your score free. Pay €1.99 once to fix it.</p>
           </div>
-          <button onClick={onClose} style={{ width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-subtle)', border:'0.5px solid var(--border)', borderRadius:6, color:'var(--text-tertiary)', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+          <button onClick={onClose} className="plans-modal-close">
             <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div style={{ padding:'16px 20px', display:'flex', flexDirection:'column' as const, gap:8 }}>
+        <div className="plans-modal-body">
           {(['free','pro','premium'] as const).map(pk=>{
             const p=PLAN_DEFS[pk]; const isCurrent=tier===pk
             return (
-              <div key={pk} style={{ border:pk==='pro'?'1.5px solid var(--border-strong)':'0.5px solid var(--border)', borderRadius:8, background:pk==='pro'?'var(--bg-subtle)':'var(--bg)', overflow:'hidden' }}>
-                <div style={{ padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <span style={{ fontSize:11, fontWeight:700, color:pk==='pro'?'var(--text-primary)':pk==='premium'?'var(--score-high)':'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.07em' }}>{p.label}</span>
-                    {pk==='pro'&&<span style={{ fontSize:8, fontWeight:800, letterSpacing:'0.08em', textTransform:'uppercase' as const, background:'var(--accent)', color:'#fff', padding:'2px 7px', borderRadius:20 }}>Popular</span>}
-                    {isCurrent&&<span style={{ fontSize:8, fontWeight:700, textTransform:'uppercase' as const, color:'var(--text-tertiary)', border:'0.5px solid var(--border)', padding:'2px 7px', borderRadius:20 }}>Current</span>}
+              <div key={pk} className={`plan-card ${pk==='pro'?'plan-card-featured':'plan-card-normal'}`}>
+                <div className="plan-card-header">
+                  <div className="plan-card-labels">
+                    <span style={{ fontSize:11, fontWeight:700, color:pk==='pro'?'var(--text-primary)':pk==='premium'?'var(--score-high)':'var(--text-tertiary)', textTransform:'uppercase', letterSpacing:'0.07em' }}>{p.label}</span>
+                    {pk==='pro'&&<span className="plan-badge-popular">Popular</span>}
+                    {isCurrent&&<span className="plan-badge-current">Current</span>}
                   </div>
-                  <div style={{ display:'flex', alignItems:'baseline', gap:3 }}>
-                    <span style={{ fontSize:22, fontWeight:800, color:'var(--text-primary)', lineHeight:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.02em' }}>{p.price}</span>
-                    {p.period&&<span style={{ fontSize:11, color:'var(--text-tertiary)' }}>{p.period}</span>}
+                  <div className="plan-card-price">
+                    <span className="plan-price-num">{p.price}</span>
+                    {p.period&&<span className="plan-price-period">{p.period}</span>}
                   </div>
                 </div>
-                <div style={{ padding:'12px 18px 14px', borderTop:'0.5px solid var(--border)' }}>
-                  <ul style={{ listStyle:'none', margin:0, padding:0, display:'flex', flexDirection:'column' as const, gap:6 }}>
-                    {p.features.map(f=><li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:12.5, color:'var(--text-secondary)', lineHeight:1.45 }}><svg width="12" height="12" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
+                <div className="plan-card-body">
+                  <ul className="plan-features">
+                    {p.features.map(f=><li key={f} className="plan-feature"><svg width="12" height="12" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
                   </ul>
-                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} style={{ width:'100%', marginTop:12, padding:10, fontSize:13, fontWeight:600, color:'#fff', background:'var(--accent)', border:'none', borderRadius:6, cursor:buying?'not-allowed':'pointer', fontFamily:'var(--font-sans)' }}>{buying===pk?'Loading…':pk==='pro'?'Get Pro — €1.99':'Get Premium — €5.99/mo'}</button>}
+                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} className="plan-cta">{buying===pk?'Loading…':pk==='pro'?'Get Pro — €1.99':'Get Premium — €5.99/mo'}</button>}
                 </div>
               </div>
             )
@@ -836,25 +763,25 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
     document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h)
   }, [])
   return (
-    <div ref={ref} style={{ position:'relative' }}>
-      <button onClick={()=>setOpen(v=>!v)} style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px 4px 5px', background:open?'var(--bg-subtle)':'transparent', border:'0.5px solid var(--border)', borderRadius:40, cursor:'pointer', fontFamily:'var(--font-sans)' }}>
-        <span style={{ width:25, height:25, borderRadius:'50%', background:'var(--accent)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, flexShrink:0 }}>{initials}</span>
-        <span style={{ maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' as const, fontSize:12.5, fontWeight:500, color:'var(--text-secondary)' }}>{user.email?.split('@')[0]}</span>
+    <div ref={ref} className="account-dropdown">
+      <button onClick={()=>setOpen(v=>!v)} className="account-toggle" style={{ background:open?'var(--bg-subtle)':'transparent' }}>
+        <span className="account-avatar">{initials}</span>
+        <span className="account-email">{user.email?.split('@')[0]}</span>
         <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ transform:open?'rotate(180deg)':'none', transition:'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open&&(
-        <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:220, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', borderRadius:7, overflow:'hidden', boxShadow:'0 8px 40px rgba(0,0,0,0.14)', zIndex:1000 }}>
-          <div style={{ padding:'13px 16px', borderBottom:'0.5px solid var(--border)' }}>
-            <div style={{ fontSize:12.5, fontWeight:600, color:'var(--text-primary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' as const }}>{user.email}</div>
-            <div style={{ fontSize:10.5, color:meta.color, fontWeight:600, marginTop:3, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{meta.label} plan</div>
+        <div className="dropdown-menu">
+          <div className="dropdown-header">
+            <div className="dropdown-email">{user.email}</div>
+            <div className="dropdown-tier" style={{ color:meta.color }}>{meta.label} plan</div>
           </div>
-          <div style={{ padding:'4px 0' }}>
+          <div className="dropdown-section">
             <button className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
             <button className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
             <button className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
             <button className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}} style={ddItem}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
           </div>
-          <div style={{ borderTop:'0.5px solid var(--border)', padding:'4px 0' }}>
+          <div className="dropdown-section dropdown-divider">
             <button className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}} style={{...ddItem,color:'#ef4444'}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
           </div>
         </div>
@@ -865,7 +792,6 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
 const LOADING_STEPS = ['Reading your CV…','Running the 7-second test…','Checking ATS compatibility…','Writing your rewrites & actions…']
 
-// ── Scroll-reveal for landing sections ──
 function useScrollReveal(active: boolean) {
   useEffect(() => {
     if (!active) return
@@ -889,6 +815,7 @@ function useScrollReveal(active: boolean) {
     return () => obs.disconnect()
   }, [active])
 }
+
 export default function Home() {
   const { user, session, loading: authLoading, signOut } = useAuth()
   const { tier } = useTier(user?.id)
@@ -912,14 +839,12 @@ export default function Home() {
   const appStateRef = useRef<AppState>('idle')
   const resultRef   = useRef<GatedAnalysisResult|null>(null)
 
-  // Sync refs on every render so they're always current
   appStateRef.current = appState
   resultRef.current   = result
 
   const safeSetAppState = (s: AppState) => { appStateRef.current = s; setAppState(s) }
   const safeSetResult   = (r: GatedAnalysisResult|null) => { resultRef.current = r; setResult(r) }
 
-  // Guard: if auth re-render resets state, restore from refs
   useEffect(() => {
     if (appStateRef.current === 'result' && appState !== 'result') {
       setAppState('result')
@@ -1004,97 +929,74 @@ export default function Home() {
     }
   }
 
-  // Activate scroll-reveal when on idle landing
   useScrollReveal(appState === 'idle' || appState === 'error')
 
-  const S = {
-    nav: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 40px', height:60, borderBottom:'1px solid var(--border)', background:'var(--bg-elevated)', position:'sticky' as const, top:0, zIndex:200, isolation:'isolate' as const },
-    sect: (bg:string) => ({ background:bg, padding:'80px 40px' }),
-    wrap: { maxWidth:1100, margin:'0 auto' },
-    twoCol: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:64, alignItems:'center' as const },
-    eyebrow: { fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.08em', color:'var(--accent)', marginBottom:10 },
-    h2: { fontSize:'clamp(24px,3vw,36px)' as const, fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, marginBottom:14, letterSpacing:'-0.02em', fontFamily:'var(--font-display)' },
-    body: { fontSize:15, color:'var(--text-secondary)', lineHeight:1.65, marginBottom:24, fontWeight:500 },
-    btnPrimary: { background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'12px 24px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)', transition:'background 0.2s' },
-    banner: (bg:string) => ({ background:bg, padding:'44px 40px' }),
-    bannerInner: { maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'center', justifyContent:'space-between', gap:40 },
-  }
-
   return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column' as const, background:'var(--bg)', fontFamily:'var(--font-sans)' }}>
-      <style dangerouslySetInnerHTML={{ __html: MOBILE_CSS }} />
-
+    <div className="page-root">
       {showAuthModal    && <AuthModal onClose={()=>setShowAuthModal(false)}/>}
       {showUpgradeModal && <UpgradeModal onClose={()=>setShowUpgradeModal(false)} roastId={result?.analysis_id} userId={user?.id} userEmail={user?.email}/>}
       {showAccountModal && user && <AccountModal onClose={()=>setShowAccountModal(false)} userId={user.id} userEmail={user.email??''} onUpgrade={()=>{setShowAccountModal(false);setShowPlansModal(true)}} onSignOut={()=>{setShowAccountModal(false);handleSignOut()}}/>}
       {showPlansModal   && <PlansModal tier={tier} userId={user?.id} userEmail={user?.email} onClose={()=>setShowPlansModal(false)} onBuy={()=>{setShowPlansModal(false);setShowUpgradeModal(true)}}/>}
 
-      {/* NAVBAR */}
-      <nav style={S.nav}>
-        <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:18, fontWeight:700, color:'var(--accent)' }}>
+      <nav className="navbar">
+        <div className="navbar-logo">
           <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
           CVCheck
         </div>
-        <ul className="nav-links-desktop" style={{ display:'flex', alignItems:'center', gap:28, listStyle:'none', position:'absolute' as const, left:'50%', transform:'translateX(-50%)' }}>
+        <ul className="navbar-links nav-links-desktop">
           {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>{
-              const el = document.querySelector(href)
-              if (el) { el.scrollIntoView({behavior:'smooth'}) }
-              else { router.push(`/${href}`) }
-            }} className='nav-link' style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
+            <li key={href}><button onClick={()=>{ const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}) } else { router.push(`/${href}`) } }} className="nav-link" style={{ fontSize:14, background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', fontWeight:500, letterSpacing:'-0.01em' }}>{label}</button></li>
           ))}
         </ul>
-        <div className="nav-right" style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <div className="navbar-right">
           {!authLoading&&(user?(
             <AccountDropdown user={user} tier={tier} onOpenAccount={()=>setShowAccountModal(true)} onOpenPlans={()=>setShowPlansModal(true)} onSignOut={handleSignOut}/>
           ):(
             <>
-              <button onClick={()=>setShowAuthModal(true)} className='btn-outline nav-btn-login' style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', background:'transparent', border:'1px solid var(--border-strong)', borderRadius:6, padding:'8px 16px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Log in</button>
-              <button onClick={()=>setShowAuthModal(true)} className='btn-primary' style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, padding:'9px 18px', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign up</button>
+              <button onClick={()=>setShowAuthModal(true)} className="nav-btn btn-outline nav-btn-login">Log in</button>
+              <button onClick={()=>setShowAuthModal(true)} className="nav-btn-accent btn-primary">Sign up</button>
             </>
           ))}
           <ThemeToggle/>
         </div>
       </nav>
 
-      <main style={{ flex:1 }}>
+      <main className="page-main">
 
-        {/* HERO */}
-        <section className="hero-section" style={{ background:'var(--bg-elevated)', padding:'80px 40px 60px', textAlign:'center' as const }}>
-          <div style={S.wrap}>
-            <h1 style={{ fontSize:'clamp(36px,5vw,58px)', fontWeight:800, lineHeight:0.95, color:'var(--text-heading)', marginBottom:20, letterSpacing:'-0.025em', fontFamily:'var(--font-display)' }}>
+        <section className="section-hero">
+          <div className="section-wrap">
+            <h1 className="hero-h1">
               Your CV, Brutally Honest.<br/>Land More Interviews.
             </h1>
-            <p className="hero-subtitle" style={{ fontSize:20, color:'var(--text-secondary)', maxWidth:'60ch', margin:'0 auto 32px', lineHeight:1.65, fontWeight:500, letterSpacing:'-0.005em' }}>
+            <p className="hero-p">
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
             </p>
 
-            {/* Upload Box */}
-            <div id="upload" style={{ maxWidth:560, margin:'0 auto 12px', background:'var(--bg-elevated)', border:'0.5px solid var(--border-strong)', borderRadius:8, overflow:'hidden', boxShadow:'var(--shadow-xl)' }}>
-              <div style={{ display:'flex', borderBottom:'0.5px solid var(--border)' }}>
+            <div className="upload-box">
+              <div className="upload-tabs">
                 {(['url','pdf'] as const).map(m=>(
-                  <button key={m} onClick={()=>setMode(m)} style={{ flex:1, padding:'12px', fontSize:13, fontWeight:600, color:mode===m?'var(--text-primary)':'var(--text-tertiary)', background:mode===m?'var(--bg-elevated)':'var(--bg-subtle)', border:'none', cursor:'pointer', fontFamily:'var(--font-sans)', borderBottom:mode===m?'2px solid var(--accent)':'2px solid transparent', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+                  <button key={m} onClick={()=>setMode(m)} className={`upload-tab ${mode===m?'upload-tab-active':'upload-tab-inactive'}`}>
                     {m==='url'?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>}
                   </button>
                 ))}
               </div>
-              <div style={{ padding:20 }}>
+              <div className="upload-body">
                 {mode==='url'&&(
-                  <div className="upload-url-row" style={{ display:'flex', gap:8 }}>
-                    <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} style={{ flex:1, padding:'10px 14px', fontSize:13, border:'0.5px solid var(--border-strong)', borderRadius:5, background:'var(--bg)', color:'var(--text-primary)', fontFamily:'var(--font-sans)', outline:'none' }} autoComplete="off" spellCheck={false}/>
-                    <button onClick={submit} disabled={!url.trim()||appState==='loading'} style={{ padding:'10px 20px', background:'var(--accent)', color:'#fff', border:'none', borderRadius:5, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-sans)', opacity:!url.trim()||appState==='loading'?0.4:1, display:'flex', alignItems:'center', gap:6, whiteSpace:'nowrap' as const }}>
+                  <div className="upload-url-row">
+                    <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} className="upload-url-input" autoComplete="off" spellCheck={false}/>
+                    <button onClick={submit} disabled={!url.trim()||appState==='loading'} className="upload-submit">
                       Analyze <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
                   </div>
                 )}
                 {mode==='pdf'&&(
                   <>
-                    <div onDrop={handleDrop} onDragOver={e=>{e.preventDefault();setIsDragging(true)}} onDragLeave={()=>setIsDragging(false)} onClick={()=>!file&&fileInputRef.current?.click()} style={{ border:`1.5px dashed ${isDragging?'var(--accent)':file?'var(--score-high)':'var(--border-strong)'}`, borderRadius:8, padding:'28px 20px', textAlign:'center' as const, cursor:file?'default':'pointer', background:isDragging?'var(--accent-subtle)':file?'rgba(22,163,74,0.04)':'var(--bg)', marginBottom:10 }}>
-                      <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} style={{ display:'none' }}/>
+                    <div onDrop={handleDrop} onDragOver={e=>{e.preventDefault();setIsDragging(true)}} onDragLeave={()=>setIsDragging(false)} onClick={()=>!file&&fileInputRef.current?.click()} className={`drop-zone ${isDragging?'drop-zone-active':file?'drop-zone-filled':'drop-zone-empty'}`}>
+                      <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} className="hidden"/>
                       {file?(
-                        <div style={{ display:'flex', alignItems:'center', gap:12, justifyContent:'center' }}>
+                        <div className="drop-zone-file-row">
                           <svg width="20" height="20" fill="none" stroke="var(--score-high)" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                          <div style={{ textAlign:'left' as const }}>
+                          <div className="file-name-col">
                             <div style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)' }}>{file.name}</div>
                             <div style={{ fontSize:11, color:'var(--text-tertiary)' }}>{(file.size/1024).toFixed(0)} KB · PDF ready</div>
                           </div>
@@ -1105,49 +1007,47 @@ export default function Home() {
                       ):(
                         <>
                           <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" style={{ marginBottom:8 }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          <div style={{ fontSize:13, fontWeight:500, color:'var(--text-secondary)', marginBottom:4 }}>Drop your CV here</div>
-                          <div style={{ fontSize:11, color:'var(--text-tertiary)' }}>or click to browse · PDF · max 5 MB</div>
+                          <div className="drop-zone-hint">Drop your CV here</div>
+                          <div className="drop-zone-sub">or click to browse · PDF · max 5 MB</div>
                         </>
                       )}
                     </div>
-                    <button onClick={submit} disabled={!file||appState==='loading'} style={{ width:'100%', padding:'11px', background:'var(--accent)', color:'#fff', border:'none', borderRadius:5, fontSize:13, fontWeight:600, cursor:file&&appState!=='loading'?'pointer':'not-allowed', fontFamily:'var(--font-sans)', opacity:!file||appState==='loading'?0.38:1, display:'flex', alignItems:'center', justifyContent:'center', gap:7 }}>
+                    <button onClick={submit} disabled={!file||appState==='loading'} className="upload-submit" style={{ width:'100%', justifyContent:'center', padding:'11px', borderRadius:5, opacity:!file||appState==='loading'?0.38:1, cursor:file&&appState!=='loading'?'pointer':'not-allowed' }}>
                       Analyze my CV <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
                   </>
                 )}
                 {(appState==='error'||appState==='idle')&&error&&(
-                  <div style={{ marginTop:10, padding:'10px 14px', borderRadius:5, background:'rgba(220,38,38,0.06)', border:'0.5px solid rgba(220,38,38,0.2)', fontSize:12.5, color:'var(--score-low)', display:'flex', gap:8, alignItems:'flex-start' }}>
+                  <div className="error-box">
                     <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     {error}
                   </div>
                 )}
               </div>
-              <div style={{ padding:'10px 20px 14px', fontSize:12, color:'var(--text-tertiary)', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
+              <div className="upload-footer">
                 {tier==='free'&&analysisCount>=1?<>Used your free scan · <button style={{ background:'none', border:'none', padding:0, cursor:'pointer', color:'var(--accent)', fontFamily:'var(--font-sans)', fontSize:'inherit', textDecoration:'underline' }} onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
               </div>
             </div>
 
-            {/* Stats strip */}
-            <div className="stats-strip" style={{ display:'flex', justifyContent:'center', gap:48, flexWrap:'wrap' as const, marginTop:48, paddingTop:32, borderTop:'0.5px solid var(--border)' }}>
-              {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'"consider improving" in your feedback'}].map(s=>(
-                <div key={s.num} style={{ textAlign:'center' as const }}>
-                  <div style={{ fontSize:28, fontWeight:800, color:'var(--accent)', letterSpacing:'-1px', lineHeight:1 }}>{s.num}</div>
-                  <div style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:4 }}>{s.label}</div>
+            <div className="stats-strip">
+              {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'\"consider improving\" in your feedback'}].map(s=>(
+                <div key={s.num} className="stat-item">
+                  <div className="stat-num">{s.num}</div>
+                  <div className="stat-label">{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* LOADING OVERLAY */}
         {appState==='loading'&&(
-          <div style={{ position:'fixed', inset:0, background:'rgba(253,248,243,0.94)', backdropFilter:'blur(14px)', display:'flex', flexDirection:'column' as const, alignItems:'center', justifyContent:'center', zIndex:300, gap:20 }}>
-            <div style={{ width:36, height:36, border:'3px solid var(--border)', borderTopColor:'var(--accent)', borderRadius:'50%', animation:'spin 0.7s linear infinite' }}/>
-            <p style={{ fontSize:16, fontWeight:600, color:'var(--text-primary)' }}>Analyzing your CV…</p>
-            <div style={{ display:'flex', flexDirection:'column' as const, gap:8, alignItems:'center' }}>
+          <div className="loading-overlay">
+            <div className="loading-spinner"/>
+            <p className="loading-title">Analyzing your CV…</p>
+            <div className="loading-steps">
               {LOADING_STEPS.map((step,i)=>(
-                <div key={step} style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)', opacity:i<=loadingStep?1:0.25 }}>
-                  <div style={{ width:5, height:5, borderRadius:'50%', background:i===loadingStep?'var(--accent)':'var(--border)', animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
+                <div key={step} className="loading-step" style={{ fontSize:13, color:i===loadingStep?'var(--text-secondary)':'var(--text-tertiary)', opacity:i<=loadingStep?1:0.25 }}>
+                  <div className="loading-step-dot" style={{ background:i===loadingStep?'var(--accent)':'var(--border)', animation:i===loadingStep?'pulse 1.4s ease-in-out infinite':'none' }}/>
                   {step}
                 </div>
               ))}
@@ -1155,22 +1055,21 @@ export default function Home() {
           </div>
         )}
 
-        {/* RESULTS */}
         {appState==='result'&&result&&(
-          <section id="result-section" style={{ background:'var(--bg)', padding:'32px 0 60px' }}>
-            <div className="result-topbar" style={{ maxWidth:800, margin:'0 auto 20px', padding:'0 20px', display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' as const }}>
-              <button onClick={reset} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'none', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+          <section id="result-section" className="result-section">
+            <div className="result-topbar">
+              <button onClick={reset} className="topbar-btn">
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                 New analysis
               </button>
               {user&&savedToHistory&&(
-                <button onClick={()=>router.push('/history')} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--score-high)', background:'rgba(22,163,74,0.06)', border:'0.5px solid rgba(22,163,74,0.2)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>
+                <button onClick={()=>router.push('/history')} className="topbar-btn topbar-btn-saved">
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                   Saved · View history
                 </button>
               )}
-              {!user&&<button onClick={()=>setShowAuthModal(true)} style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)' }}>Sign in to save</button>}
-              <button onClick={copyShare} disabled={shareLoading} className="share-btn" style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:500, color:'var(--text-secondary)', background:'transparent', border:'0.5px solid var(--border)', borderRadius:4, padding:'5px 13px', cursor:'pointer', fontFamily:'var(--font-sans)', opacity:shareLoading?0.6:1 }}>
+              {!user&&<button onClick={()=>setShowAuthModal(true)} className="topbar-btn">Sign in to save</button>}
+              <button onClick={copyShare} disabled={shareLoading} className="topbar-btn topbar-btn-share share-btn" style={{ marginLeft:'auto', opacity:shareLoading?0.6:1 }}>
                 {copied?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Link copied!</>:shareLoading?<>Generating…</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share score</>}
               </button>
             </div>
@@ -1178,81 +1077,73 @@ export default function Home() {
           </section>
         )}
 
-
-        {/* ════════════════════════════════════════
-            LANDING — TEAL STYLE
-        ════════════════════════════════════════ */}
         {(appState==='idle'||appState==='error')&&(<>
 
-          {/* ── Feature 1: CV Analysis ── */}
-          <section id="analysis" className="landing-section" style={{ background:'var(--bg-elevated)', padding:'96px 40px 80px' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>AI CV Analysis</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:640, margin:'0 auto 16px' }}>Every recruiter bias, every ATS gap. Exposed.</h2>
-              <p data-sr data-sr-delay="0.16" style={{ fontSize:19, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px', fontWeight:500 }}>CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>Analyze My CV for Free ↑</button>
+          <section id="analysis" className="landing-section" style={{ background:'var(--bg-elevated)' }}>
+            <div className="section-wrap-md">
+              <div data-sr data-sr-delay="0" className="eyebrow-badge">AI CV Analysis</div>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ maxWidth:640 }}>Every recruiter bias, every ATS gap. Exposed.</h2>
+              <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">Analyze My CV for Free ↑</button>
 
-              {/* Big mockup */}
-              <div data-sr data-sr-delay="0.28" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
-                {/* Mockup header bar */}
-                <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
-                  <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
-                  <div style={{ flex:1, height:24, background:'var(--bg-muted)', borderRadius:4, maxWidth:300, margin:'0 auto' }}/>
+              <div data-sr data-sr-delay="0.28" className="mockup-window mockupLift">
+                <div className="mockup-titlebar">
+                  <div className="mockup-dots">
+                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  </div>
+                  <div className="mockup-bar"/>
                 </div>
-                {/* Content */}
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:0 }}>
-                  {/* Left: score + dims */}
-                  <div style={{ padding:'28px 24px', borderRight:'0.5px solid var(--border)' }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:20, marginBottom:24, paddingBottom:20, borderBottom:'0.5px solid var(--border)' }}>
-                      <div style={{ position:'relative' as const, width:88, height:88, flexShrink:0 }}>
+                <div className="analysis-mockup-grid">
+                  <div className="analysis-mockup-left">
+                    <div className="lmock-score-hero">
+                      <div className="lmock-score-wrap">
                         <svg width="88" height="88" viewBox="0 0 88 88">
                           <circle cx="44" cy="44" r="36" fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
                           <circle cx="44" cy="44" r="36" fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeDasharray="164 226" transform="rotate(-90 44 44)"/>
                         </svg>
-                        <div style={{ position:'absolute' as const, top:'50%', left:'50%', transform:'translate(-50%,-50%)', textAlign:'center' as const }}>
-                          <div style={{ fontSize:22, fontWeight:800, color:'var(--accent)', lineHeight:1 }}>73</div>
-                          <div style={{ fontSize:9, color:'var(--text-tertiary)' }}>/100</div>
+                        <div className="score-ring-center">
+                          <div className="lmock-score-num">73</div>
+                          <div className="lmock-score-denom">/100</div>
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize:11, fontWeight:700, color:'var(--score-mid)', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:4 }}>Good</div>
-                        <div style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.5 }}>Strong foundation. 3 critical gaps holding you back.</div>
+                        <div className="lmock-score-label">Good</div>
+                        <div className="lmock-score-desc">Strong foundation. 3 critical gaps holding you back.</div>
                       </div>
                     </div>
                     {[{label:'First Impression',pct:73},{label:'Impact & Achievements',pct:68},{label:'ATS Compatibility',pct:70},{label:'Red Flags',pct:70},{label:'Career Story',pct:60}].map(d=>(
-                      <div key={d.label} style={{ marginBottom:10 }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-secondary)', marginBottom:3 }}><span>{d.label}</span><span style={{ color:'var(--accent)', fontWeight:700 }}>{d.pct}%</span></div>
-                        <div style={{ height:4, background:'var(--bg-muted)', borderRadius:2 }}><div style={{ height:4, background:'var(--accent)', borderRadius:2, width:`${d.pct}%` }}/></div>
+                      <div key={d.label} className="lmock-bar-row">
+                        <div className="lmock-bar-header"><span>{d.label}</span><span className="lmock-bar-pct">{d.pct}%</span></div>
+                        <div className="lmock-bar-track"><div className="lmock-bar-fill" style={{ width:`${d.pct}%` }}/></div>
                       </div>
                     ))}
                   </div>
-                  {/* Right: rewrite + keywords */}
-                  <div style={{ padding:'28px 24px', display:'flex', flexDirection:'column' as const, gap:16 }}>
+                  <div className="lmock-right">
                     <div>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:10 }}>Bullet Rewrite</div>
-                      <div style={{ borderRadius:8, border:'0.5px solid var(--border)', overflow:'hidden', fontSize:12 }}>
-                        <div style={{ padding:'10px 14px', background:'rgba(220,38,38,0.04)', borderBottom:'0.5px solid var(--border)' }}>
-                          <div style={{ fontSize:9, fontWeight:700, color:'var(--score-low)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:4 }}>Before</div>
-                          <p style={{ margin:0, color:'var(--text-secondary)', lineHeight:1.5 }}>Worked on improving the onboarding experience for new users.</p>
+                      <div className="section-label">Bullet Rewrite</div>
+                      <div className="lmock-bullet-wrap">
+                        <div className="lmock-bullet-before">
+                          <div className="bullet-label bullet-label-before">Before</div>
+                          <p className="lmock-bullet-p lmock-bullet-p-before">Worked on improving the onboarding experience for new users.</p>
                         </div>
-                        <div style={{ padding:'10px 14px', background:'rgba(22,163,74,0.04)' }}>
-                          <div style={{ fontSize:9, fontWeight:700, color:'var(--score-high)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:4 }}>After</div>
-                          <p style={{ margin:0, color:'var(--text-primary)', fontWeight:500, lineHeight:1.5 }}>Redesigned onboarding for 12k users, cutting drop-off 34% in 3 months.</p>
+                        <div className="lmock-bullet-after">
+                          <div className="bullet-label bullet-label-after">After</div>
+                          <p className="lmock-bullet-p lmock-bullet-p-after">Redesigned onboarding for 12k users, cutting drop-off 34% in 3 months.</p>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:8 }}>ATS Keywords</div>
-                      <div style={{ display:'flex', flexWrap:'wrap' as const, gap:5 }}>
-                        {['Figma ✓','UX Research ✓','Prototyping ✓'].map(k=><span key={k} style={{ fontSize:11, padding:'3px 9px', borderRadius:4, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', color:'var(--accent)', fontWeight:600 }}>{k}</span>)}
-                        {['Design Systems ✗','A/B Testing ✗'].map(k=><span key={k} style={{ fontSize:11, padding:'3px 9px', borderRadius:4, background:'rgba(220,38,38,0.06)', border:'0.5px solid rgba(220,38,38,0.2)', color:'var(--score-low)', fontWeight:600 }}>{k}</span>)}
+                      <div className="section-label">ATS Keywords</div>
+                      <div className="keyword-list">
+                        {['Figma ✓','UX Research ✓','Prototyping ✓'].map(k=><span key={k} className="keyword-tag" style={{ background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', color:'var(--accent)', fontWeight:600 }}>{k}</span>)}
+                        {['Design Systems ✗','A/B Testing ✗'].map(k=><span key={k} className="keyword-tag keyword-missing">{k}</span>)}
                       </div>
                     </div>
-                    <div style={{ marginTop:'auto' }}>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:8 }}>Red Flags</div>
+                    <div className="lmock-flags-mt">
+                      <div className="section-label">Red Flags</div>
                       {[{sev:'high',text:'Bullets lack measurable outcomes'},{sev:'medium',text:'No professional summary section'}].map(f=>(
-                        <div key={f.text} style={{ display:'flex', alignItems:'flex-start', gap:8, marginBottom:7, fontSize:12, color:'var(--text-secondary)' }}>
-                          <div style={{ width:6, height:6, borderRadius:'50%', background:f.sev==='high'?'var(--score-low)':'var(--score-mid)', flexShrink:0, marginTop:4 }}/>
+                        <div key={f.text} className="lmock-flag-row">
+                          <div className={f.sev==='high'?'lmock-flag-dot-high':'lmock-flag-dot-mid'}/>
                           {f.text}
                         </div>
                       ))}
@@ -1263,61 +1154,58 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── Feature 2: Job Tracker ── */}
-          <section id="jobs" className="landing-section" style={{ background:'var(--bg)', padding:'96px 40px 80px' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Matching</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:600, margin:'0 auto 16px' }}>Jobs that actually fit, with a score to prove it.</h2>
-              <p data-sr data-sr-delay="0.16" style={{ fontSize:19, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:520, margin:'0 auto 32px', fontWeight:500 }}>CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary" style={{ background:'var(--accent)', color:'#fff', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden' }}>See My Matched Jobs ↑</button>
-              {/* Big job card mockup */}
-              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border-strong)', boxShadow:'0 24px 80px rgba(45,31,14,0.14)', overflow:'hidden', textAlign:'left' as const }}>
-                <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
-                  <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
-                  <div style={{ flex:1, height:24, background:'var(--bg-muted)', borderRadius:4, maxWidth:300, margin:'0 auto' }}/>
+          <section id="jobs" className="landing-section" style={{ background:'var(--bg)' }}>
+            <div className="section-wrap-md">
+              <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Matching</div>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ maxWidth:600 }}>Jobs that actually fit, with a score to prove it.</h2>
+              <p data-sr data-sr-delay="0.16" className="section-body">CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">See My Matched Jobs ↑</button>
+              <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
+                <div className="mockup-titlebar">
+                  <div className="mockup-dots">
+                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  </div>
+                  <div className="mockup-bar"/>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1.4fr 1fr' }}>
-                  {/* Left: job list */}
-                  <div style={{ borderRight:'0.5px solid var(--border)' }}>
-                    {/* Filters */}
-                    <div style={{ padding:'16px 20px', borderBottom:'0.5px solid var(--border)', display:'flex', gap:6 }}>
+                <div className="lmock-jobs-grid">
+                  <div className="lmock-jobs-left">
+                    <div className="lmock-jobs-filters">
                       {['All (7)','Strong (3)','Good (2)','Partial (2)'].map((f,i)=>(
-                        <span key={f} style={{ fontSize:11, fontWeight:600, padding:'4px 10px', borderRadius:4, background:i===0?'var(--accent)':'var(--bg-muted)', color:i===0?'#fff':'var(--text-tertiary)', border:i===0?'none':'0.5px solid var(--border)' }}>{f}</span>
+                        <span key={f} className={`job-filter-btn ${i===0?'job-filter-active':'job-filter-inactive'}`}>{f}</span>
                       ))}
                     </div>
                     {[
-                      {init:'FG',title:'Sr. Product Designer',co:'Figma',loc:'Remote EU',sal:'€80k–110k',fit:87,fitLabel:'Strong'},
-                      {init:'ZL',title:'UX Design Lead',co:'Zalando',loc:'Berlin, DE',sal:'€70k–90k',fit:74,fitLabel:'Good'},
-                      {init:'MZ',title:'Design Lead',co:'Monzo',loc:'London, UK',sal:'€85k–105k',fit:91,fitLabel:'Strong'},
+                      {init:'FG',title:'Sr. Product Designer',co:'Figma',loc:'Remote EU',sal:'€80k–110k',fit:87,isTop:true},
+                      {init:'ZL',title:'UX Design Lead',co:'Zalando',loc:'Berlin, DE',sal:'€70k–90k',fit:74,isTop:false},
+                      {init:'MZ',title:'Design Lead',co:'Monzo',loc:'London, UK',sal:'€85k–105k',fit:91,isTop:false},
                     ].map((j,i)=>(
-                      <div key={j.title} style={{ padding:'16px 20px', borderBottom:'0.5px solid var(--border)', background:i===0?'var(--accent-subtle)':'transparent', display:'flex', alignItems:'flex-start', gap:12 }}>
-                        <div style={{ width:32, height:32, borderRadius:7, background:i===0?'var(--accent)':'var(--bg-muted)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:800, color:i===0?'#fff':'var(--text-tertiary)', flexShrink:0 }}>{j.init}</div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13, fontWeight:700, color:'var(--text-primary)', marginBottom:2 }}>{j.title}</div>
+                      <div key={j.title} className="lmockup-job-row" style={{ background:j.isTop?'var(--accent-subtle)':'transparent' }}>
+                        <div className="lmockup-job-avatar" style={{ background:j.isTop?'var(--accent)':'var(--bg-muted)', color:j.isTop?'#fff':'var(--text-tertiary)' }}>{j.init}</div>
+                        <div className="job-card-meta">
+                          <div className="job-title">{j.title}</div>
                           <div style={{ fontSize:11, color:'var(--text-secondary)' }}>{j.co} · {j.loc}</div>
                           <div style={{ fontSize:11, color:'var(--text-tertiary)', marginTop:2 }}>{j.sal}</div>
                         </div>
-                        <span style={{ fontSize:10, fontWeight:700, padding:'2px 7px', borderRadius:3, background:j.fit>=80?'rgba(22,163,74,0.1)':'rgba(202,138,4,0.1)', color:j.fit>=80?'var(--score-high)':'var(--score-mid)', flexShrink:0 }}>{j.fit}%</span>
+                        <span className="lmockup-fit-pct" style={{ background:j.fit>=80?'rgba(22,163,74,0.1)':'rgba(202,138,4,0.1)', color:j.fit>=80?'var(--score-high)':'var(--score-mid)' }}>{j.fit}%</span>
                       </div>
                     ))}
                   </div>
-                  {/* Right: fit analysis */}
-                  <div style={{ padding:'24px 20px' }}>
-                    <div style={{ marginBottom:16, paddingBottom:16, borderBottom:'0.5px solid var(--border)' }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:'var(--text-primary)', marginBottom:4 }}>Sr. Product Designer</div>
-                      <div style={{ fontSize:11, color:'var(--text-secondary)', marginBottom:10 }}>Figma · Remote EU · €80k–110k</div>
-                      <div style={{ display:'inline-flex', alignItems:'center', gap:5, background:'rgba(22,163,74,0.1)', border:'0.5px solid rgba(22,163,74,0.3)', borderRadius:4, padding:'3px 9px', fontSize:11, fontWeight:700, color:'var(--score-high)' }}>87% · Strong Match</div>
+                  <div className="lmock-job-detail">
+                    <div className="lmock-job-detail-header">
+                      <div className="lmock-job-detail-title">Sr. Product Designer</div>
+                      <div className="lmock-job-detail-sub">Figma · Remote EU · €80k–110k</div>
+                      <div className="lmock-match-badge">87% · Strong Match</div>
                     </div>
-                    <div style={{ marginBottom:14 }}>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--score-high)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:7 }}>✓ Strengths</div>
-                      {['Strong portfolio & Figma proficiency','User research background matches'].map(s=><div key={s} style={{ fontSize:12, color:'var(--text-secondary)', marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
+                    <div className="lmock-detail-section">
+                      <div className="subsection-label-success">✓ Strengths</div>
+                      {['Strong portfolio & Figma proficiency','User research background matches'].map(s=><div key={s} className="job-section-row"><span style={{ color:'var(--score-high)', flexShrink:0 }}>✓</span>{s}</div>)}
                     </div>
-                    <div style={{ marginBottom:14 }}>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:7 }}>Gaps</div>
-                      {['Design Systems exp. needed','A/B Testing not mentioned'].map(s=><div key={s} style={{ fontSize:12, color:'var(--text-secondary)', marginBottom:4, display:'flex', gap:6 }}><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{s}</div>)}
+                    <div className="lmock-detail-section">
+                      <div className="subsection-label-muted">Gaps</div>
+                      {['Design Systems exp. needed','A/B Testing not mentioned'].map(s=><div key={s} className="job-section-row"><span style={{ color:'var(--score-low)', flexShrink:0 }}>✕</span>{s}</div>)}
                     </div>
                     <div>
-                      <div style={{ fontSize:10, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:7 }}>Skill Match</div>
+                      <div className="subsection-label-muted">Skill Match</div>
                       {[{label:'Figma',pct:92},{label:'Design Systems',pct:38},{label:'User Research',pct:80}].map(s=>(
                         <div key={s.label} style={{ marginBottom:7 }}>
                           <div style={{ display:'flex', justifyContent:'space-between', fontSize:11, color:'var(--text-secondary)', marginBottom:2 }}><span>{s.label}</span><span style={{ color:s.pct<50?'var(--score-low)':'var(--score-high)', fontWeight:600 }}>{s.pct}%</span></div>
@@ -1331,132 +1219,128 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ── Feature 3: Job Insights (yellow bg like Teal) ── */}
-          <section id="alerts" style={{ background:'var(--accent)', padding:'96px 40px 80px' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <div data-sr data-sr-delay="0" style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,0.2)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'#fff', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Job Alerts</div>
-              <h2 data-sr data-sr-delay="0.08" style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'#fff', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:580, margin:'0 auto 16px' }}>New matched jobs in your inbox every Monday.</h2>
-              <p data-sr data-sr-delay="0.16" style={{ fontSize:17, color:'rgba(255,255,255,0.8)', lineHeight:1.65, maxWidth:480, margin:'0 auto 32px', fontWeight:500 }}>Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn" style={{ background:'#fff', color:'var(--accent)', border:'none', borderRadius:8, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', marginBottom:56, position:'relative' as const, overflow:'hidden', transition:'opacity 0.15s, transform 0.12s' }}>Enable Job Alerts ↓</button>
+          <section id="alerts" className="section-alerts">
+            <div className="section-wrap-md">
+              <div data-sr data-sr-delay="0" className="eyebrow-badge-inverse">Job Alerts</div>
+              <h2 data-sr data-sr-delay="0.08" className="section-h2" style={{ color:'#fff', maxWidth:580 }}>New matched jobs in your inbox every Monday.</h2>
+              <p data-sr data-sr-delay="0.16" className="alerts-subtitle">Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
+              <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn section-btn-inverse">Enable Job Alerts ↓</button>
 
-              {/* Email mockup */}
-              <div data-sr data-sr-delay="0.3" className="mockupLift" style={{ maxWidth:560, margin:'0 auto', background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid rgba(255,255,255,0.2)', boxShadow:'0 24px 80px rgba(0,0,0,0.2)', overflow:'hidden', textAlign:'left' as const }}>
-                <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'0.5px solid var(--border)', display:'flex', alignItems:'center', gap:8 }}>
-                  <div style={{ display:'flex', gap:5 }}>{['#EF4444','#F59E0B','#22C55E'].map(c=><div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}</div>
-                  <div style={{ flex:1, height:24, background:'var(--bg-muted)', borderRadius:4, maxWidth:260, margin:'0 auto' }}/>
+              <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift alerts-mockup-inner">
+                <div className="mockup-titlebar">
+                  <div className="mockup-dots">
+                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  </div>
+                  <div className="mockup-bar"/>
                 </div>
-                <div style={{ padding:24 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:20, paddingBottom:16, borderBottom:'0.5px solid var(--border)' }}>
-                    <div style={{ width:32, height:32, background:'var(--accent)', borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <div className="lmock-alerts">
+                  <div className="lmock-alerts-header">
+                    <div className="lmock-alerts-icon">
                       <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
                     </div>
                     <div>
-                      <div style={{ fontSize:13, fontWeight:700, color:'var(--text-primary)' }}>CVCheck Weekly Digest</div>
-                      <div style={{ fontSize:11, color:'var(--text-tertiary)' }}>Monday, 09:00 · 3 new matches</div>
+                      <div className="lmock-alerts-title">CVCheck Weekly Digest</div>
+                      <div className="lmock-alerts-meta">Monday, 09:00 · 3 new matches</div>
                     </div>
                   </div>
                   {[{title:'Sr. Product Designer',co:'Figma',salary:'€80k–110k',fit:87},{title:'UX Design Lead',co:'Zalando',salary:'€70k–90k',fit:74}].map(j=>(
-                    <div key={j.title} style={{ background:'var(--bg-subtle)', borderRadius:8, padding:'14px 16px', marginBottom:10, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                    <div key={j.title} className="lmock-alert-job">
                       <div>
-                        <div style={{ fontSize:13, fontWeight:700, color:'var(--text-primary)', marginBottom:2 }}>{j.title} · {j.co}</div>
-                        <div style={{ fontSize:11, color:'var(--text-tertiary)' }}>{j.salary} · Remote</div>
+                        <div className="lmock-alert-job-title">{j.title} · {j.co}</div>
+                        <div className="lmock-alert-job-sub">{j.salary} · Remote</div>
                       </div>
-                      <span style={{ fontSize:11, fontWeight:700, padding:'3px 9px', borderRadius:4, background:'var(--accent)', color:'#fff', flexShrink:0 }}>{j.fit}% fit</span>
+                      <span className="lmock-alert-fit">{j.fit}% fit</span>
                     </div>
                   ))}
-                  <div style={{ display:'flex', gap:8, justifyContent:'center', marginTop:16 }}>
-                    <button style={{ flex:1, padding:'9px', background:'var(--accent)', color:'#fff', border:'none', borderRadius:6, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)' }}>View All Jobs →</button>
-                    <button style={{ padding:'9px 14px', background:'transparent', color:'var(--text-tertiary)', border:'0.5px solid var(--border)', borderRadius:6, fontSize:12, cursor:'pointer', fontFamily:'var(--font-sans)' }}>Unsubscribe</button>
+                  <div className="lmock-alerts-btns">
+                    <button className="lmock-alerts-btn-primary">View All Jobs →</button>
+                    <button className="lmock-alerts-btn-secondary">Unsubscribe</button>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ── How it Works ── */}
-          <section style={{ background:'var(--bg)', padding:'96px 40px' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>How it works</div>
-              <h2 style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:16, maxWidth:560, margin:'0 auto 56px' }}>Done before your coffee gets cold.</h2>
+          <section className="steps-section">
+            <div className="section-wrap-md">
+              <div className="eyebrow-badge">How it works</div>
+              <h2 className="section-h2" style={{ maxWidth:560 }}>Done before your coffee gets cold.</h2>
 
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:24 }}>
+              <div className="steps-grid steps-grid-mt">
                 {[
                   {n:'01',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>, title:'Upload Your CV', desc:'Drop a PDF or paste a URL. No account needed to start.'},
                   {n:'02',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>, title:'Get Your Score', desc:'AI scores 7 dimensions and flags every red flag in seconds.'},
                   {n:'03',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, title:'Fix & Rewrite', desc:'Get AI-rewritten bullets, missing keywords, and how-to fixes.'},
                   {n:'04',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>, title:'Apply Smarter', desc:'Match to jobs with a fit score. Get weekly alerts. Land interviews.'},
                 ].map((s,i)=>(
-                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className='card-hover' style={{ background:'var(--bg-elevated)', borderRadius:12, padding:'28px 20px', border:'0.5px solid var(--border)', boxShadow:'0 2px 12px rgba(45,31,14,0.06)', textAlign:'center' as const }}>
-                    <div style={{ width:48, height:48, borderRadius:12, background:'var(--accent-subtle)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>{s.icon}</div>
-                    <div style={{ fontSize:10, fontWeight:800, color:'var(--accent)', letterSpacing:'0.1em', marginBottom:8, fontFamily:'var(--font-mono)' }}>STEP {s.n}</div>
-                    <div style={{ fontSize:15, fontWeight:700, color:'var(--text-primary)', marginBottom:8 }}>{s.title}</div>
-                    <div style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.55 }}>{s.desc}</div>
+                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className="step-card card-hover">
+                    <div className="step-icon">{s.icon}</div>
+                    <div className="step-num">STEP {s.n}</div>
+                    <div className="step-title">{s.title}</div>
+                    <div className="step-desc">{s.desc}</div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* ── Job Domain Examples ── */}
-          <section className="landing-section" style={{ background:'var(--bg-subtle)', padding:'80px 40px', borderTop:'0.5px solid var(--border)' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <h2 style={{ fontSize:'clamp(24px,3vw,36px)', fontWeight:800, color:'var(--text-heading)', letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:12 }}>Works for every domain and level.</h2>
-              <p style={{ fontSize:15, color:'var(--text-secondary)', marginBottom:36, fontWeight:500 }}>CVCheck detects your field and seniority automatically.</p>
-              <div style={{ display:'flex', flexWrap:'wrap' as const, gap:10, justifyContent:'center' }}>
+          <section className="landing-section-subtle">
+            <div className="section-wrap-md">
+              <h2 className="section-h2">Works for every domain and level.</h2>
+              <p className="domains-tagline">CVCheck detects your field and seniority automatically.</p>
+              <div className="domain-tags-wrap">
                 {['Product Design','Engineering','Product Management','Marketing','Data Science','UX Research','Frontend Dev','Backend Dev','DevOps','Sales','Finance','Operations','Content','HR','Consulting','Startup Founder'].map(d=>(
-                  <span key={d} style={{ fontSize:13, fontWeight:500, padding:'7px 16px', borderRadius:20, background:'var(--bg-elevated)', border:'0.5px solid var(--border)', color:'var(--text-secondary)' }}>{d}</span>
+                  <span key={d} className="domain-tag">{d}</span>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* ── Pricing ── */}
-          <section id="pricing" style={{ background:'var(--bg-elevated)', padding:'96px 40px' }}>
-            <div style={{ maxWidth:960, margin:'0 auto', textAlign:'center' as const }}>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'var(--accent-subtle)', border:'0.5px solid var(--accent-border)', borderRadius:20, padding:'5px 14px', fontSize:11, fontWeight:700, color:'var(--accent)', letterSpacing:'0.07em', textTransform:'uppercase' as const, marginBottom:20 }}>Pricing</div>
-              <h2 style={{ fontSize:'clamp(30px,4vw,48px)', fontWeight:800, color:'var(--text-heading)', lineHeight:1.05, letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:12, maxWidth:520, margin:'0 auto 12px' }}>No tricks. No "contact us."</h2>
-              <p style={{ fontSize:17, color:'var(--text-secondary)', lineHeight:1.65, maxWidth:420, margin:'0 auto 56px', fontWeight:500 }}>Start free. Pay once for Pro. Subscribe for unlimited.</p>
+          <section id="pricing" className="pricing-section">
+            <div className="section-wrap-md">
+              <div className="eyebrow-badge">Pricing</div>
+              <h2 className="section-h2" style={{ maxWidth:520 }}>No tricks. No "contact us."</h2>
+              <p className="pricing-intro">Start free. Pay once for Pro. Subscribe for unlimited.</p>
 
-              <div className="pricing-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, textAlign:'left' as const }}>
+              <div className="pricing-grid">
                 {([
-                  { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Career trajectory','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaAction:scrollToUpload, ctaStyle:{background:'transparent',color:'var(--accent)',border:'2px solid var(--accent)'} },
-                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','AI bullet rewrites on your text','How-to-fix for every red flag','Missing ATS keywords','Career gap analysis','Top 3 actions with how-to + examples'], cta:'Get Pro — €1.99',   ctaAction:()=>setShowUpgradeModal(true), ctaStyle:{background:'var(--accent)',color:'#fff',border:'none'} },
-                  { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',      ctaAction:()=>setShowUpgradeModal(true), ctaStyle:{background:'transparent',color:'var(--accent)',border:'2px solid var(--accent)'} },
+                  { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Career trajectory','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
+                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','AI bullet rewrites on your text','How-to-fix for every red flag','Missing ATS keywords','Career gap analysis','Top 3 actions with how-to + examples'], cta:'Get Pro — €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
+                  { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
                 ] as const).map((p,i)=>(
-                  <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} style={{ background:'var(--bg)', borderRadius:12, border:p.badge?'2px solid var(--border-strong)':'0.5px solid var(--border)', padding:'32px 28px', position:'relative' as const, boxShadow:p.badge?'0 8px 40px rgba(45,31,14,0.12)':'0 2px 8px rgba(45,31,14,0.06)' }}>
-                    {p.badge&&<div style={{ position:'absolute' as const, top:-13, left:'50%', transform:'translateX(-50%)', background:'var(--accent)', color:'#fff', borderRadius:20, padding:'4px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase' as const, letterSpacing:'0.05em', whiteSpace:'nowrap' as const }}>{p.badge}</div>}
-                    <div style={{ fontSize:12, fontWeight:700, color:p.badge?'var(--accent)':'var(--text-tertiary)', textTransform:'uppercase' as const, letterSpacing:'0.07em', marginBottom:10 }}>{p.label}</div>
-                    <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:4 }}>
-                      <span style={{ fontSize:44, fontWeight:800, color:'var(--text-primary)', lineHeight:1, fontFamily:'var(--font-sans)', letterSpacing:'-0.02em' }}>{p.price}</span>
-                      <span style={{ fontSize:13, color:'var(--text-tertiary)' }}>{p.period}</span>
+                  <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
+                    {p.badge&&<div className="pricing-badge">{p.badge}</div>}
+                    <div className="pricing-plan-label" style={{ color:p.badge?'var(--accent)':'var(--text-tertiary)' }}>{p.label}</div>
+                    <div className="pricing-price">
+                      <span className="pricing-price-num">{p.price}</span>
+                      <span className="pricing-period">{p.period}</span>
                     </div>
-                    <ul style={{ listStyle:'none', margin:'20px 0 28px', padding:0, display:'flex', flexDirection:'column' as const, gap:9 }}>
-                      {p.features.map(f=><li key={f} style={{ display:'flex', alignItems:'flex-start', gap:8, fontSize:13, color:'var(--text-secondary)' }}><svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" style={{ flexShrink:0, marginTop:1 }}><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
+                    <ul className="pricing-features">
+                      {p.features.map(f=><li key={f} className="pricing-feature"><svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
                     </ul>
-                    <button onClick={p.ctaAction} style={{ width:'100%', padding:'12px', borderRadius:8, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-sans)', ...p.ctaStyle }}>{tier===p.key?'Current plan':p.cta}</button>
+                    <button onClick={p.ctaAction} className={`pricing-cta ${p.ctaFilled?'pricing-cta-filled':'pricing-cta-outline'}`}>{tier===p.key?'Current plan':p.cta}</button>
                   </div>
                 ))}
               </div>
-              <p style={{ marginTop:24, fontSize:12, color:'var(--text-tertiary)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+              <p className="pricing-trust">
                 <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                 Secure checkout via Stripe · No subscription on Pro · 1 scan always free
               </p>
             </div>
           </section>
 
-          {/* ── Testimonial ── */}
-          <section className="landing-section" style={{ background:'var(--bg)', padding:'96px 40px', textAlign:'center' as const, borderTop:'0.5px solid var(--border)' }}>
-            <div style={{ maxWidth:680, margin:'0 auto' }}>
-              <h2 style={{ fontSize:'clamp(26px,3vw,38px)', fontWeight:800, color:'var(--text-heading)', letterSpacing:'-0.02em', fontFamily:'var(--font-display)', marginBottom:40 }}>The most honest feedback your CV will ever get.</h2>
-              <div style={{ background:'var(--bg-elevated)', borderRadius:12, border:'0.5px solid var(--border)', padding:'40px 44px', boxShadow:'0 8px 40px rgba(45,31,14,0.08)' }}>
-                <div style={{ display:'flex', justifyContent:'center', gap:3, marginBottom:14 }}>
+          <section className="testimonial-section">
+            <div className="section-wrap-sm">
+              <h2 className="section-h2">The most honest feedback your CV will ever get.</h2>
+              <div className="testimonial-card testimonial-mt">
+                <div className="testimonial-stars">
                   {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
                 </div>
-                <p style={{ fontSize:13, color:'var(--text-tertiary)', marginBottom:20 }}>Rated <strong style={{ color:'var(--text-secondary)' }}>4.9</strong> by early users</p>
-                <blockquote style={{ fontSize:'clamp(17px,2vw,22px)', fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, fontStyle:'normal', marginBottom:20, fontFamily:'var(--font-sans)', letterSpacing:'-0.02em' }}>
+                <p className="testimonial-rating">Rated <strong style={{ color:'var(--text-secondary)' }}>4.9</strong> by early users</p>
+                <blockquote className="testimonial-quote">
                   "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
                 </blockquote>
-                <p style={{ fontSize:13, color:'var(--text-tertiary)' }}>Mihai D., Product Manager, Bucharest</p>
+                <p className="testimonial-author">Mihai D., Product Manager, Bucharest</p>
               </div>
             </div>
           </section>
@@ -1464,16 +1348,15 @@ export default function Home() {
         </>)}
       </main>
 
-      {/* FOOTER */}
-      <footer style={{ background:'var(--text-primary)', padding:'60px 40px 36px' }}>
-        <div className="footer-inner" style={{ maxWidth:1100, margin:'0 auto' }}>
-          <div className="footer-grid" style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:40, marginBottom:48 }}>
+      <footer className="footer">
+        <div className="footer-inner">
+          <div className="footer-grid">
             <div>
-              <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:18, fontWeight:700, color:'#fff', marginBottom:14 }}>
+              <div className="footer-logo">
                 <img src="/logo.png" width="32" height="32" alt="CVCheck" style={{display:'block'}} />
                 CVCheck
               </div>
-              <p style={{ fontSize:13, color:'#8A6848', lineHeight:1.6 }}>AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>
+              <p className="footer-desc">AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>
             </div>
             {[
               { title:'Product', links:[{label:'CV Analysis',href:'/#analysis'},{label:'Job Matching',href:'/#jobs'},{label:'Job Alerts',href:'/#alerts'},{label:'Pricing',href:'/#pricing'}] },
@@ -1481,18 +1364,18 @@ export default function Home() {
               { title:'Support', links:[{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
             ].map(col=>(
               <div key={col.title}>
-                <div style={{ fontSize:12, fontWeight:700, color:'#fff', marginBottom:14, textTransform:'uppercase' as const, letterSpacing:'0.06em' }}>{col.title}</div>
-                <ul style={{ listStyle:'none', display:'flex', flexDirection:'column' as const, gap:10 }}>
-                  {col.links.map(l=><li key={l.label}><Link href={l.href} style={{ fontSize:13, color:'#8A6848', textDecoration:'none' }}>{l.label}</Link></li>)}
+                <div className="footer-col-title">{col.title}</div>
+                <ul className="footer-links">
+                  {col.links.map(l=><li key={l.label}><Link href={l.href} className="footer-link">{l.label}</Link></li>)}
                 </ul>
               </div>
             ))}
           </div>
-          <div className="footer-bottom" style={{ borderTop:'1px solid #3D2910', paddingTop:24, display:'flex', alignItems:'center', justifyContent:'space-between', fontSize:12, color:'#5A3C20' }}>
+          <div className="footer-bottom">
             <span>© 2026 CVCheck · cvcheck.app</span>
-            <div style={{ display:'flex', gap:20 }}>
-              <Link href="/privacy" style={{ color:'#5A3C20', textDecoration:'none' }}>Privacy</Link>
-              <Link href="/terms" style={{ color:'#5A3C20', textDecoration:'none' }}>Terms</Link>
+            <div className="footer-bottom-links">
+              <Link href="/privacy" className="footer-bottom-link">Privacy</Link>
+              <Link href="/terms" className="footer-bottom-link">Terms</Link>
             </div>
           </div>
         </div>
@@ -1501,3 +1384,5 @@ export default function Home() {
     </div>
   )
 }
+ENDTSX
+echo "Done writing page.tsx"
