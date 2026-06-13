@@ -200,7 +200,24 @@ input, textarea { font-family: var(--font-sans); }
 .sr-d4 { transition-delay: 0.32s; }
 .sr-d5 { transition-delay: 0.40s; }
 
-/* AccountDropdown row hover states */
+/* AccountDropdown row buttons */
+.dd-row, .dd-danger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.dd-row svg, .dd-danger svg { flex-shrink: 0; }
 .dd-row:hover  { background: var(--bg-subtle) !important; color: var(--text-primary) !important; }
 .dd-danger:hover { background: rgba(239,68,68,0.07) !important; color: #ef4444 !important; }
 
