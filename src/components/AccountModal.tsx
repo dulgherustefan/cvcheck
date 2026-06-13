@@ -52,7 +52,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
       <style>{`
         @keyframes _accFadeIn  { from { opacity: 0; } to { opacity: 1; } }
         @keyframes _accFadeUp  {
-          from { opacity: 0; transform: translateY(14px) scale(0.98); }
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         ._acc-input:focus {
@@ -61,7 +61,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
           outline: none !important;
         }
         ._acc-row {
-          transition: background 0.15s, color 0.15s !important;
+          transition: background 0.15s cubic-bezier(0.16,1,0.3,1), color 0.15s !important;
           border-radius: 10px !important;
         }
         ._acc-row:hover { background: var(--bg-subtle) !important; }
@@ -70,34 +70,39 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
           color: #DC2626 !important;
         }
         ._acc-close {
-          transition: all 0.15s !important;
+          transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1) !important;
         }
         ._acc-close:hover {
           background: var(--accent-subtle) !important;
           border-color: var(--accent-border) !important;
           color: var(--accent) !important;
+          transform: scale(1.05) !important;
         }
+        ._acc-close:active { transform: scale(0.95) !important; }
         ._acc-upgrade-btn {
-          transition: all 0.15s !important;
+          transition: background 0.15s, color 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s !important;
         }
         ._acc-upgrade-btn:hover {
           background: var(--accent) !important;
           color: #fff !important;
-          transform: translateY(-1px) !important;
-          box-shadow: 0 3px 10px rgba(212,98,42,0.30) !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 14px rgba(212,98,42,0.35) !important;
         }
+        ._acc-upgrade-btn:active { transform: scale(0.97) !important; }
         ._acc-accordion {
-          transition: background 0.15s !important;
+          transition: background 0.15s cubic-bezier(0.16,1,0.3,1) !important;
           border-radius: 10px !important;
         }
         ._acc-accordion:hover { background: var(--bg-subtle) !important; }
         ._acc-pw-submit {
-          transition: opacity 0.15s, transform 0.12s !important;
+          transition: opacity 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s !important;
         }
         ._acc-pw-submit:hover:not(:disabled) {
-          opacity: 0.88 !important;
-          transform: translateY(-1px) !important;
+          opacity: 0.92 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 4px 14px rgba(212,98,42,0.30) !important;
         }
+        ._acc-pw-submit:active:not(:disabled) { transform: scale(0.97) !important; }
       `}</style>
 
       <div
@@ -120,7 +125,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
             overflow: 'hidden',
             boxShadow: '0 24px 80px rgba(45,31,14,0.22), 0 4px 16px rgba(45,31,14,0.08)',
             position: 'relative',
-            animation: '_accFadeUp 0.24s cubic-bezier(0.16,1,0.3,1)',
+            animation: '_accFadeUp 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
           onClick={e => e.stopPropagation()}
         >

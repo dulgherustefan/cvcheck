@@ -93,7 +93,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
     <>
       <style>{`
         @keyframes _authFadeUp {
-          from { opacity: 0; transform: translateY(16px) scale(0.98); }
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes _authFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -113,20 +113,21 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
           border-color: var(--border-strong) !important;
           background: var(--bg-subtle) !important;
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(45,31,14,0.09) !important;
+          box-shadow: 0 3px 10px rgba(45,31,14,0.10) !important;
         }
-        ._auth-google { transition: all 0.15s ease !important; }
+        ._auth-google { transition: background 0.15s, border-color 0.15s, transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s !important; }
+        ._auth-google:active { transform: scale(0.97) !important; transition-duration: 0.08s !important; }
 
         ._auth-submit {
-          transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s !important;
+          transition: opacity 0.15s, transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s !important;
         }
         ._auth-submit:hover:not(:disabled) {
-          opacity: 0.9 !important;
-          transform: translateY(-1px) !important;
-          box-shadow: 0 4px 14px rgba(212,98,42,0.35) !important;
+          opacity: 0.92 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 20px rgba(212,98,42,0.40) !important;
         }
         ._auth-submit:active:not(:disabled) {
-          transform: scale(0.98) !important;
+          transform: scale(0.97) !important;
           box-shadow: none !important;
         }
 
@@ -183,7 +184,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
             overflow: 'hidden',
             boxShadow: '0 24px 80px rgba(45,31,14,0.22), 0 4px 16px rgba(45,31,14,0.08)',
             position: 'relative',
-            animation: '_authFadeUp 0.25s cubic-bezier(0.16,1,0.3,1)',
+            animation: '_authFadeUp 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
           onClick={e => e.stopPropagation()}
         >
