@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeScript } from '@/components/ThemeScript'
+import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -139,7 +140,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
       </head>
-      <body>{children}</body>
+      <body><PageTransition>{children}</PageTransition></body>
     </html>
   )
 }
