@@ -762,25 +762,25 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   }, [])
   return (
     <div ref={ref} className="account-dropdown">
-      <button onClick={()=>setOpen(v=>!v)} className={`account-toggle ${open?'account-toggle-open':''}`}>
+      <button onClick={()=>setOpen(v=>!v)} className={`account-toggle ${open?'account-toggle-open':''}`} aria-haspopup="menu" aria-expanded={open}>
         <span className="account-avatar">{initials}</span>
         <span className="account-email">{user.email?.split('@')[0]}</span>
         <svg width="10" height="10" fill="none" stroke="var(--text-tertiary)" strokeWidth="2.5" viewBox="0 0 24 24" className={`account-chevron ${open?'account-chevron-open':''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {open&&(
-        <div className="dropdown-menu">
+        <div className="dropdown-menu" role="menu">
           <div className="dropdown-header">
             <div className="dropdown-email">{user.email}</div>
             <div className={`dropdown-tier dropdown-tier-${tier}`}>{meta.label} plan</div>
           </div>
           <div className="dropdown-section">
-            <button className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
-            <button className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
-            <button className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
-            <button className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
+            <button role="menuitem" className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
+            <button role="menuitem" className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
+            <button role="menuitem" className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
+            <button role="menuitem" className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
           </div>
           <div className="dropdown-section dropdown-divider">
-            <button className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
+            <button role="menuitem" className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
           </div>
         </div>
       )}
@@ -942,8 +942,8 @@ export default function Home() {
           CVCheck
         </div>
         <ul className="navbar-links nav-links-desktop">
-          {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>{ const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}) } else { router.push(`/${href}`) } }} className="nav-link">{label}</button></li>
+          {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing'],['FAQ','/faq']].map(([label,href])=>(
+            <li key={href}><button onClick={()=>{ if (href.startsWith('#')) { const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}); return } } router.push(href) }} className="nav-link">{label}</button></li>
           ))}
         </ul>
         <div className="navbar-right">

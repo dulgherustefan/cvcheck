@@ -20,36 +20,13 @@ export function ThemeToggle() {
     localStorage.setItem('cvcheck-theme', next)
   }
 
-  if (!mounted) return <div style={{ width: 36, height: 36 }} />
+  if (!mounted) return <div className="theme-toggle-placeholder" />
 
   return (
     <button
       onClick={toggle}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 'var(--radius-md)',
-        border: '1px solid var(--border-strong)',
-        background: 'var(--bg-elevated)',
-        color: 'var(--text-secondary)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'all 0.15s',
-        cursor: 'pointer',
-        flexShrink: 0,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.background = 'var(--accent-subtle)'
-        e.currentTarget.style.borderColor = 'var(--accent)'
-        e.currentTarget.style.color = 'var(--accent)'
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.background = 'var(--bg-elevated)'
-        e.currentTarget.style.borderColor = 'var(--border-strong)'
-        e.currentTarget.style.color = 'var(--text-secondary)'
-      }}
+      className="theme-toggle"
     >
       {theme === 'light' ? (
         <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">

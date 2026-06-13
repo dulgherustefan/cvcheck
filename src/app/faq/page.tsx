@@ -52,8 +52,22 @@ const faqs = [
 ]
 
 export default function FAQPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }
+
   return (
     <div className="page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <nav className="navbar">
         <Link href="/" className="navbar-logo">
           <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
