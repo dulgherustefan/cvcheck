@@ -1005,8 +1005,7 @@ export default function Home() {
           <div className="hero-centered-wrap">
 
             <motion.div className="hero-kicker" variants={heroKickerVariants} initial="hidden" animate="visible">
-              <span className="hero-kicker-dot"/>
-              AI-powered CV analysis
+              Announcing our free CV scoring engine
             </motion.div>
 
             <motion.h1 className="hero-h1" variants={heroH1Variants} initial="hidden" animate="visible">
