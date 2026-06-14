@@ -1049,10 +1049,11 @@ export default function Home() {
             </motion.div>
 
             <motion.div className="hero-cta-meta" variants={heroCtaMetaVariants} initial="hidden" animate="visible">
-              <button onClick={()=>setMode(mode==='url'?'pdf':'url')} className="hero-mode-toggle">
-                {mode==='url'?'Upload PDF instead':'Paste a URL instead'}
-              </button>
-              <span className="hero-cta-trust">
+              <div className="hero-cta-toggle">
+                <button onClick={()=>setMode('url')} className={`hero-toggle-btn ${mode==='url'?'hero-toggle-active':''}`}>URL</button>
+                <button onClick={()=>setMode('pdf')} className={`hero-toggle-btn ${mode==='pdf'?'hero-toggle-active':''}`}>PDF</button>
+              </div>
+              <span className="hero-cta-meta-text">
                 {tier==='free'&&analysisCount>=1
                   ? <><button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
                   : '1 free scan · no account required'}
@@ -1068,8 +1069,11 @@ export default function Home() {
 
             <motion.div className="hero-works-with" variants={heroWorksWithVariants} initial="hidden" animate="visible">
               <span className="hero-works-label">ANALYZES</span>
-              {['LinkedIn', 'PDF CVs', 'Portfolio sites', 'GitHub profiles', 'Notion pages'].map(s=>(
-                <span key={s} className="hero-works-item">{s}</span>
+              {['LinkedIn', 'PDF CVs', 'Portfolio sites', 'GitHub profiles', 'Notion pages'].map((s, i, arr)=>(
+                <span key={s} className="hero-works-row">
+                  <span className="hero-works-item">{s}</span>
+                  {i < arr.length - 1 && <span className="hero-works-sep">·</span>}
+                </span>
               ))}
             </motion.div>
 
