@@ -297,12 +297,12 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Hero ── */
 .section-hero {
   position: relative; overflow: visible;
-  padding: 100px 0 0;
+  padding: 120px 0 0;
 }
 .section-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 45% at 50% 0%, rgba(168,255,62,0.09) 0%, transparent 65%);
+  background: radial-gradient(ellipse 55% 40% at 50% 0%, rgba(168,255,62,0.07) 0%, transparent 70%);
   pointer-events: none; z-index: 0;
 }
 .hero-dot-grid {
@@ -320,32 +320,40 @@ input, textarea { font-family: var(--font-sans); }
 
 .hero-kicker {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 500; letter-spacing: 0em; text-transform: none;
   color: var(--accent);
-  border: 1px solid var(--accent-border);
-  padding: 6px 16px;
+  border: 1px solid rgba(168,255,62,0.35);
+  padding: 8px 20px;
   border-radius: 100px;
-  margin-bottom: 36px;
-  background: rgba(168,255,62,0.06);
+  margin-bottom: 48px;
+  background: rgba(15,15,16,0.75);
+  backdrop-filter: blur(8px);
+  cursor: default;
+  transition: background 0.15s, border-color 0.15s;
+}
+.hero-kicker:hover {
+  background: rgba(168,255,62,0.08);
+  border-color: rgba(168,255,62,0.5);
 }
 .hero-kicker-dot {
-  width: 6px; height: 6px;
+  width: 7px; height: 7px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex-shrink: 0;
   animation: glowPulse 2s ease-in-out infinite;
 }
 
 .hero-h1 {
-  font-family: var(--font-display);
-  font-size: clamp(52px, 7.5vw, 92px);
-  font-weight: 800;
+  font-family: var(--font-sans);
+  font-size: clamp(56px, 8.5vw, 100px);
+  font-weight: 700;
   line-height: 1.0;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.025em;
   color: var(--text-heading);
-  max-width: 860px;
-  margin-bottom: 28px;
+  max-width: 900px;
+  margin-bottom: 32px;
 }
 .hero-h1-accent {
   color: var(--accent);
@@ -353,11 +361,13 @@ input, textarea { font-family: var(--font-sans); }
 }
 
 .hero-p {
-  font-size: 18px; line-height: 1.65;
-  color: var(--text-secondary);
-  max-width: 500px;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.6;
+  color: #8E8C9E;
+  max-width: 620px;
   font-weight: 400;
   margin-bottom: 40px;
+  font-family: var(--font-sans);
 }
 
 /* ── Hero CTA row (input + button inline) ── */
