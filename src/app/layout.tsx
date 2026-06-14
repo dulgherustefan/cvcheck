@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeScript } from '@/components/ThemeScript'
+import { Syne, Geist, DM_Mono } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
 

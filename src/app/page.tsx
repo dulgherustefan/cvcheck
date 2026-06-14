@@ -954,7 +954,7 @@ export default function Home() {
           ):(
             <>
               <button onClick={()=>setShowAuthModal(true)} className="nav-btn btn-outline nav-btn-login">Log in</button>
-              <button onClick={()=>setShowAuthModal(true)} className="nav-btn-accent btn-primary">Sign up</button>
+              <button onClick={()=>setShowAuthModal(true)} className="nav-btn-accent btn-primary shimmerBtn">Sign up</button>
             </>
           ))}
           <ThemeToggle/>
@@ -1043,15 +1043,20 @@ export default function Home() {
 
         {appState==='loading'&&(
           <div className="loading-overlay">
-            <div className="loading-spinner"/>
-            <p className="loading-title">Analyzing your CV…</p>
-            <div className="loading-steps">
-              {LOADING_STEPS.map((step,i)=>(
-                <div key={step} className={`loading-step ${i===loadingStep?'loading-step-active':''} ${i>loadingStep?'loading-step-pending':''}`}>
-                  <div className={`loading-step-dot ${i===loadingStep?'loading-step-dot-active':''}`}/>
-                  {step}
-                </div>
-              ))}
+            <div className="loading-inner">
+              <div className="loading-spinner"/>
+              <p className="loading-title">Analyzing your CV…</p>
+              <div className="loading-steps">
+                {LOADING_STEPS.map((step,i)=>(
+                  <div key={step} className={`loading-step ${i===loadingStep?'loading-step-active':''} ${i>loadingStep?'loading-step-pending':''}`}>
+                    <div className={`loading-step-dot ${i===loadingStep?'loading-step-dot-active':''}`}/>
+                    {step}
+                  </div>
+                ))}
+              </div>
+              <div className="loading-dots">
+                <div className="loading-dot"/><div className="loading-dot"/><div className="loading-dot"/>
+              </div>
             </div>
           </div>
         )}
