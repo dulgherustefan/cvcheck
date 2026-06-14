@@ -18,7 +18,7 @@ export function HeroDotGrid() {
     const GAP = 28
     const DOT_R = 1.5
     const GLOW_RADIUS = 120
-    const ACCENT = { r: 168, g: 255, b: 62 }
+    const ACCENT = { r: 61, g: 255, b: 160 }
 
     let raf: number
     let cols: number, rows: number

@@ -1,8 +1,22 @@
 import type { Metadata } from 'next'
 import { ThemeScript } from '@/components/ThemeScript'
-import { Syne, Geist, DM_Mono } from 'next/font/google'
+import { Inter, DM_Mono } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-dm-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://cvcheck.app'),
@@ -141,7 +155,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
       </head>
-      <body><PageTransition>{children}</PageTransition></body>
+      <body className={`${inter.variable} ${dmMono.variable}`}><PageTransition>{children}</PageTransition></body>
     </html>
   )
 }
