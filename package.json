@@ -17,6 +17,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "cheerio": "^1.2.0",
+    "framer-motion": "^12.40.0",
     "next": "15.3.8",
     "node-html-parser": "^7.1.0",
     "pdf-parse": "^1.1.4",
