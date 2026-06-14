@@ -965,78 +965,150 @@ export default function Home() {
 
         <section className="section-hero">
           <HeroDotGrid />
-          <div className="section-wrap">
+          <div className="hero-centered-wrap">
+            <div className="hero-kicker">
+              <span className="hero-kicker-dot"/>
+              AI-powered CV analysis
+            </div>
+
             <h1 className="hero-h1">
-              Your CV, <RotatingText texts={['Brutally Honest.', 'Scored /100.', 'ATS-Checked.', 'Interview-Ready.']} /><br/>Land More Interviews.
+              Your CV, scored.<br/>
+              <RotatingText texts={['Brutally Honest.', 'ATS-Checked.', 'Interview-Ready.', 'Fixed in Seconds.']} />
             </h1>
+
             <p className="hero-p">
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
             </p>
 
-            <div className="upload-box">
-              <div className="upload-tabs">
-                {(['url','pdf'] as const).map(m=>(
-                  <button key={m} onClick={()=>setMode(m)} className={`upload-tab ${mode===m?'upload-tab-active':'upload-tab-inactive'}`}>
-                    {m==='url'?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>}
-                  </button>
-                ))}
-              </div>
-              <div className="upload-body">
-                {mode==='url'&&(
-                  <div className="upload-url-row">
-                    <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} className="upload-url-input" autoComplete="off" spellCheck={false}/>
-                    <button onClick={submit} disabled={!url.trim()||appState==='loading'} className="upload-submit">
-                      Analyze <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <div className="hero-upload-centered">
+              <div className="upload-box">
+                <div className="upload-tabs">
+                  {(['url','pdf'] as const).map(m=>(
+                    <button key={m} onClick={()=>setMode(m)} className={`upload-tab ${mode===m?'upload-tab-active':'upload-tab-inactive'}`}>
+                      {m==='url'?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>}
                     </button>
-                  </div>
-                )}
-                {mode==='pdf'&&(
-                  <>
-                    <div onDrop={handleDrop} onDragOver={e=>{e.preventDefault();setIsDragging(true)}} onDragLeave={()=>setIsDragging(false)} onClick={()=>!file&&fileInputRef.current?.click()} className={`drop-zone ${isDragging?'drop-zone-active':file?'drop-zone-filled':'drop-zone-empty'}`}>
-                      <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} className="hidden"/>
-                      {file?(
-                        <div className="drop-zone-file-row">
-                          <svg width="20" height="20" fill="none" stroke="var(--score-high)" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                          <div className="file-name-col">
-                            <div className="file-name">{file.name}</div>
-                            <div className="file-size">{(file.size/1024).toFixed(0)} KB · PDF ready</div>
-                          </div>
-                          <button onClick={e=>{e.stopPropagation();setFile(null)}} className="file-clear-btn">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                          </button>
-                        </div>
-                      ):(
-                        <>
-                          <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" className="drop-zone-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          <div className="drop-zone-hint">Drop your CV here</div>
-                          <div className="drop-zone-sub">or click to browse · PDF · max 5 MB</div>
-                        </>
-                      )}
+                  ))}
+                </div>
+                <div className="upload-body">
+                  {mode==='url'&&(
+                    <div className="upload-url-row">
+                      <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} className="upload-url-input" autoComplete="off" spellCheck={false}/>
+                      <button onClick={submit} disabled={!url.trim()||appState==='loading'} className="upload-submit">
+                        Analyze <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                      </button>
                     </div>
-                    <button onClick={submit} disabled={!file||appState==='loading'} className={`upload-submit upload-submit-full ${(!file||appState==='loading')?'upload-submit-disabled':''}`}>
-                      Analyze my CV <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                    </button>
-                  </>
-                )}
-                {(appState==='error'||appState==='idle')&&error&&(
-                  <div className="error-box">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="error-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    {error}
-                  </div>
-                )}
-              </div>
-              <div className="upload-footer">
-                {tier==='free'&&analysisCount>=1?<>Used your free scan · <button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
+                  )}
+                  {mode==='pdf'&&(
+                    <>
+                      <div onDrop={handleDrop} onDragOver={e=>{e.preventDefault();setIsDragging(true)}} onDragLeave={()=>setIsDragging(false)} onClick={()=>!file&&fileInputRef.current?.click()} className={`drop-zone ${isDragging?'drop-zone-active':file?'drop-zone-filled':'drop-zone-empty'}`}>
+                        <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} className="hidden"/>
+                        {file?(
+                          <div className="drop-zone-file-row">
+                            <svg width="20" height="20" fill="none" stroke="var(--score-high)" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <div className="file-name-col">
+                              <div className="file-name">{file.name}</div>
+                              <div className="file-size">{(file.size/1024).toFixed(0)} KB · PDF ready</div>
+                            </div>
+                            <button onClick={e=>{e.stopPropagation();setFile(null)}} className="file-clear-btn">
+                              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                          </div>
+                        ):(
+                          <>
+                            <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" className="drop-zone-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div className="drop-zone-hint">Drop your CV here</div>
+                            <div className="drop-zone-sub">or click to browse · PDF · max 5 MB</div>
+                          </>
+                        )}
+                      </div>
+                      <button onClick={submit} disabled={!file||appState==='loading'} className={`upload-submit upload-submit-full ${(!file||appState==='loading')?'upload-submit-disabled':''}`}>
+                        Analyze my CV <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                      </button>
+                    </>
+                  )}
+                  {(appState==='error'||appState==='idle')&&error&&(
+                    <div className="error-box">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="error-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      {error}
+                    </div>
+                  )}
+                </div>
+                <div className="upload-footer">
+                  {tier==='free'&&analysisCount>=1?<>Used your free scan · <button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
+                </div>
               </div>
             </div>
 
-            <div className="stats-strip">
-              {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'\"consider improving\" in your feedback'}].map(s=>(
-                <div key={s.num} className="stat-item">
-                  <div className="stat-num">{s.num}</div>
-                  <div className="stat-label">{s.label}</div>
+            <div className="hero-stats-strip">
+              {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'vague feedback'}].map(s=>(
+                <div key={s.num} className="hero-stat-item">
+                  <span className="hero-stat-num">{s.num}</span>
+                  <span className="hero-stat-label">{s.label}</span>
                 </div>
               ))}
+            </div>
+
+            <div className="hero-mockup-wrap">
+              <div className="mockup-window mockupLift">
+                <div className="mockup-titlebar">
+                  <div className="mockup-dots">
+                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  </div>
+                  <div className="mockup-bar"/>
+                </div>
+                <div className="analysis-mockup-grid">
+                  <div className="analysis-mockup-left">
+                    <div className="lmock-score-hero">
+                      <div className="lmock-score-wrap">
+                        <svg width="88" height="88" viewBox="0 0 88 88">
+                          <circle cx="44" cy="44" r="36" fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
+                          <circle cx="44" cy="44" r="36" fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeDasharray="164 226" transform="rotate(-90 44 44)"/>
+                        </svg>
+                        <div className="score-ring-center">
+                          <div className="lmock-score-num">73</div>
+                          <div className="lmock-score-denom">/100</div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="lmock-score-label">Good</div>
+                        <div className="lmock-score-desc">Strong foundation. 3 critical gaps holding you back.</div>
+                      </div>
+                    </div>
+                    {[{label:'First Impression',pct:73},{label:'Impact & Achievements',pct:68},{label:'ATS Compatibility',pct:70},{label:'Red Flags',pct:70},{label:'Career Story',pct:60}].map(d=>(
+                      <div key={d.label} className="lmock-bar-row">
+                        <div className="lmock-bar-header"><span>{d.label}</span><span className="lmock-bar-pct">{d.pct}%</span></div>
+                        <div className="lmock-bar-track"><div className={`lmock-bar-fill pct-${Math.round(d.pct/5)*5}`}/></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="lmock-right">
+                    <div>
+                      <div className="section-label">Bullet Rewrite</div>
+                      <div className="lmock-bullet-wrap">
+                        <div className="lmock-bullet-before">
+                          <div className="bullet-label bullet-label-before">Before</div>
+                          <p className="lmock-bullet-p lmock-bullet-p-before">Responsible for managing social media accounts and creating content for various platforms.</p>
+                        </div>
+                        <div className="lmock-bullet-after">
+                          <div className="bullet-label bullet-label-after">After</div>
+                          <p className="lmock-bullet-p lmock-bullet-p-after">Grew LinkedIn following 340% in 6 months by launching a weekly video series, driving 12k monthly impressions.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="section-label">Red Flags</div>
+                      <div className="lmock-flags-mt">
+                        {[{sev:'critical',text:'No quantified achievements in last 3 roles'},{sev:'warning',text:'Generic objective statement adds no value'},{sev:'info',text:'Skills section lacks ATS-relevant keywords'}].map(f=>(
+                          <div key={f.text} className="lmock-flag-row">
+                            <div className={f.sev==='critical'?'lmock-flag-dot-high':f.sev==='warning'?'lmock-flag-dot-mid':'lmock-flag-dot-info'}/>
+                            <span className="lmock-flag-text">{f.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
