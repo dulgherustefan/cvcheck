@@ -966,85 +966,73 @@ export default function Home() {
         <section className="section-hero">
           <HeroDotGrid />
           <div className="hero-centered-wrap">
+
             <div className="hero-kicker">
               <span className="hero-kicker-dot"/>
               AI-powered CV analysis
             </div>
 
             <h1 className="hero-h1">
-              Your CV, scored.<br/>
-              <RotatingText texts={['Brutally Honest.', 'ATS-Checked.', 'Interview-Ready.', 'Fixed in Seconds.']} />
+              Your CV, analyzed.<br/>
+              <span className="hero-h1-accent"><RotatingText texts={['Brutally Honest.', 'ATS-Checked.', 'Interview-Ready.', 'Scored /100.']} /></span>
             </h1>
 
             <p className="hero-p">
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
             </p>
 
-            <div className="hero-upload-centered">
-              <div className="upload-box">
-                <div className="upload-tabs">
-                  {(['url','pdf'] as const).map(m=>(
-                    <button key={m} onClick={()=>setMode(m)} className={`upload-tab ${mode===m?'upload-tab-active':'upload-tab-inactive'}`}>
-                      {m==='url'?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>Link / URL</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>PDF upload</>}
-                    </button>
-                  ))}
-                </div>
-                <div className="upload-body">
-                  {mode==='url'&&(
-                    <div className="upload-url-row">
-                      <input type="url" placeholder="yourportfolio.com · linkedin.com/in/yourname" value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} className="upload-url-input" autoComplete="off" spellCheck={false}/>
-                      <button onClick={submit} disabled={!url.trim()||appState==='loading'} className="upload-submit">
-                        Analyze <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                      </button>
-                    </div>
-                  )}
-                  {mode==='pdf'&&(
-                    <>
-                      <div onDrop={handleDrop} onDragOver={e=>{e.preventDefault();setIsDragging(true)}} onDragLeave={()=>setIsDragging(false)} onClick={()=>!file&&fileInputRef.current?.click()} className={`drop-zone ${isDragging?'drop-zone-active':file?'drop-zone-filled':'drop-zone-empty'}`}>
-                        <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} className="hidden"/>
-                        {file?(
-                          <div className="drop-zone-file-row">
-                            <svg width="20" height="20" fill="none" stroke="var(--score-high)" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            <div className="file-name-col">
-                              <div className="file-name">{file.name}</div>
-                              <div className="file-size">{(file.size/1024).toFixed(0)} KB · PDF ready</div>
-                            </div>
-                            <button onClick={e=>{e.stopPropagation();setFile(null)}} className="file-clear-btn">
-                              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                          </div>
-                        ):(
-                          <>
-                            <svg width="28" height="28" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" viewBox="0 0 24 24" className="drop-zone-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <div className="drop-zone-hint">Drop your CV here</div>
-                            <div className="drop-zone-sub">or click to browse · PDF · max 5 MB</div>
-                          </>
-                        )}
-                      </div>
-                      <button onClick={submit} disabled={!file||appState==='loading'} className={`upload-submit upload-submit-full ${(!file||appState==='loading')?'upload-submit-disabled':''}`}>
-                        Analyze my CV <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                      </button>
-                    </>
-                  )}
-                  {(appState==='error'||appState==='idle')&&error&&(
-                    <div className="error-box">
-                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="error-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                      {error}
-                    </div>
-                  )}
-                </div>
-                <div className="upload-footer">
-                  {tier==='free'&&analysisCount>=1?<>Used your free scan · <button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>:'1 free scan · no account, no card'}
-                </div>
-              </div>
+            <div className="hero-cta-row">
+              {mode==='url' ? (
+                <>
+                  <input
+                    type="url"
+                    placeholder="linkedin.com/in/yourname or portfolio URL"
+                    value={url}
+                    onChange={e=>setUrl(e.target.value)}
+                    onKeyDown={e=>e.key==='Enter'&&submit()}
+                    className="hero-input"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button onClick={submit} disabled={!url.trim()||appState==='loading'} className="hero-cta-btn shimmerBtn">
+                    Analyze my CV
+                  </button>
+                </>
+              ) : (
+                <>
+                  <label className="hero-input hero-input-file" onClick={()=>fileInputRef.current?.click()}>
+                    <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" onChange={e=>{const f=e.target.files?.[0];if(f?.type==='application/pdf')setFile(f)}} className="hidden"/>
+                    {file ? file.name : 'Drop your CV PDF here'}
+                  </label>
+                  <button onClick={submit} disabled={!file||appState==='loading'} className="hero-cta-btn shimmerBtn">
+                    Analyze my CV
+                  </button>
+                </>
+              )}
             </div>
 
-            <div className="hero-stats-strip">
-              {[{num:'7',label:'dimensions scored'},{num:'~30s',label:'from upload to score'},{num:'€1.99',label:'Pro · one-time'},{num:'0',label:'vague feedback'}].map(s=>(
-                <div key={s.num} className="hero-stat-item">
-                  <span className="hero-stat-num">{s.num}</span>
-                  <span className="hero-stat-label">{s.label}</span>
-                </div>
+            <div className="hero-cta-meta">
+              <button onClick={()=>setMode(mode==='url'?'pdf':'url')} className="hero-mode-toggle">
+                {mode==='url'?'Upload PDF instead':'Paste a URL instead'}
+              </button>
+              <span className="hero-cta-trust">
+                {tier==='free'&&analysisCount>=1
+                  ? <><button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
+                  : '1 free scan · no account required'}
+              </span>
+            </div>
+
+            {(appState==='error'||appState==='idle')&&error&&(
+              <div className="error-box hero-error">
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="error-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {error}
+              </div>
+            )}
+
+            <div className="hero-works-with">
+              <span className="hero-works-label">ANALYZES</span>
+              {['LinkedIn', 'PDF CVs', 'Portfolio sites', 'GitHub profiles', 'Notion pages'].map(s=>(
+                <span key={s} className="hero-works-item">{s}</span>
               ))}
             </div>
 
@@ -1110,6 +1098,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
           </div>
         </section>
 
