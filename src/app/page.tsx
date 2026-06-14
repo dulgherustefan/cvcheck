@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
+import { motion, type Variants } from 'framer-motion'
 import { HeroDotGrid } from '@/components/HeroDotGrid'
 import { RotatingText } from '@/components/RotatingText'
 import { useRouter } from 'next/navigation'
@@ -792,6 +793,42 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
 
 const LOADING_STEPS = ['Reading your CV…','Running the 7-second test…','Checking ATS compatibility…','Writing your rewrites & actions…']
 
+const HERO_STAGGER = 0.1
+
+const heroKickerVariants: Variants = {
+  hidden: { opacity: 0, y: -10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+}
+const heroH1Variants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, delay: HERO_STAGGER } },
+}
+const heroPVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: HERO_STAGGER * 2 } },
+}
+const heroCtaRowVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: HERO_STAGGER * 3 } },
+}
+const heroCtaMetaVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, delay: HERO_STAGGER * 4 } },
+}
+const heroWorksWithVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.5, delay: HERO_STAGGER * 5 } },
+}
+const heroMockupVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: HERO_STAGGER * 6, ease: [0.16, 1, 0.3, 1] },
+  },
+}
+
 function useScrollReveal(active: boolean) {
   useEffect(() => {
     if (!active) return
@@ -967,21 +1004,21 @@ export default function Home() {
           <HeroDotGrid />
           <div className="hero-centered-wrap">
 
-            <div className="hero-kicker">
+            <motion.div className="hero-kicker" variants={heroKickerVariants} initial="hidden" animate="visible">
               <span className="hero-kicker-dot"/>
               AI-powered CV analysis
-            </div>
+            </motion.div>
 
-            <h1 className="hero-h1">
+            <motion.h1 className="hero-h1" variants={heroH1Variants} initial="hidden" animate="visible">
               Your CV, analyzed.<br/>
               <span className="hero-h1-accent"><RotatingText texts={['Brutally Honest.', 'ATS-Checked.', 'Interview-Ready.', 'Scored /100.']} /></span>
-            </h1>
+            </motion.h1>
 
-            <p className="hero-p">
+            <motion.p className="hero-p" variants={heroPVariants} initial="hidden" animate="visible">
               Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
-            </p>
+            </motion.p>
 
-            <div className="hero-cta-row">
+            <motion.div className="hero-cta-row" variants={heroCtaRowVariants} initial="hidden" animate="visible">
               {mode==='url' ? (
                 <>
                   <input
@@ -1009,9 +1046,9 @@ export default function Home() {
                   </button>
                 </>
               )}
-            </div>
+            </motion.div>
 
-            <div className="hero-cta-meta">
+            <motion.div className="hero-cta-meta" variants={heroCtaMetaVariants} initial="hidden" animate="visible">
               <button onClick={()=>setMode(mode==='url'?'pdf':'url')} className="hero-mode-toggle">
                 {mode==='url'?'Upload PDF instead':'Paste a URL instead'}
               </button>
@@ -1020,7 +1057,7 @@ export default function Home() {
                   ? <><button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
                   : '1 free scan · no account required'}
               </span>
-            </div>
+            </motion.div>
 
             {(appState==='error'||appState==='idle')&&error&&(
               <div className="error-box hero-error">
@@ -1029,14 +1066,14 @@ export default function Home() {
               </div>
             )}
 
-            <div className="hero-works-with">
+            <motion.div className="hero-works-with" variants={heroWorksWithVariants} initial="hidden" animate="visible">
               <span className="hero-works-label">ANALYZES</span>
               {['LinkedIn', 'PDF CVs', 'Portfolio sites', 'GitHub profiles', 'Notion pages'].map(s=>(
                 <span key={s} className="hero-works-item">{s}</span>
               ))}
-            </div>
+            </motion.div>
 
-            <div className="hero-mockup-wrap">
+            <motion.div className="hero-mockup-wrap" variants={heroMockupVariants} initial="hidden" animate="visible">
               <div className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
                   <div className="mockup-dots">
@@ -1097,7 +1134,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </section>

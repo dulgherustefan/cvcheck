@@ -1529,3 +1529,275 @@ input, textarea { font-family: var(--font-sans); }
 
 /* ── Top-3 actions panel header ── */
 .panel-icon-accent { width: 26px; height: 26px; border-radius: var(--radius-sm); background: rgba(168,255,62,0.1); border: 1px solid rgba(168,255,62,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ============================================================
+   InteractiveHero — Navbar + Hero additions
+   Append to src/app/globals.css (or merge with existing rules)
+   Uses existing CVCheck CSS variables — no new colors introduced.
+   ============================================================ */
+
+/* ---------- Navbar ---------- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.3s var(--ease-in-out), border-color 0.3s var(--ease-in-out);
+}
+
+.navbar-scrolled {
+  background: rgba(10, 10, 11, 0.95);
+  border-bottom-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.navbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 72px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.navbar-logo img {
+  border-radius: 6px;
+}
+
+.navbar-logo span {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--text-heading);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-link {
+  position: relative;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.2s var(--ease-out-expo);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.nav-btn-login {
+  font-size: 14px;
+  padding: 8px 18px;
+}
+
+.nav-btn-accent {
+  font-size: 14px;
+  padding: 8px 18px;
+}
+
+.navbar-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.navbar-mobile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 11, 0.97);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 24px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.navbar-mobile-divider {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+
+/* ---------- Hero section wrapper ---------- */
+.hero {
+  position: relative;
+  padding-top: 72px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.hero-fade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent 0%, var(--bg) 92%),
+    radial-gradient(ellipse at center, transparent 40%, var(--bg) 95%);
+}
+
+.hero-dot-grid {
+  z-index: 0;
+  opacity: 1;
+}
+
+/* ---------- CTA input mode toggle ---------- */
+.hero-cta-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hero-cta-toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.hero-toggle-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s var(--ease-out-expo), background 0.2s var(--ease-out-expo);
+}
+
+.hero-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.hero-toggle-active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.hero-cta-meta-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Hero file input mode ---------- */
+.hero-input-file {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.hero-input-file:hover {
+  color: var(--text-primary);
+}
+
+.hero-input-file-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------- Hero mockup image ---------- */
+.hero-mockup-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 960px) {
+  .navbar-links {
+    display: none;
+  }
+  .nav-btn-login,
+  .nav-btn-accent {
+    display: none;
+  }
+  .navbar-mobile-toggle {
+    display: flex;
+    align-items: center;
+  }
+  .navbar-mobile-menu.visible {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-inner {
+    padding: 0 16px;
+  }
+  .hero-cta-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
