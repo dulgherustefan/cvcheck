@@ -1399,10 +1399,10 @@ export default function Home() {
                 </div>
                 <div className="lmock-alerts">
                   <div className="lmock-alerts-header">
-                    <div className="lmock-alerts-icon">
-                      <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>
+                    <div className="lmock-alerts-avatar">
+                      <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
                     </div>
-                    <div>
+                    <div className="lmock-alerts-headtext">
                       <div className="lmock-alerts-title">CVCheck Weekly Digest</div>
                       <div className="lmock-alerts-meta">Monday, 09:00 · 3 new matches</div>
                     </div>
@@ -1481,7 +1481,7 @@ export default function Home() {
                 ] as const).map((p,i)=>(
                   <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
                     {p.badge&&<BorderTrail/>}
-                    {p.badge&&<div className="pricing-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" className="svg-shrink"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{p.badge}</div>}
+                    {p.badge&&<div className="pricing-badge"><svg className="pricing-badge-star" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>{p.badge}</span></div>}
                     <div className={`pricing-plan-label ${p.badge?'pricing-plan-label-featured':'pricing-plan-label-normal'}`}>{p.label}</div>
                     <div className="pricing-price">
                       <span className="pricing-price-num">{p.price}</span>

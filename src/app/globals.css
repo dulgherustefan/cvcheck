@@ -1039,23 +1039,15 @@ input, textarea { font-family: var(--font-sans); }
   border-radius: var(--radius-md); padding: 8px 16px;
 }
 
-/* ── Alerts section ── */
-.lmock-alerts-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 56px; }
-.lmock-alert-panel { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.lmock-alert-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); }
-.lmock-alert-from   { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 4px; }
-.lmock-alert-subject{ font-size: 14px; font-weight: 600; color: var(--text-heading); }
-.lmock-alert-date   { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
-.lmock-alert-body { padding: 16px 20px; }
-.lmock-alert-greeting { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; }
-.lmock-alert-job { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+/* ── Alerts email mockup ── */
+.lmock-alert-job { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
 .lmock-alert-job:last-of-type { border-bottom: none; }
-.lmock-alert-job-title { font-size: 13px; font-weight: 500; color: var(--text-heading); }
-.lmock-alert-job-sub   { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
-.lmock-alert-fit { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: rgba(168,255,62,0.1); border: 1px solid rgba(168,255,62,0.2); border-radius: 100px; padding: 3px 10px; white-space: nowrap; }
-.lmock-alerts-btns { display: flex; gap: 8px; margin-top: 14px; }
-.lmock-alerts-btn-primary { flex: 1; background: var(--accent); color: var(--text-inverse); font-size: 12px; font-weight: 600; border-radius: var(--radius-md); padding: 8px; cursor: pointer; }
-.lmock-alerts-btn-secondary { font-size: 12px; color: var(--text-tertiary); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; cursor: pointer; }
+.lmock-alert-job-title { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.lmock-alert-job-sub   { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+.lmock-alert-fit { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-subtle); border: 1px solid var(--accent-border); border-radius: 100px; padding: 4px 10px; white-space: nowrap; flex-shrink: 0; }
+.lmock-alerts-btns { display: flex; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); }
+.lmock-alerts-btn-primary { flex: 1; background: var(--accent); color: var(--text-inverse); font-size: 12px; font-weight: 600; border-radius: var(--radius-md); padding: 10px; cursor: pointer; }
+.lmock-alerts-btn-secondary { font-size: 12px; color: var(--text-tertiary); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 14px; cursor: pointer; }
 
 /* ── Steps ── */
 .steps-section { padding: 96px 0; border-top: 1px solid var(--border); }
@@ -1087,11 +1079,13 @@ input, textarea { font-family: var(--font-sans); }
 .pricing-card-featured > *:not([aria-hidden]) { position: relative; z-index: 1; }
 .pricing-badge {
   position: absolute; top: 20px; right: 20px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-inverse); background: var(--accent);
-  padding: 4px 10px; border-radius: 100px;
+  padding: 5px 12px; border-radius: 100px;
 }
+.pricing-badge-star { flex-shrink: 0; }
+.pricing-badge span { line-height: 1; }
 .pricing-plan-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 16px; }
 .pricing-plan-label-featured { color: var(--accent); }
 .pricing-plan-label-normal   { color: var(--text-tertiary); }
@@ -1510,11 +1504,11 @@ input, textarea { font-family: var(--font-sans); }
 
 .job-card-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 
-.lmock-alerts { }
-.lmock-alerts-header { padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); }
-.lmock-alerts-icon { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-.lmock-alerts-meta  { font-size: 11px; color: var(--text-tertiary); }
+.lmock-alerts-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); }
+.lmock-alerts-avatar { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--text-inverse); }
+.lmock-alerts-headtext { min-width: 0; }
 .lmock-alerts-title { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.lmock-alerts-meta  { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
 
 .loading-steps { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
 
