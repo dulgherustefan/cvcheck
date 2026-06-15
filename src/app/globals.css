@@ -294,6 +294,42 @@ input, textarea { font-family: var(--font-sans); }
   margin-bottom: 16px;
 }
 
+/* ── Unified centered section header (echoes the hero) ── */
+.section-head {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  max-width: 660px;
+  margin: 0 auto 48px;
+}
+.section-head .eyebrow-badge { margin-bottom: 16px; }
+.section-head .eyebrow-badge::after {
+  content: '';
+  display: inline-block; width: 16px; height: 1px;
+  background: var(--accent); margin-left: 8px;
+}
+.section-head .section-h2 { margin-bottom: 16px; }
+.section-head .section-body { margin-bottom: 28px; max-width: 56ch; }
+.section-head .section-btn,
+.section-head .btn-primary { margin-bottom: 0; }
+
+/* ── Trust strip (extends the hero, social proof) ── */
+.trust-strip {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 20px 0;
+}
+.trust-strip-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0 40px;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 12px 36px;
+}
+.trust-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+}
+.trust-item svg { color: var(--accent); flex-shrink: 0; }
+
 /* ── Hero ── */
 .section-hero {
   position: relative; overflow: visible;
@@ -980,35 +1016,6 @@ input, textarea { font-family: var(--font-sans); }
 .landing-section-subtle { padding: 96px 0; background: var(--bg-subtle); border-top: 1px solid var(--border); }
 .landing-section-accent { padding: 96px 0; background: var(--bg-muted); border-top: 1px solid var(--border); }
 
-/* ── Mockup grid ── */
-.lmock-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: start; margin-top: 56px; }
-.lmock-copy h2 { margin-bottom: 16px; }
-.lmock-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px; max-width: 40ch; }
-.lmock-features { display: flex; flex-direction: column; gap: 12px; }
-.lmock-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-secondary); }
-.lmock-feature-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
-
-.lmock-panel {
-  background: var(--bg-elevated); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden;
-}
-.lmock-panel-stripe { height: 2px; background: linear-gradient(90deg, var(--accent), rgba(168,255,62,0.2)); }
-.lmock-panel-body { padding: 20px; }
-.lmock-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.lmock-score-num {
-  font-family: var(--font-display); font-size: 40px; font-weight: 700;
-  color: var(--accent); letter-spacing: -0.04em; line-height: 1;
-}
-.lmock-score-meta { font-size: 12px; color: var(--text-tertiary); }
-.lmock-rating { display: inline-block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); background: rgba(168,255,62,0.1); border: 1px solid rgba(168,255,62,0.2); border-radius: 100px; padding: 3px 10px; margin-top: 4px; }
-.lmock-bars { display: flex; flex-direction: column; gap: 10px; }
-.lmock-bar-row { display: flex; flex-direction: column; gap: 4px; }
-.lmock-bar-label-row { display: flex; justify-content: space-between; }
-.lmock-bar-label { font-size: 11px; color: var(--text-secondary); }
-.lmock-bar-val   { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
-.lmock-bar-track { height: 3px; background: var(--bg-muted); border-radius: 2px; overflow: hidden; }
-.lmock-bar-fill  { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
-
 /* ── Job mockup ── */
 .lmock-jobs-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: start; margin-top: 56px; }
 .lmock-jobs-list { display: flex; flex-direction: column; gap: 10px; }
@@ -1061,19 +1068,18 @@ input, textarea { font-family: var(--font-sans); }
 
 /* ── Domain tags ── */
 .domains-tagline { font-size: 15px; color: var(--text-secondary); margin-bottom: 32px; }
-.domain-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.domain-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .domain-tag {
   font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
-  padding: 6px 14px; border-radius: var(--radius-sm);
+  padding: 7px 14px; border-radius: 8px;
   background: var(--bg-elevated); color: var(--text-secondary);
   border: 1px solid var(--border);
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .domain-tag:hover { border-color: var(--accent-border); color: var(--accent); }
 
 /* ── Pricing ── */
 .pricing-section { padding: 96px 0; border-top: 1px solid var(--border); }
-.section-h2-steps, .section-h2-pricing { margin-bottom: 8px; }
 .pricing-intro { font-size: 15px; color: var(--text-secondary); margin-bottom: 48px; }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
 .pricing-card { background: var(--bg-elevated); padding: 32px 28px; position: relative; }
@@ -1094,7 +1100,7 @@ input, textarea { font-family: var(--font-sans); }
 .pricing-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-secondary); }
 .svg-shrink { flex-shrink: 0; margin-top: 2px; }
 .pricing-cta {
-  width: 100%; padding: 11px;
+  width: 100%; padding: 12px;
   border-radius: var(--radius-md); font-size: 13px; font-weight: 600;
   cursor: pointer;
 }
@@ -1108,7 +1114,7 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Testimonial ── */
 .testimonial-section { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg-elevated); }
 .testimonial-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; }
-.testimonial-mt { margin-top: 40px; }
+.testimonial-mt { margin-top: 0; }
 .testimonial-stars { display: flex; gap: 4px; margin-bottom: 12px; }
 .testimonial-rating { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
 .testimonial-rating-num { color: var(--text-heading); }
@@ -1234,7 +1240,8 @@ input, textarea { font-family: var(--font-sans); }
   .navbar { padding: 0 24px; }
   .navbar-links { display: none; }
   .section-wrap, .section-wrap-md, .section-wrap-sm, .section-wrap-lg { padding: 0 24px; }
-  .landing-section, .landing-section-alt, .landing-section-subtle, .steps-section, .pricing-section, .testimonial-section { padding: 72px 0; }
+  .landing-section, .landing-section-alt, .landing-section-subtle, .steps-section, .pricing-section, .testimonial-section, .section-alerts { padding: 72px 0; }
+  .section-head { margin-bottom: 40px; }
   .lmock-grid, .lmock-jobs-grid, .lmock-alerts-wrap { grid-template-columns: 1fr; gap: 32px; }
   .steps-grid { grid-template-columns: 1fr 1fr; }
   .pricing-grid { grid-template-columns: 1fr; background: none; border: none; gap: 12px; }
@@ -1272,7 +1279,8 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Mockup window (browser chrome) ── */
 .mockup-window {
   background: var(--bg-elevated); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); overflow: hidden; margin-top: 40px;
+  border-radius: var(--radius-lg); overflow: hidden;
+  margin: 0 auto; max-width: 960px;
 }
 .mockup-titlebar {
   display: flex; align-items: center; gap: 10px;
@@ -1356,7 +1364,6 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Section variants for landing ── */
 .landing-section-elevated { background: var(--bg-elevated); }
 .landing-section-base     { background: var(--bg); }
-.section-h2-wide, .section-h2-medium { margin-bottom: 12px; }
 .section-body { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 52ch; margin-bottom: 24px; }
 .section-btn { background: var(--accent); color: var(--text-inverse); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: var(--radius-md); margin-bottom: 40px; border: none; cursor: pointer; }
 
@@ -1372,19 +1379,12 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Testimonial ── */
 .testimonial-section { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg-elevated); }
 .testimonial-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; }
-.testimonial-mt { margin-top: 40px; }
+.testimonial-mt { margin-top: 0; }
 .testimonial-stars { display: flex; gap: 4px; margin-bottom: 10px; }
 .testimonial-rating { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
 .testimonial-rating-num { color: var(--text-heading); font-weight: 600; }
 .testimonial-quote { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--text-heading); line-height: 1.5; letter-spacing: -0.02em; margin-bottom: 16px; }
 .testimonial-author { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--text-tertiary); text-transform: uppercase; }
-
-/* ── Alerts landing section ── */
-.alerts-section { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg); }
-.alerts-inner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 48px; }
-.alerts-cta-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; max-width: 38ch; line-height: 1.65; }
-.alerts-cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--text-inverse); font-size: 13px; font-weight: 600; padding: 11px 22px; border-radius: var(--radius-md); border: none; cursor: pointer; transition: background 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s; }
-.alerts-cta-btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,255,62,0.3); }
 
 /* ── Result topbar ── */
 .result-section { animation: fadeIn 0.25s ease both; }
@@ -1506,12 +1506,6 @@ input, textarea { font-family: var(--font-sans); }
 /* ── Missing classes ── */
 .action-card-body { margin-top: 10px; }
 
-.alerts-mockup-inner { }
-.alerts-subtitle { font-size: 14px; color: var(--text-secondary); line-height: 1.65; max-width: 38ch; margin-bottom: 28px; }
-
-.eyebrow-badge-inverse { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bg); margin-bottom: 20px; }
-.eyebrow-badge-inverse::before { content: ''; display: inline-block; width: 16px; height: 1px; background: var(--bg); margin-right: 8px; }
-
 .job-card-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
 
 .lmock-alerts { }
@@ -1525,16 +1519,12 @@ input, textarea { font-family: var(--font-sans); }
 .plan-card-body { }
 
 .section-alerts { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg-elevated); }
-.section-h2-alerts { margin-bottom: 12px; }
-.section-btn-inverse { display: inline-flex; align-items: center; gap: 8px; background: var(--bg); color: var(--accent); font-size: 13px; font-weight: 600; padding: 11px 22px; border-radius: var(--radius-md); border: none; cursor: pointer; transition: background 0.15s, transform 0.14s; }
-.section-btn-inverse:hover { background: var(--bg-subtle); transform: translateY(-1px); }
-.section-h2-inverse { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; color: var(--text-heading); margin-bottom: 16px; }
 
 .shimmerBtn { position: relative; overflow: hidden; }
 .shimmerBtn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%); transform: translateX(-100%); transition: none; pointer-events: none; }
 .shimmerBtn:hover::after { animation: shimmerSlide 0.5s ease forwards; }
 
-.steps-grid-mt { margin-top: 48px; }
+.steps-grid-mt { margin-top: 0; }
 
 /* ── Loading step items ── */
 .loading-step {

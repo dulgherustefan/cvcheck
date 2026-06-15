@@ -1220,12 +1220,30 @@ export default function Home() {
 
         {(appState==='idle'||appState==='error')&&(<>
 
+          <div className="trust-strip">
+            <div className="trust-strip-inner">
+              {[
+                '7 scoring dimensions',
+                'ATS-tested',
+                'No signup to start',
+                'Results in seconds',
+              ].map(t=>(
+                <span key={t} className="trust-item">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
           <section id="analysis" className="landing-section landing-section-elevated">
             <div className="section-wrap-md">
-              <div data-sr data-sr-delay="0" className="eyebrow-badge">AI CV Analysis</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-wide">Every recruiter bias, every ATS gap. Exposed.</h2>
-              <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">Analyze My CV for Free ↑</button>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">AI CV Analysis</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">Every recruiter bias, every ATS gap. Exposed.</h2>
+                <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
+                <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">Analyze My CV for Free ↑</button>
+              </div>
 
               <div data-sr data-sr-delay="0.28" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
@@ -1297,10 +1315,12 @@ export default function Home() {
 
           <section id="jobs" className="landing-section landing-section-base">
             <div className="section-wrap-md">
-              <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Matching</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-medium">Jobs that actually fit, with a score to prove it.</h2>
-              <p data-sr data-sr-delay="0.16" className="section-body">CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">See My Matched Jobs ↑</button>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Matching</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">Jobs that actually fit, with a score to prove it.</h2>
+                <p data-sr data-sr-delay="0.16" className="section-body">CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
+                <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">See My Matched Jobs ↑</button>
+              </div>
               <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
                   <div className="mockup-dots">
@@ -1362,12 +1382,14 @@ export default function Home() {
 
           <section id="alerts" className="section-alerts">
             <div className="section-wrap-md">
-              <div data-sr data-sr-delay="0" className="eyebrow-badge-inverse">Job Alerts</div>
-              <h2 data-sr data-sr-delay="0.08" className="section-h2 section-h2-inverse section-h2-alerts">New matched jobs in your inbox every Monday.</h2>
-              <p data-sr data-sr-delay="0.16" className="alerts-subtitle">Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
-              <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn section-btn-inverse">Enable Job Alerts ↓</button>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Alerts</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">New matched jobs in your inbox every Monday.</h2>
+                <p data-sr data-sr-delay="0.16" className="section-body">Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
+                <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn btn-primary section-btn">Enable Job Alerts ↓</button>
+              </div>
 
-              <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift alerts-mockup-inner">
+              <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
                   <div className="mockup-dots">
                     <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
@@ -1404,8 +1426,10 @@ export default function Home() {
 
           <section className="steps-section">
             <div className="section-wrap-md">
-              <div className="eyebrow-badge">How it works</div>
-              <h2 className="section-h2 section-h2-steps">Done before your coffee gets cold.</h2>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">How it works</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">Done before your coffee gets cold.</h2>
+              </div>
 
               <div className="steps-grid steps-grid-mt">
                 {[
@@ -1425,10 +1449,13 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="landing-section-subtle">
+          <section className="landing-section landing-section-elevated">
             <div className="section-wrap-md">
-              <h2 className="section-h2">Works for every domain and level.</h2>
-              <p className="domains-tagline">CVCheck detects your field and seniority automatically.</p>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">Domains</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">Works for every domain and level.</h2>
+                <p data-sr data-sr-delay="0.16" className="section-body">CVCheck detects your field and seniority automatically.</p>
+              </div>
               <div className="domain-tags-wrap">
                 {['Product Design','Engineering','Product Management','Marketing','Data Science','UX Research','Frontend Dev','Backend Dev','DevOps','Sales','Finance','Operations','Content','HR','Consulting','Startup Founder'].map(d=>(
                   <span key={d} className="domain-tag">{d}</span>
@@ -1439,9 +1466,11 @@ export default function Home() {
 
           <section id="pricing" className="pricing-section">
             <div className="section-wrap-md">
-              <div className="eyebrow-badge">Pricing</div>
-              <h2 className="section-h2 section-h2-pricing">No tricks. No "contact us."</h2>
-              <p className="pricing-intro">Start free. Pay once for Pro. Subscribe for unlimited.</p>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">Pricing</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">No tricks. No "contact us."</h2>
+                <p data-sr data-sr-delay="0.16" className="section-body">Start free. Pay once for Pro. Subscribe for unlimited.</p>
+              </div>
 
               <div className="pricing-grid">
                 {([
@@ -1472,7 +1501,10 @@ export default function Home() {
 
           <section className="testimonial-section">
             <div className="section-wrap-sm">
-              <h2 className="section-h2">The most honest feedback your CV will ever get.</h2>
+              <div className="section-head">
+                <div data-sr data-sr-delay="0" className="eyebrow-badge">Testimonial</div>
+                <h2 data-sr data-sr-delay="0.08" className="section-h2">The most honest feedback your CV will ever get.</h2>
+              </div>
               <div className="testimonial-card testimonial-mt">
                 <div className="testimonial-stars">
                   {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
