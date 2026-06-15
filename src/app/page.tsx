@@ -829,6 +829,40 @@ const heroMockupVariants: Variants = {
   },
 }
 
+// Sources analyzed, each with a monochrome brand mark (inherits currentColor)
+const HERO_WORKS_ITEMS = [
+  {
+    name: 'LinkedIn',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34v-7.7H5.78v7.7h2.56zM7.06 9.5a1.49 1.49 0 1 0 0-2.98 1.49 1.49 0 0 0 0 2.98zm11.28 8.84v-4.22c0-2.26-1.21-3.31-2.82-3.31-1.3 0-1.88.72-2.2 1.22v-1.05h-2.56c.03.72 0 7.7 0 7.7h2.56v-4.3c0-.23.02-.46.08-.62.18-.46.6-.94 1.3-.94.92 0 1.29.7 1.29 1.72v4.14h2.55z"/></svg>
+    ),
+  },
+  {
+    name: 'PDF CVs',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h2M8 17h5"/></svg>
+    ),
+  },
+  {
+    name: 'Portfolio sites',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+    ),
+  },
+  {
+    name: 'GitHub profiles',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.46c.52.1.71-.23.71-.5v-1.78c-2.92.63-3.54-1.41-3.54-1.41-.48-1.21-1.16-1.53-1.16-1.53-.95-.65.07-.64.07-.64 1.05.07 1.6 1.08 1.6 1.08.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.67-1.4-2.33-.27-4.78-1.17-4.78-5.18 0-1.15.41-2.08 1.08-2.82-.11-.27-.47-1.34.1-2.79 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.88-1.07 2.88-1.07.57 1.45.21 2.52.1 2.79.67.74 1.07 1.67 1.07 2.82 0 4.02-2.45 4.9-4.79 5.16.38.33.71.97.71 1.96v2.9c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5z"/></svg>
+    ),
+  },
+  {
+    name: 'Notion pages',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 17V8l6 9V8"/></svg>
+    ),
+  },
+]
+
 function useScrollReveal(active: boolean) {
   useEffect(() => {
     if (!active) return
@@ -1068,9 +1102,9 @@ export default function Home() {
 
             <motion.div className="hero-works-with" variants={heroWorksWithVariants} initial="hidden" animate="visible">
               <span className="hero-works-label">ANALYZES</span>
-              {['LinkedIn', 'PDF CVs', 'Portfolio sites', 'GitHub profiles', 'Notion pages'].map((s, i, arr)=>(
-                <span key={s} className="hero-works-row">
-                  <span className="hero-works-item">{s}</span>
+              {HERO_WORKS_ITEMS.map((item, i, arr)=>(
+                <span key={item.name} className="hero-works-row">
+                  <span className="hero-works-item">{item.icon}{item.name}</span>
                   {i < arr.length - 1 && <span className="hero-works-sep">·</span>}
                 </span>
               ))}
