@@ -1076,7 +1076,7 @@ input, textarea { font-family: var(--font-sans); }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
 .pricing-card { background: var(--bg-elevated); padding: 32px 28px; position: relative; }
 .pricing-card-featured { background: var(--bg-subtle); }
-.pricing-card-featured > *:not([aria-hidden]) { position: relative; z-index: 1; }
+.pricing-card-featured > *:not([aria-hidden]):not(.pricing-badge) { position: relative; z-index: 1; }
 .pricing-badge {
   position: absolute; top: 20px; right: 20px; z-index: 2;
   display: inline-flex; align-items: center; gap: 6px;
