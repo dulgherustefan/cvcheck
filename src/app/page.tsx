@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { HeroDotGrid } from '@/components/HeroDotGrid'
 import { RotatingText } from '@/components/RotatingText'
+import { BorderTrail } from '@/components/BorderTrail'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -1479,7 +1480,8 @@ export default function Home() {
                   { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
                 ] as const).map((p,i)=>(
                   <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
-                    {p.badge&&<div className="pricing-badge">{p.badge}</div>}
+                    {p.badge&&<BorderTrail/>}
+                    {p.badge&&<div className="pricing-badge"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" className="svg-shrink"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>{p.badge}</div>}
                     <div className={`pricing-plan-label ${p.badge?'pricing-plan-label-featured':'pricing-plan-label-normal'}`}>{p.label}</div>
                     <div className="pricing-price">
                       <span className="pricing-price-num">{p.price}</span>

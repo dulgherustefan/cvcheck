@@ -372,7 +372,7 @@ input, textarea { font-family: var(--font-sans); }
 .hero-kicker::after {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(100deg, transparent 35%, rgba(168,255,62,0.18) 50%, transparent 65%);
+  background: linear-gradient(100deg, transparent 35%, rgba(61,255,160,0.18) 50%, transparent 65%);
   transform: translateX(-100%);
   animation: kickerShine 4.5s ease-in-out infinite;
   pointer-events: none;
@@ -1084,8 +1084,10 @@ input, textarea { font-family: var(--font-sans); }
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
 .pricing-card { background: var(--bg-elevated); padding: 32px 28px; position: relative; }
 .pricing-card-featured { background: var(--bg-subtle); }
+.pricing-card-featured > *:not([aria-hidden]) { position: relative; z-index: 1; }
 .pricing-badge {
-  position: absolute; top: 20px; right: 20px;
+  position: absolute; top: 20px; right: 20px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 4px;
   font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-inverse); background: var(--accent);
   padding: 4px 10px; border-radius: 100px;
@@ -1299,7 +1301,7 @@ input, textarea { font-family: var(--font-sans); }
 .analysis-mockup-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 0; }
 .analysis-mockup-left { padding: 20px; border-right: 1px solid var(--border); }
 .lmock-score-hero { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-subtle); border-radius: var(--radius-md); margin-bottom: 16px; }
-.lmock-score-wrap { position: relative; width: 68px; height: 68px; flex-shrink: 0; }
+.lmock-score-wrap { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
 .lmock-score-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .lmock-score-num { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.04em; line-height: 1; }
 .lmock-score-denom { font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary); }
