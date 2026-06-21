@@ -773,8 +773,11 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
       {open&&(
         <div className="dropdown-menu" role="menu">
           <div className="dropdown-header">
-            <div className="dropdown-email">{user.email}</div>
-            <div className={`dropdown-tier dropdown-tier-${tier}`}>{meta.label} plan</div>
+            <span className="dropdown-avatar">{initials}</span>
+            <div className="dropdown-id">
+              <div className="dropdown-email">{user.email}</div>
+              <span className={`dropdown-tier-badge ${tier==='pro'?'tier-pro':tier==='premium'?'tier-premium':''}`}>{meta.label}</span>
+            </div>
           </div>
           <div className="dropdown-section">
             <button role="menuitem" className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
