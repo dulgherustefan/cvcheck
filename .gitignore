@@ -1,3 +1,23 @@
+# dependencies
 node_modules
+
+# env
 .env.local
+.env*.local
+
+# next.js build output
 .next
+out
+
+# typescript build cache
+*.tsbuildinfo
+
+# macOS junk
+.DS_Store
+
+# vercel
+.vercel
+
+# logs
+*.log
+npm-debug.log*
