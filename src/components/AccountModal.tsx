@@ -321,7 +321,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
 
               {/* Saved jobs */}
               <a
-                href="/history#saved"
+                href="/history?tab=saved"
                 onClick={onClose}
                 className="_acc-row"
                 style={{
