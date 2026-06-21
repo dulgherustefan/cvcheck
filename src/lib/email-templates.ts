@@ -3,10 +3,29 @@
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://cvcheck.app'
 
+// Job titles/companies/locations come from third-party job boards (Adzuna,
+// Remotive, etc.) and user-derived CV meta — never trust them as raw HTML.
+function esc(s: unknown): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// For values used inside href="..." — only allow http(s), else drop to '#'.
+function escUrl(s: unknown): string {
+  const url = String(s ?? '').trim()
+  if (!/^https?:\/\//i.test(url)) return '#'
+  return esc(url)
+}
+
 export function buildConfirmationEmail({ email, domain, level, unsubscribeToken }: {
   email: string; domain: string; level: string; unsubscribeToken: string
 }) {
-  const unsubUrl = `${APP_URL}/api/jobs/alert/unsubscribe?token=${unsubscribeToken}`
+  const unsubUrl = `${APP_URL}/api/jobs/alert/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+  domain = esc(domain); level = esc(level); email = esc(email)
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -64,7 +83,8 @@ export function buildJobAlertEmail({ email, domain, level, jobs, unsubscribeToke
   }>
   unsubscribeToken: string
 }) {
-  const unsubUrl = `${APP_URL}/api/jobs/alert/unsubscribe?token=${unsubscribeToken}`
+  const unsubUrl = `${APP_URL}/api/jobs/alert/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+  domain = esc(domain); level = esc(level); email = esc(email)
 
   const fitColor = (label: string) => ({
     strong: '#16a34a', good: '#65A30D', partial: '#CA8A04', stretch: '#dc2626',
@@ -74,9 +94,12 @@ export function buildJobAlertEmail({ email, domain, level, jobs, unsubscribeToke
     const salary = job.salary_min
       ? `${Math.round(job.salary_min / 1000)}k${job.salary_max ? `–${Math.round(job.salary_max / 1000)}k` : '+'}`
       : ''
-    const color = fitColor(job.fit_label)
+    // fit_label drives a CSS color — restrict to the known set so a crafted
+    // label can't break out of the style attribute.
+    const safeLabel = ['strong', 'good', 'partial', 'stretch'].includes(job.fit_label) ? job.fit_label : 'partial'
+    const color = fitColor(safeLabel)
     const strengthsList = job.strengths.map(s =>
-      `<tr><td style="padding:2px 0;font-size:12px;color:#8884AA;line-height:1.5"><span style="color:#16a34a;margin-right:6px">✓</span>${s}</td></tr>`
+      `<tr><td style="padding:2px 0;font-size:12px;color:#8884AA;line-height:1.5"><span style="color:#16a34a;margin-right:6px">✓</span>${esc(s)}</td></tr>`
     ).join('')
 
     return `
@@ -84,18 +107,18 @@ export function buildJobAlertEmail({ email, domain, level, jobs, unsubscribeToke
       <tr><td style="padding:16px 20px">
         <table cellpadding="0" cellspacing="0" width="100%"><tr>
           <td>
-            <div style="font-size:14px;font-weight:600;color:#ECEAF8;letter-spacing:-0.2px">${job.title}</div>
-            <div style="font-size:12px;color:#8884AA;margin-top:3px">${job.company} · ${job.location}${salary ? ` · <strong style="color:#ECEAF8">${salary}</strong>` : ''}</div>
+            <div style="font-size:14px;font-weight:600;color:#ECEAF8;letter-spacing:-0.2px">${esc(job.title)}</div>
+            <div style="font-size:12px;color:#8884AA;margin-top:3px">${esc(job.company)} · ${esc(job.location)}${salary ? ` · <strong style="color:#ECEAF8">${esc(salary)}</strong>` : ''}</div>
           </td>
           <td align="right" style="vertical-align:top;white-space:nowrap">
             <span style="font-size:11px;font-weight:700;color:${color};background:${color}20;border:0.5px solid ${color}40;border-radius:3px;padding:2px 8px;letter-spacing:0.04em;text-transform:uppercase">
-              ${job.fit_score}% · ${job.fit_label}
+              ${Math.round(Number(job.fit_score) || 0)}% · ${esc(safeLabel)}
             </span>
           </td>
         </tr></table>
         ${job.strengths.length > 0 ? `<table cellpadding="0" cellspacing="0" style="margin-top:10px;width:100%">${strengthsList}</table>` : ''}
         <div style="margin-top:12px">
-          <a href="${job.redirect_url}" style="font-size:12px;font-weight:600;color:#ECEAF8;background:#1E1C34;border:0.5px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 14px;text-decoration:none">
+          <a href="${escUrl(job.redirect_url)}" style="font-size:12px;font-weight:600;color:#ECEAF8;background:#1E1C34;border:0.5px solid rgba(255,255,255,0.12);border-radius:4px;padding:6px 14px;text-decoration:none">
             View job →
           </a>
         </div>

@@ -1163,10 +1163,6 @@ input, textarea { font-family: var(--font-sans); }
 .dropdown-section { padding: 6px; }
 .dropdown-divider { border-top: 1px solid var(--border); }
 
-/* ── Theme toggle ── */
-.theme-toggle-placeholder { width: 34px; height: 34px; }
-.theme-toggle { width: 34px; height: 34px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-subtle); color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
-.theme-toggle:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-subtle); }
 
 /* ── Footer ── */
 .footer { border-top: 1px solid var(--border); padding: 56px 0 40px; }
@@ -1426,9 +1422,6 @@ input, textarea { font-family: var(--font-sans); }
 
 /* ── Nav login btn ── */
 .nav-btn-login { padding: 7px 14px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-secondary); cursor: pointer; }
-
-/* ── Theme toggle placeholder ── */
-.theme-toggle { display: none; } /* hide ThemeToggle on dark-only design */
 
 /* ── Hero RotatingText ── */
 .hero-rotating-wrap { display: inline; position: relative; }

@@ -3,9 +3,13 @@ import { SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO } from './prompt'
 import type { AnalysisResult, CVScores, Rating, Tier } from './types'
 import { randomUUID } from 'crypto'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+// Lazy client — avoid constructing at module load so a missing key doesn't
+// crash the build during page-data collection.
+let _client: Anthropic | null = null
+function getClient(): Anthropic {
+  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  return _client
+}
 
 const MAX_CONTENT_CHARS = 6000
 
@@ -72,7 +76,7 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
   const isPro = tier === 'pro' || tier === 'premium'
   const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE
 
-  const message = await client.messages.create({
+  const message = await getClient().messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: isPro ? 6000 : 4000,
     system: systemPrompt,

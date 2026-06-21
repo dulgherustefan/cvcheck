@@ -59,6 +59,19 @@ function getIdentifier(req: NextRequest, userId: string | null): string {
 }
 
 async function checkAndIncrementFreeLimit(identifier: string): Promise<{ allowed: boolean }> {
+  // Atomic check-and-increment via Postgres function — prevents the TOCTOU race
+  // where two concurrent requests both pass the limit check. See
+  // supabase/migrations/0001_free_scan_atomic.sql
+  const { data, error } = await supabaseAdmin.rpc('increment_free_scan', {
+    p_identifier: identifier,
+    p_limit:      FREE_SCAN_LIMIT,
+  })
+
+  if (!error) return { allowed: data === true }
+
+  // Fallback (RPC not deployed yet): conservative non-atomic path. Logs so the
+  // migration gets applied; still better than failing the request entirely.
+  console.warn('[roast] increment_free_scan RPC unavailable, using fallback:', error.code ?? error.message)
   const { data: existing } = await supabaseAdmin
     .from('free_scans')
     .select('scan_count')

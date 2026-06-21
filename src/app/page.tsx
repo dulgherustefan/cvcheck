@@ -7,7 +7,6 @@ import { RotatingText } from '@/components/RotatingText'
 import { BorderTrail } from '@/components/BorderTrail'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { UpgradeModal } from '@/components/UpgradeModal'
 import { AccountModal } from '@/components/AccountModal'
@@ -1029,7 +1028,6 @@ export default function Home() {
               <button onClick={()=>setShowAuthModal(true)} className="nav-btn-accent btn-primary shimmerBtn">Sign up</button>
             </>
           ))}
-          <ThemeToggle/>
         </div>
       </nav>
 

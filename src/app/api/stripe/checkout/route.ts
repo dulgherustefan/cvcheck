@@ -33,7 +33,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const origin = req.headers.get('origin') ?? 'http://localhost:3000'
+    // Never trust the client-supplied Origin header for redirect URLs — an
+    // attacker could send Origin: https://evil.com and hijack the post-payment
+    // redirect. Use the server-configured app URL; fall back to Origin only in dev.
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL
+    const origin =
+      appUrl ??
+      (process.env.NODE_ENV !== 'production'
+        ? (req.headers.get('origin') ?? 'http://localhost:3000')
+        : 'https://cvcheck.app')
 
     const session = await stripe.checkout.sessions.create({
       mode: plan === 'pro' ? 'payment' : 'subscription',

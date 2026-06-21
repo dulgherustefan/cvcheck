@@ -7,8 +7,18 @@ import Anthropic from '@anthropic-ai/sdk'
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 min — processes multiple users
 
-const resend    = new Resend(process.env.RESEND_API_KEY!)
-const anthropic = new Anthropic()
+// Lazily construct external clients — instantiating at module load crashes the
+// build when the API keys aren't present (e.g. local/CI without secrets).
+let _resend: Resend | null = null
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+  return _resend
+}
+let _anthropic: Anthropic | null = null
+function getAnthropic(): Anthropic {
+  if (!_anthropic) _anthropic = new Anthropic()
+  return _anthropic
+}
 const FROM_EMAIL = process.env.RESEND_FROM ?? 'CVCheck <alerts@cvcheck.app>'
 
 // ── Auth: only Vercel Cron or internal secret can call this ──────────────────
@@ -181,7 +191,7 @@ ${rawJobs.map((j, i) => `${i + 1}. ${j.title.slice(0, 100)} at ${j.company.slice
 Return array of ${rawJobs.length} objects:
 [{"fit_score": <0-100>, "fit_label": <"strong"|"good"|"partial"|"stretch">, "strengths": [<string>, <string>]}]`
 
-      const response = await anthropic.messages.create({
+      const response = await getAnthropic().messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         messages: [{ role: 'user', content: fitPrompt }],
@@ -226,7 +236,7 @@ Return array of ${rawJobs.length} objects:
         unsubscribeToken: alert.unsubscribe_token,
       })
 
-      await resend.emails.send({
+      await getResend().emails.send({
         from:    FROM_EMAIL,
         to:      alert.email,
         subject: `${jobs.length} ${safeDomain} jobs matched your profile this week`,

@@ -6,7 +6,13 @@ import type { JobsRequest } from '@/lib/types'
 
 export const runtime = 'nodejs'
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
+// Lazily construct Resend — instantiating at module load crashes the build
+// when RESEND_API_KEY isn't present (e.g. local/CI without the secret).
+let _resend: Resend | null = null
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+  return _resend
+}
 const FROM_EMAIL = process.env.RESEND_FROM ?? 'CVCheck <alerts@cvcheck.app>'
 
 // Allowed values for validation
@@ -128,7 +134,7 @@ export async function POST(req: NextRequest) {
   const unsubscribeToken = alertRow?.unsubscribe_token ?? ''
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from:    FROM_EMAIL,
       to:      auth.email,
       subject: '✓ Job alerts activated — CVCheck',

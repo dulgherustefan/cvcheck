@@ -15,18 +15,14 @@ export const maxDuration = 60
 // ── Auth helpers ──────────────────────────────────────────────────────────────
 
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { getUserIdFromRequest } from '@/lib/auth'
+import { checkRateLimit, makeIdentifier } from '@/lib/ratelimit'
 
-async function getUserIdFromRequest(req: NextRequest): Promise<string | null> {
-  try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) return null
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
-    if (error || !user) return null
-    return user.id
-  } catch {
-    return null
-  }
+function getClientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for')
+  if (!fwd) return req.headers.get('x-real-ip') ?? 'unknown'
+  const ip = fwd.split(',')[0].trim()
+  return /^[0-9a-fA-F.:]+$/.test(ip) ? ip : 'unknown'
 }
 
 async function getTierForUser(userId: string | null): Promise<Tier> {
@@ -487,7 +483,12 @@ async function fetchAllJobs(
 
 // ── Claude fit analysis ───────────────────────────────────────────────────────
 
-const anthropic = new Anthropic()
+// Lazy — avoid constructing at module load (keeps build green without the key).
+let _anthropic: Anthropic | null = null
+function getAnthropic(): Anthropic {
+  if (!_anthropic) _anthropic = new Anthropic()
+  return _anthropic
+}
 
 async function analyzeJobFit(
   job: JobListing,
@@ -520,7 +521,7 @@ fit_label rules: 80-100=strong, 60-79=good, 40-59=partial, 0-39=stretch
 strengths: exactly 2 short strings (max 10 words) — what the candidate already has that matches this role.
 gaps: exactly 3 short strings (max 10 words) — specific skills or experience missing. Be concrete, not generic.`
 
-  const response = await anthropic.messages.create({
+  const response = await getAnthropic().messages.create({
     model:      'claude-haiku-4-5-20251001',
     max_tokens: 300,
     messages:   [{ role: 'user', content: prompt }],
@@ -533,7 +534,13 @@ gaps: exactly 3 short strings (max 10 words) — specific skills or experience m
     .replace(/```json|```/g, '')
     .trim()
 
-  const parsed = JSON.parse(text) as JobFitAnalysis
+  let parsed: JobFitAnalysis
+  try {
+    parsed = JSON.parse(text) as JobFitAnalysis
+  } catch {
+    console.warn(`[jobs] Failed to parse fit JSON for "${job.title}" @ ${job.company}`)
+    throw new Error('invalid_fit_json')
+  }
   // Clamp fit_score to valid range
   parsed.fit_score = Math.min(100, Math.max(0, parsed.fit_score ?? 0))
   return parsed
@@ -543,6 +550,29 @@ gaps: exactly 3 short strings (max 10 words) — specific skills or experience m
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth first so the rate-limit key + tier are known before doing any work.
+    const userId    = await getUserIdFromRequest(req)
+    const ip        = getClientIp(req)
+
+    // Rate limit — each request fans out to up to 12 Claude calls, so an
+    // unthrottled endpoint can drain the Anthropic quota fast.
+    const rl = await checkRateLimit(makeIdentifier(userId, ip), !!userId)
+    if (!rl.allowed) {
+      const retryAfterSec = Math.ceil((rl.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        { error: 'rate_limit_exceeded', retryAfter: retryAfterSec },
+        {
+          status: 429,
+          headers: {
+            'Retry-After':           String(retryAfterSec),
+            'X-RateLimit-Limit':     String(rl.limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset':     String(Math.ceil(rl.resetAt / 1000)),
+          },
+        },
+      )
+    }
+
     const body = (await req.json()) as JobsRequest
     const { detected_domain, detected_level, trajectory, keywords } = body
 
@@ -572,9 +602,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const userId    = await getUserIdFromRequest(req)
     const tier      = await getTierForUser(userId)
-    const isPro     = tier === 'pro' || tier === 'premium'
     const isPremium = tier === 'premium'
     const fitLocked = !isPremium  // fit analysis is Premium-only
 

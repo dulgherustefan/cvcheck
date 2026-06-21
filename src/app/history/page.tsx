@@ -4,7 +4,6 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { createSupabaseBrowser } from '@/lib/supabase'
 import type { Rating, CVScores, FirstImpression, ImpactAnalysis, ATSAnalysis, RedFlag, CareerStory, FormatAnalysis, CredibilityAnalysis, PriorityAction } from '@/lib/types'
 
@@ -902,7 +901,6 @@ function HistoryContent() {
                 {user.email?.split('@')[0]}
               </span>
             )}
-            <ThemeToggle />
           </div>
         </div>
       </header>
