@@ -1014,7 +1014,7 @@ export default function Home() {
 
       <nav className="navbar">
         <div className="navbar-logo">
-          <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
+          <img src="/logo.svg" width="32" height="32" alt="CVCheck" className="logo-img" />
           CVCheck
         </div>
         <ul className="navbar-links nav-links-desktop">
@@ -1525,7 +1525,7 @@ export default function Home() {
           <div className="footer-grid">
             <div>
               <div className="footer-logo">
-                <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
+                <img src="/logo.svg" width="32" height="32" alt="CVCheck" className="logo-img" />
                 CVCheck
               </div>
               <p className="footer-desc">AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>

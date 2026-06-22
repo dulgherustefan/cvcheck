@@ -889,7 +889,7 @@ function HistoryContent() {
             </Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <img src="/logo.png" width="24" height="24" alt="CVCheck" style={{display:"block",borderRadius:5}}/>
+              <img src="/logo.svg" width="24" height="24" alt="CVCheck" style={{display:"block",borderRadius:5}}/>
               <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
                 CVCheck
               </span>

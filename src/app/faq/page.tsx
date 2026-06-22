@@ -69,7 +69,7 @@ export default function FAQPage() {
       />
       <nav className="navbar">
         <Link href="/" className="navbar-logo">
-          <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
+          <img src="/logo.svg" width="32" height="32" alt="CVCheck" className="logo-img" />
           CVCheck
         </Link>
         <div className="navbar-right">
