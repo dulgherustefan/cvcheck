@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ThemeScript } from '@/components/ThemeScript'
-import { Inter, DM_Mono } from 'next/font/google'
+import { Inter, DM_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
 
@@ -8,6 +8,15 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+// Display face for headings — a contemporary grotesque with real character,
+// deliberately not Inter (used only for body) to give the brand its own voice.
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-bricolage',
   display: 'swap',
 })
 
@@ -155,7 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
       </head>
-      <body className={`${inter.variable} ${dmMono.variable}`}><PageTransition>{children}</PageTransition></body>
+      <body className={`${inter.variable} ${dmMono.variable} ${bricolage.variable}`}><PageTransition>{children}</PageTransition></body>
     </html>
   )
 }
