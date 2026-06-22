@@ -198,7 +198,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
 
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 20 }}>
-              <img src="/logo.svg" width="28" height="28" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
+              <img src="/logo.png" width="28" height="28" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
               <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>CVCheck</span>
             </div>
 
@@ -224,7 +224,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
             {/* Logo + heading */}
             <div style={{ marginBottom: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                <img src="/logo.svg" width="26" height="26" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
+                <img src="/logo.png" width="26" height="26" alt="CVCheck" style={{ display: 'block', borderRadius: 6 }} />
                 <span style={{
                   fontSize: 15, fontWeight: 700,
                   color: 'var(--accent)',
@@ -390,7 +390,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
                   padding: '12px 16px',
                   background: 'var(--accent)',
                   border: 'none', borderRadius: 10,
-                  color: '#fff', fontSize: 14, fontWeight: 700,
+                  color: 'var(--text-inverse)', fontSize: 14, fontWeight: 700,
                   cursor: isLoading ? 'default' : 'pointer',
                   opacity: isLoading ? 0.6 : 1,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,

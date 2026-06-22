@@ -1014,7 +1014,7 @@ export default function Home() {
 
       <nav className="navbar">
         <div className="navbar-logo">
-          <img src="/logo.svg" width="32" height="32" alt="CVCheck" className="logo-img" />
+          <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
           CVCheck
         </div>
         <ul className="navbar-links nav-links-desktop">
@@ -1509,10 +1509,6 @@ export default function Home() {
                 <h2 data-sr data-sr-delay="0.08" className="section-h2">The most honest feedback your CV will ever get.</h2>
               </div>
               <div className="testimonial-card testimonial-mt">
-                <div className="testimonial-stars">
-                  {[...Array(5)].map((_,i)=><svg key={i} width="20" height="20" fill="var(--accent)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>)}
-                </div>
-                <p className="testimonial-rating">Rated <strong className="testimonial-rating-num">4.9</strong> by early users</p>
                 <blockquote className="testimonial-quote">
                   "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
                 </blockquote>
@@ -1529,7 +1525,7 @@ export default function Home() {
           <div className="footer-grid">
             <div>
               <div className="footer-logo">
-                <img src="/logo.svg" width="32" height="32" alt="CVCheck" className="logo-img" />
+                <img src="/logo.png" width="32" height="32" alt="CVCheck" className="logo-img" />
                 CVCheck
               </div>
               <p className="footer-desc">AI-powered CV analysis and job matching. Get your score, fix your red flags, land more interviews.</p>

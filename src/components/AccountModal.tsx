@@ -84,7 +84,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         }
         ._acc-upgrade-btn:hover {
           background: var(--accent) !important;
-          color: #fff !important;
+          color: var(--text-inverse) !important;
           transform: translateY(-2px) !important;
           box-shadow: 0 4px 14px rgba(61,255,160,0.35) !important;
         }
@@ -162,7 +162,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
                 background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)',
-                color: '#fff',
+                color: 'var(--text-inverse)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 18, fontWeight: 800, flexShrink: 0,
                 fontFamily: 'var(--font-display)',
@@ -306,7 +306,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                       disabled={pwLoading}
                       style={{
                         padding: '10px', background: 'var(--accent)', border: 'none',
-                        borderRadius: 9, color: '#fff',
+                        borderRadius: 9, color: 'var(--text-inverse)',
                         fontSize: 13, fontWeight: 700,
                         opacity: pwLoading ? 0.6 : 1,
                         cursor: pwLoading ? 'not-allowed' : 'pointer',

@@ -216,7 +216,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       </p>
                       <span style={{
                         fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                        background: 'var(--accent)', color: '#fff',
+                        background: 'var(--accent)', color: 'var(--text-inverse)',
                         padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap',
                       }}>
                         Most popular
@@ -241,7 +241,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     style={{
                       width: '100%', padding: '12px 16px',
                       fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
-                      color: '#fff', background: 'var(--accent)', border: 'none',
+                      color: 'var(--text-inverse)', background: 'var(--accent)', border: 'none',
                       borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
@@ -431,7 +431,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     marginTop: 4, padding: '13px',
                     background: 'var(--accent)', border: 'none',
                     borderRadius: 8,
-                    color: '#fff', fontSize: 14, fontWeight: 700,
+                    color: 'var(--text-inverse)', fontSize: 14, fontWeight: 700,
                     boxShadow: '0 4px 14px rgba(61,255,160,0.30)',
                     cursor: authLoading ? 'not-allowed' : 'pointer',
                     opacity: authLoading ? 0.65 : 1,
