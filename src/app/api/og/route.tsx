@@ -13,15 +13,15 @@ const RATING_LABEL: Record<string, string> = {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 75) return '#16A34A'
-  if (score >= 50) return '#CA8A04'
-  return '#DC2626'
+  if (score >= 75) return '#3DFFA0'
+  if (score >= 50) return '#FFD23F'
+  return '#FF5F5F'
 }
 
 function ratingColor(rating: string): string {
-  if (['strong', 'excellent'].includes(rating)) return '#16A34A'
-  if (['good', 'average'].includes(rating))     return '#CA8A04'
-  return '#DC2626'
+  if (['strong', 'excellent'].includes(rating)) return '#3DFFA0'
+  if (['good', 'average'].includes(rating))     return '#FFD23F'
+  return '#FF5F5F'
 }
 
 // SVG circle arc for score ring

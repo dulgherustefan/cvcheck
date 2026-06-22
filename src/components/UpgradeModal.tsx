@@ -110,7 +110,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(26,18,9,0.55)',
+          background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -130,14 +130,14 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
             maxWidth: step === 'login' ? 440 : 580,
             maxHeight: '92vh',
             overflowY: 'auto',
-            boxShadow: '0 32px 80px rgba(45,31,14,0.28), 0 8px 24px rgba(45,31,14,0.12)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.28), 0 8px 24px rgba(0,0,0,0.12)',
             animation: 'modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             transition: 'max-width 0.3s ease',
             overflow: 'hidden',
           }}
         >
           {/* Terracotta stripe */}
-          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
+          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))', flexShrink: 0 }} />
 
           {/* Close button */}
           <button
@@ -245,7 +245,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
-                      boxShadow: '0 4px 14px rgba(212,98,42,0.35)',
+                      boxShadow: '0 4px 14px rgba(61,255,160,0.35)',
                       opacity: loading && loading !== 'pro' ? 0.5 : 1,
                     }}
                   >
@@ -432,7 +432,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     background: 'var(--accent)', border: 'none',
                     borderRadius: 8,
                     color: '#fff', fontSize: 14, fontWeight: 700,
-                    boxShadow: '0 4px 14px rgba(212,98,42,0.30)',
+                    boxShadow: '0 4px 14px rgba(61,255,160,0.30)',
                     cursor: authLoading ? 'not-allowed' : 'pointer',
                     opacity: authLoading ? 0.65 : 1,
                     transition: 'all 0.15s', fontFamily: 'var(--font-sans)',

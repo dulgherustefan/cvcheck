@@ -212,7 +212,7 @@ function LockedPreview({ count, label, sublabel, onUnlock }: { count?:number|str
   )
 }
 
-const FIT_COLORS: Record<string,string> = { strong:'var(--score-high)', good:'#65A30D', partial:'var(--score-mid)', stretch:'var(--score-low)' }
+const FIT_COLORS: Record<string,string> = { strong:'var(--score-high)', good:'#B8E85F', partial:'var(--score-mid)', stretch:'var(--score-low)' }
 function FitBadge({ label, score }: { label:string; score:number }) {
   const color = FIT_COLORS[label] ?? 'var(--text-secondary)'
   return (

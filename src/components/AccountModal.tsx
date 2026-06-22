@@ -15,7 +15,7 @@ interface AccountModalProps {
 const TIER_META: Record<string, { label: string; color: string; bg: string; border: string; dot: string }> = {
   free:    { label: 'Free',    color: 'var(--text-secondary)', bg: 'var(--bg-subtle)',          border: 'var(--border-strong)', dot: 'var(--text-tertiary)' },
   pro:     { label: 'Pro',     color: 'var(--accent)',          bg: 'var(--accent-subtle)',      border: 'var(--accent-border)', dot: 'var(--accent)' },
-  premium: { label: 'Premium', color: '#92650A',                bg: 'rgba(234,179,8,0.10)',      border: 'rgba(234,179,8,0.28)', dot: '#CA8A04' },
+  premium: { label: 'Premium', color: 'var(--text-inverse)',   bg: 'var(--accent)',             border: 'transparent',          dot: 'var(--text-inverse)' },
 }
 
 export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut }: AccountModalProps) {
@@ -67,7 +67,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         ._acc-row:hover { background: var(--bg-subtle) !important; }
         ._acc-danger:hover {
           background: rgba(220,38,38,0.06) !important;
-          color: #DC2626 !important;
+          color: #FF5F5F !important;
         }
         ._acc-close {
           transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1) !important;
@@ -86,7 +86,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
           background: var(--accent) !important;
           color: #fff !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 4px 14px rgba(212,98,42,0.35) !important;
+          box-shadow: 0 4px 14px rgba(61,255,160,0.35) !important;
         }
         ._acc-upgrade-btn:active { transform: scale(0.97) !important; }
         ._acc-accordion {
@@ -100,7 +100,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         ._acc-pw-submit:hover:not(:disabled) {
           opacity: 0.92 !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 4px 14px rgba(212,98,42,0.30) !important;
+          box-shadow: 0 4px 14px rgba(61,255,160,0.30) !important;
         }
         ._acc-pw-submit:active:not(:disabled) { transform: scale(0.97) !important; }
       `}</style>
@@ -108,7 +108,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
       <div
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(26,18,9,0.55)',
+          background: 'rgba(0,0,0,0.6)',
           backdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 2000, padding: 24,
@@ -123,14 +123,14 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
             border: '1px solid var(--border-strong)',
             borderRadius: 20,
             overflow: 'hidden',
-            boxShadow: '0 24px 80px rgba(45,31,14,0.22), 0 4px 16px rgba(45,31,14,0.08)',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.08)',
             position: 'relative',
             animation: '_accFadeUp 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
           onClick={e => e.stopPropagation()}
         >
           {/* Top accent stripe */}
-          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)' }} />
+          <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))' }} />
 
           <div style={{ padding: '28px 28px 24px' }}>
 
@@ -161,12 +161,12 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
               {/* Avatar */}
               <div style={{
                 width: 52, height: 52, borderRadius: 14,
-                background: 'linear-gradient(135deg, var(--accent) 0%, #E8925A 100%)',
+                background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)',
                 color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 18, fontWeight: 800, flexShrink: 0,
                 fontFamily: 'var(--font-display)',
-                boxShadow: '0 4px 12px rgba(212,98,42,0.30)',
+                boxShadow: '0 4px 12px rgba(61,255,160,0.30)',
               }}>
                 {initials}
               </div>
@@ -286,7 +286,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                     )}
                     {pwSuccess && (
                       <div style={{
-                        fontSize: 12, color: '#15803D',
+                        fontSize: 12, color: 'var(--accent)',
                         padding: '8px 12px',
                         background: 'rgba(22,163,74,0.06)',
                         border: '1px solid rgba(22,163,74,0.15)',

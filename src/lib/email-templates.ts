@@ -87,7 +87,7 @@ export function buildJobAlertEmail({ email, domain, level, jobs, unsubscribeToke
   domain = esc(domain); level = esc(level); email = esc(email)
 
   const fitColor = (label: string) => ({
-    strong: '#16a34a', good: '#65A30D', partial: '#CA8A04', stretch: '#dc2626',
+    strong: '#3DFFA0', good: '#B8E85F', partial: '#FFD23F', stretch: '#FF5F5F',
   }[label] ?? '#8884AA')
 
   const jobCards = jobs.slice(0, 5).map(job => {
@@ -99,7 +99,7 @@ export function buildJobAlertEmail({ email, domain, level, jobs, unsubscribeToke
     const safeLabel = ['strong', 'good', 'partial', 'stretch'].includes(job.fit_label) ? job.fit_label : 'partial'
     const color = fitColor(safeLabel)
     const strengthsList = job.strengths.map(s =>
-      `<tr><td style="padding:2px 0;font-size:12px;color:#8884AA;line-height:1.5"><span style="color:#16a34a;margin-right:6px">✓</span>${esc(s)}</td></tr>`
+      `<tr><td style="padding:2px 0;font-size:12px;color:#8884AA;line-height:1.5"><span style="color:#3DFFA0;margin-right:6px">✓</span>${esc(s)}</td></tr>`
     ).join('')
 
     return `

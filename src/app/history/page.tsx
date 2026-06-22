@@ -58,12 +58,12 @@ const RATING_LABELS: Record<Rating, string> = {
 }
 
 const RATING_COLORS: Record<Rating, string> = {
-  needs_work: '#DC2626',
-  below_average: '#EA580C',
-  average: '#CA8A04',
-  good: '#65A30D',
-  strong: '#16A34A',
-  excellent: '#0891B2',
+  needs_work: '#FF5F5F',
+  below_average: '#FF8F5F',
+  average: '#FFD23F',
+  good: '#B8E85F',
+  strong: '#5FE8A8',
+  excellent: '#3DFFA0',
 }
 
 const LIST_SELECT = [
@@ -132,7 +132,7 @@ function MiniRing({ score }: { score: number }) {
 function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => void }) {
   const vColor = RATING_COLORS[entry.rating]
   const tierMeta = entry.tier === 'premium'
-    ? { label: 'Premium', color: '#92650A', bg: 'rgba(234,179,8,0.10)', border: 'rgba(234,179,8,0.28)' }
+    ? { label: 'Premium', color: 'var(--text-inverse)', bg: 'var(--accent)', border: 'transparent' }
     : entry.tier === 'pro'
     ? { label: 'Pro', color: 'var(--accent)', bg: 'var(--accent-subtle)', border: 'var(--accent-border)' }
     : null
@@ -148,7 +148,7 @@ function HistoryCard({ entry, onClick }: { entry: HistoryEntry; onClick: () => v
         border: '1px solid var(--border)',
         borderRadius: 14,
         cursor: 'pointer', textAlign: 'left',
-        boxShadow: '0 1px 4px rgba(45,31,14,0.05)',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
         transition: 'border-color 0.18s, box-shadow 0.18s, transform 0.18s',
       }}
     >
@@ -227,16 +227,16 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
   }, [onClose])
 
   const severityColor = (s: string) => {
-    if (s === 'dealbreaker') return '#DC2626'
-    if (s === 'warning') return '#CA8A04'
-    return '#6B7280'
+    if (s === 'dealbreaker') return '#FF5F5F'
+    if (s === 'warning') return '#FFD23F'
+    return '#9896A8'
   }
 
   return (
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(26,18,9,0.60)', backdropFilter: 'blur(8px)',
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
         display: 'flex', justifyContent: 'flex-end',
       }}
       onClick={onClose}
@@ -248,7 +248,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
           height: '100%', overflowY: 'auto',
           background: 'var(--bg-elevated)',
           borderLeft: '1px solid var(--border-strong)',
-          boxShadow: '-32px 0 100px rgba(45,31,14,0.25)',
+          boxShadow: '-32px 0 100px rgba(0,0,0,0.25)',
           display: 'flex', flexDirection: 'column',
           animation: 'slideIn 0.25s cubic-bezier(0.22,1,0.36,1)',
         }}
@@ -256,11 +256,11 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
         <style>{`
           @keyframes slideIn { from { transform: translateX(48px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
           ._drawer-close:hover { background: var(--accent-subtle) !important; border-color: var(--accent-border) !important; color: var(--accent) !important; }
-          ._hist-card:hover { border-color: var(--accent-border) !important; box-shadow: 0 4px 20px rgba(45,31,14,0.10) !important; transform: translateY(-1px) !important; }
+          ._hist-card:hover { border-color: var(--accent-border) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.10) !important; transform: translateY(-1px) !important; }
         `}</style>
 
         {/* Stripe + Header */}
-        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))', flexShrink: 0 }} />
 
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -368,7 +368,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                   textTransform: 'uppercase' as const,
-                  color: entry.first_impression.passes_7_second_test ? '#15803D' : '#DC2626',
+                  color: entry.first_impression.passes_7_second_test ? '#3DFFA0' : '#FF5F5F',
                   background: entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
                   border: `1px solid ${entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`,
                   padding: '4px 10px', borderRadius: 20, alignSelf: 'flex-start',
@@ -462,7 +462,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                     background: 'var(--accent)', color: '#fff',
                     borderRadius: 9, fontSize: 13, fontWeight: 700,
                     textDecoration: 'none',
-                    boxShadow: '0 4px 12px rgba(212,98,42,0.30)',
+                    boxShadow: '0 4px 12px rgba(61,255,160,0.30)',
                   }}>
                     Unlock full analysis — €1.99
                   </a>
@@ -481,7 +481,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
-                    color: entry.career_story.progression_clear ? '#15803D' : '#A16207',
+                    color: entry.career_story.progression_clear ? '#3DFFA0' : '#A16207',
                     padding: '3px 9px', borderRadius: 20,
                     background: entry.career_story.progression_clear ? 'rgba(22,163,74,0.08)' : 'rgba(202,138,4,0.10)',
                     border: `1px solid ${entry.career_story.progression_clear ? 'rgba(22,163,74,0.2)' : 'rgba(202,138,4,0.22)'}`,
@@ -585,7 +585,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
               fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
               textTransform: 'uppercase' as const,
               padding: '3px 9px', borderRadius: 20, flexShrink: 0,
-              color: isApplied ? '#15803D' : 'var(--accent)',
+              color: isApplied ? '#3DFFA0' : 'var(--accent)',
               background: isApplied ? 'rgba(22,163,74,0.08)' : 'var(--accent-subtle)',
               border: `1px solid ${isApplied ? 'rgba(22,163,74,0.22)' : 'var(--accent-border)'}`,
             }}>
@@ -627,7 +627,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
               <button
                 onClick={() => handleAction('apply')} disabled={loading}
                 style={{
-                  fontSize: 12, fontWeight: 600, color: '#15803D',
+                  fontSize: 12, fontWeight: 600, color: '#3DFFA0',
                   background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.22)',
                   borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
                   fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1,
@@ -693,7 +693,7 @@ function EmptyState() {
         background: 'var(--accent)', color: '#fff',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
-        boxShadow: '0 4px 14px rgba(212,98,42,0.28)',
+        boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
       }}>
         Analyze a CV
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -727,7 +727,7 @@ function EmptySavedJobs() {
         background: 'var(--accent)', color: '#fff',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
-        boxShadow: '0 4px 14px rgba(212,98,42,0.28)',
+        boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
       }}>
         Find matching jobs
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -847,7 +847,7 @@ function HistoryContent() {
       <style>{`
         ._hist-card:hover {
           border-color: var(--accent-border) !important;
-          box-shadow: 0 4px 20px rgba(45,31,14,0.10) !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.10) !important;
           transform: translateY(-1px) !important;
         }
         ._hist-tab { transition: color 0.15s, border-color 0.15s !important; }
@@ -866,7 +866,7 @@ function HistoryContent() {
         boxShadow: '0 1px 0 var(--border)',
       }}>
         {/* Accent stripe */}
-        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #E8925A)', flexShrink: 0 }} />
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--accent-hover))', flexShrink: 0 }} />
         <div style={{
           maxWidth: 860, margin: '0 auto',
           padding: '0 32px',
