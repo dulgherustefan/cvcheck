@@ -369,8 +369,8 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                   fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                   textTransform: 'uppercase' as const,
                   color: entry.first_impression.passes_7_second_test ? '#3DFFA0' : '#FF5F5F',
-                  background: entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.08)' : 'rgba(220,38,38,0.08)',
-                  border: `1px solid ${entry.first_impression.passes_7_second_test ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`,
+                  background: entry.first_impression.passes_7_second_test ? 'var(--accent-subtle)' : 'rgba(255,95,95,0.08)',
+                  border: `1px solid ${entry.first_impression.passes_7_second_test ? 'var(--accent-border)' : 'rgba(255,95,95,0.2)'}`,
                   padding: '4px 10px', borderRadius: 20, alignSelf: 'flex-start',
                 }}>
                   {entry.first_impression.passes_7_second_test
@@ -435,7 +435,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                   }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
                       <span style={{
-                        fontSize: 10, fontWeight: 800, color: '#fff',
+                        fontSize: 10, fontWeight: 800, color: 'var(--text-inverse)',
                         background: 'var(--accent)',
                         width: 20, height: 20, borderRadius: 6,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -459,7 +459,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center' }}>
                   <a href="/" style={{
                     padding: '10px 22px',
-                    background: 'var(--accent)', color: '#fff',
+                    background: 'var(--accent)', color: 'var(--text-inverse)',
                     borderRadius: 9, fontSize: 13, fontWeight: 700,
                     textDecoration: 'none',
                     boxShadow: '0 4px 12px rgba(61,255,160,0.30)',
@@ -481,10 +481,10 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
-                    color: entry.career_story.progression_clear ? '#3DFFA0' : '#A16207',
+                    color: entry.career_story.progression_clear ? '#3DFFA0' : '#FFD23F',
                     padding: '3px 9px', borderRadius: 20,
-                    background: entry.career_story.progression_clear ? 'rgba(22,163,74,0.08)' : 'rgba(202,138,4,0.10)',
-                    border: `1px solid ${entry.career_story.progression_clear ? 'rgba(22,163,74,0.2)' : 'rgba(202,138,4,0.22)'}`,
+                    background: entry.career_story.progression_clear ? 'var(--accent-subtle)' : 'rgba(255,210,63,0.10)',
+                    border: `1px solid ${entry.career_story.progression_clear ? 'var(--accent-border)' : 'rgba(255,210,63,0.22)'}`,
                   }}>
                     {entry.career_story.progression_clear ? '✓ Clear progression' : '⚠ Unclear progression'}
                   </span>
@@ -560,7 +560,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
     <div style={{
       padding: '18px 20px',
       background: 'var(--bg-elevated)',
-      border: `1px solid ${isApplied ? 'rgba(22,163,74,0.22)' : 'var(--border)'}`,
+      border: `1px solid ${isApplied ? 'var(--accent-border)' : 'var(--border)'}`,
       borderRadius: 14,
       transition: 'border-color 0.15s',
     }}>
@@ -586,8 +586,8 @@ function SavedJobCard({ job, token, onStatusChange }: {
               textTransform: 'uppercase' as const,
               padding: '3px 9px', borderRadius: 20, flexShrink: 0,
               color: isApplied ? '#3DFFA0' : 'var(--accent)',
-              background: isApplied ? 'rgba(22,163,74,0.08)' : 'var(--accent-subtle)',
-              border: `1px solid ${isApplied ? 'rgba(22,163,74,0.22)' : 'var(--accent-border)'}`,
+              background: isApplied ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
+              border: `1px solid ${isApplied ? 'var(--accent-border)' : 'var(--accent-border)'}`,
             }}>
               {isApplied ? '✓ Applied' : 'Saved'}
             </span>
@@ -628,7 +628,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
                 onClick={() => handleAction('apply')} disabled={loading}
                 style={{
                   fontSize: 12, fontWeight: 600, color: '#3DFFA0',
-                  background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.22)',
+                  background: 'var(--accent-subtle)', border: '1px solid var(--accent-border)',
                   borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
                   fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1,
                   transition: 'opacity 0.15s',
@@ -690,7 +690,7 @@ function EmptyState() {
       <Link href="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: 7,
         padding: '11px 24px',
-        background: 'var(--accent)', color: '#fff',
+        background: 'var(--accent)', color: 'var(--text-inverse)',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
         boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
@@ -724,7 +724,7 @@ function EmptySavedJobs() {
       <Link href="/" style={{
         display: 'inline-flex', alignItems: 'center', gap: 7,
         padding: '11px 24px',
-        background: 'var(--accent)', color: '#fff',
+        background: 'var(--accent)', color: 'var(--text-inverse)',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
         boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
