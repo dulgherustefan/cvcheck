@@ -66,7 +66,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         }
         ._acc-row:hover { background: var(--bg-subtle) !important; }
         ._acc-danger:hover {
-          background: rgba(220,38,38,0.06) !important;
+          background: rgba(255,95,95,0.06) !important;
           color: #FF5F5F !important;
         }
         ._acc-close {
@@ -271,10 +271,10 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
 
                     {pwError && (
                       <div style={{
-                        fontSize: 12, color: '#B91C1C',
+                        fontSize: 12, color: '#FF5F5F',
                         padding: '8px 12px',
-                        background: 'rgba(220,38,38,0.06)',
-                        border: '1px solid rgba(220,38,38,0.15)',
+                        background: 'rgba(255,95,95,0.06)',
+                        border: '1px solid rgba(255,95,95,0.15)',
                         borderRadius: 8,
                         display: 'flex', gap: 7, alignItems: 'flex-start',
                       }}>
@@ -288,8 +288,8 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                       <div style={{
                         fontSize: 12, color: 'var(--accent)',
                         padding: '8px 12px',
-                        background: 'rgba(22,163,74,0.06)',
-                        border: '1px solid rgba(22,163,74,0.15)',
+                        background: 'rgba(61,255,160,0.06)',
+                        border: '1px solid rgba(61,255,160,0.15)',
                         borderRadius: 8,
                         display: 'flex', gap: 7, alignItems: 'center',
                       }}>
