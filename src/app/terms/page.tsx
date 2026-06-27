@@ -31,16 +31,7 @@ export default function TermsPage() {
             display: 'flex', alignItems: 'center', gap: 9,
             textDecoration: 'none', color: 'inherit',
           }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 9,
-              background: 'var(--accent)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-              </svg>
-            </div>
+            <img src="/logo.svg" width="32" height="32" alt="CVCheck" style={{ display: 'block', borderRadius: 5 }} />
             <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.025em' }}>CVCheck</span>
           </Link>
           <Link href="/" style={{

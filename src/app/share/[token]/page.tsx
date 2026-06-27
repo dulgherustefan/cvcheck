@@ -179,11 +179,7 @@ export default async function SharePage({ params }: SharePageProps) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'var(--text-primary)' }}>
-            <div style={{ width: 24, height: 24, borderRadius: 5, background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="11" height="11" fill="none" stroke="var(--bg)" strokeWidth="2.5" viewBox="0 0 24 24">
-                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
-              </svg>
-            </div>
+            <img src="/logo.svg" width="24" height="24" alt="CVCheck" style={{ display: 'block', borderRadius: 5 }} />
             <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.3px' }}>CVCheck</span>
           </Link>
           <Link href="/" style={{
