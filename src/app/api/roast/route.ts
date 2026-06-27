@@ -194,10 +194,17 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        const { extractPdfText } = await import('@/lib/pdf')
-        content = await extractPdfText(buffer)
-        // Strip source filename to avoid storing user filesystem paths
-        source = 'pdf-upload'
+        if (file.type === 'text/plain') {
+          // text/plain is in the allowlist — read it directly instead of
+          // running it through the PDF parser (which throws InvalidPDFException)
+          content = buffer.toString('utf8')
+          source = 'text-upload'
+        } else {
+          const { extractPdfText } = await import('@/lib/pdf')
+          content = await extractPdfText(buffer)
+          // Strip source filename to avoid storing user filesystem paths
+          source = 'pdf-upload'
+        }
       } else if (url) {
         // Basic URL validation
         let parsed: URL
