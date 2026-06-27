@@ -76,7 +76,7 @@ export const metadata: Metadata = {
       'Get an honest AI score for your CV — free. See exactly what recruiters notice, what to fix, and land more interviews.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og',
         width: 1200,
         height: 630,
         alt: 'CVCheck — Free AI CV Checker',
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'CVCheck · Free CV Checker',
     description: 'Score your CV out of 100 for free. See exactly what to fix and get more interviews.',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
 }
 

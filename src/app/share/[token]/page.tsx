@@ -71,11 +71,13 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
       url: `https://cvcheck.app/share/${token}`,
       siteName: 'CVCheck',
       type: 'website',
+      images: [{ url: `/api/og?score=${roast.total_score}&rating=${roast.rating}`, width: 1200, height: 630 }],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: `CV Score: ${roast.total_score}/100 — ${rating}`,
       description: `${domain}${level ? ` · ${level}` : ''} · Check your own CV free on CVCheck.`,
+      images: [`/api/og?score=${roast.total_score}&rating=${roast.rating}`],
     },
   }
 }
