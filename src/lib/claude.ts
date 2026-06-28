@@ -11,7 +11,16 @@ function getClient(): Anthropic {
   return _client
 }
 
-const MAX_CONTENT_CHARS = 6000
+// A 2-page senior CV easily exceeds 6000 chars (~1500 words); the old limit
+// truncated the bottom of longer CVs so the model never scored later roles.
+// 14000 chars (~3500 words) covers any realistic CV; input cost is negligible.
+const MAX_CONTENT_CHARS = 14000
+
+// Free tier runs on Haiku (fast, cheap — keeps the free scan sustainable).
+// Paying users get Sonnet, which is materially better at nuanced scoring,
+// bullet rewrites, and catching subtle credibility/ATS issues.
+const MODEL_FREE = 'claude-haiku-4-5-20251001'
+const MODEL_PAID = 'claude-sonnet-4-6'
 
 const RATING_THRESHOLDS: [number, Rating][] = [
   [30,  'needs_work'],
@@ -77,8 +86,10 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
   const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE
 
   const message = await getClient().messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: isPro ? MODEL_PAID : MODEL_FREE,
     max_tokens: isPro ? 6000 : 4000,
+    // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
+    temperature: 0.3,
     system: systemPrompt,
     messages: [
       {

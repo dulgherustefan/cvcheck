@@ -132,6 +132,14 @@ export interface AnalysisError {
 // ── Job Matching ──────────────────────────────────────────────────────────────
 
 /** A single job listing returned by Adzuna */
+/**
+ * Whether the user could actually take this job from where they are:
+ *  - in_country      → on-site role physically in the user's country
+ *  - remote_eligible → remote role open to the user's country/region (or worldwide)
+ *  - relocation      → on-site abroad, or remote restricted to another region
+ */
+export type JobAvailability = 'in_country' | 'remote_eligible' | 'relocation'
+
 export interface JobListing {
   id: string
   title: string
@@ -144,6 +152,8 @@ export interface JobListing {
   created: string              // ISO date
   remote?: boolean             // detected from description/title
   country_code?: string        // 2-letter ISO
+  availability?: JobAvailability  // computed server-side vs the user's region
+  region_label?: string           // short display label, e.g. "Remote" / "Relocation"
 }
 
 /** Per-job fit analysis from Claude — all tiers get basic, Pro+ gets full */
@@ -185,6 +195,7 @@ export interface JobsResponse {
   fit_locked: boolean          // true = gaps hidden (free), strengths always visible
   query_used: string           // the Adzuna search query, for transparency
   detected_country?: string    // country detected from IP
+  available_count?: number     // jobs available in the user's region (in_country + remote_eligible)
 }
 
 // ── Legacy aliases ────────────────────────────────────────────────────────────

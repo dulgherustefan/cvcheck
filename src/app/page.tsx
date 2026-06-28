@@ -264,6 +264,7 @@ function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange 
             <span>{listing.company}</span>
             {listing.location&&<><span className="job-sub-dot">·</span><span>{listing.location}</span></>}
             {salary&&<><span className="job-sub-dot">·</span><span className="job-salary">{salary}</span></>}
+            {listing.availability&&<span className={`job-avail job-avail-${listing.availability}`}>{listing.region_label}</span>}
           </div>
         </div>
         {fit&&<FitBadge label={fit.fit_label} score={fit.fit_score}/>}
@@ -295,8 +296,6 @@ function JobCard({ job, fitLocked, onUnlock, token, initialStatus, onSaveChange 
     </div>
   )
 }
-
-const ADZUNA_UI_SUPPORTED = new Set(['gb','us','ca','au','de','nl','sg','at','be','br','in','nz','pl','za','fr','it','es','ru','mx','ar'])
 type FilterType = 'all'|'strong'|'good'|'partial'|'stretch'
 
 function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:GatedAnalysisResult; token:string|null; isPremium:boolean; onUnlock:()=>void }) {
@@ -376,7 +375,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
         <div>
           <div className="jobs-title-eyebrow">Job Matches</div>
           <h2 className="jobs-title">Roles that fit your profile</h2>
-          {data?.detected_country&&<p className="jobs-subtitle">{ADZUNA_UI_SUPPORTED.has(data.detected_country)?`Jobs near you · ${data.detected_country.toUpperCase()}`:'Remote & global jobs matched to your profile'}</p>}
+          {data?.detected_country&&<p className="jobs-subtitle">{typeof data.available_count==='number'&&data.available_count>0?`${data.available_count} available in your region · ${data.detected_country.toUpperCase()}`:`Matched to your profile · ${data.detected_country.toUpperCase()}`}</p>}
         </div>
         {data&&data.jobs.length>0&&(
           <div className="job-filter-row">

@@ -6,6 +6,7 @@ import type {
   JobListing,
   JobFitAnalysis,
   JobMatch,
+  JobAvailability,
   Tier,
 } from '@/lib/types'
 
@@ -87,6 +88,85 @@ function resolveSearchCountries(userCountry: string): { countries: string[]; isS
   console.log(`[jobs] '${c}' not in Adzuna, fallback: ${fallback.join(', ')}`)
   return { countries: fallback, isSupported: false }
 }
+
+// ── Region availability ───────────────────────────────────────────────────────
+// Decides whether a fetched job is something the user could actually take from
+// where they are. Without this, a user in RO sees on-site UK/DE/PL roles ranked
+// purely by fit — jobs they can't take without relocating.
+
+const CONTINENT: Record<string, string> = {}
+const groupCountries = (codes: string[], continent: string) =>
+  codes.forEach(c => { CONTINENT[c] = continent })
+
+groupCountries(['gb','uk','ie','de','nl','fr','it','es','pt','at','be','se','dk','no','fi','gr','cz','sk','hu','hr','rs','bg','ro','md','ua','ch','lt','lv','ee','is','lu','si','cy','mt','al','ba','mk','me','pl'], 'europe')
+groupCountries(['us','ca','mx'], 'north_america')
+groupCountries(['br','ar','cl','co','pe','uy','py','bo','ec','ve'], 'south_america')
+groupCountries(['in','sg','jp','kr','cn','hk','my','th','id','ph','vn','ae','il','sa','qa','tr'], 'asia')
+groupCountries(['au','nz'], 'oceania')
+groupCountries(['za','ng','ke','eg','ma','gh'], 'africa')
+
+function continentOf(cc: string): string {
+  return CONTINENT[cc.toLowerCase()] ?? 'unknown'
+}
+
+// Country names that show up in remote "required location" strings.
+const COUNTRY_NAMES: Record<string, string> = {
+  ro: 'romania', gb: 'united kingdom', us: 'united states', de: 'germany',
+  nl: 'netherlands', fr: 'france', es: 'spain', it: 'italy', pl: 'poland',
+  pt: 'portugal', ca: 'canada', au: 'australia', in: 'india', ie: 'ireland',
+  se: 'sweden', ua: 'ukraine', md: 'moldova', at: 'austria', ch: 'switzerland',
+}
+
+// Keywords by continent, as they appear in remote location fields (Remotive's
+// candidate_required_location, Jobicy's jobGeo, etc.).
+const REGION_KEYWORDS: Record<string, RegExp> = {
+  europe:        /\b(europe|european|emea|eu only|eu\b|cet|cest|uk|united kingdom|britain|england)\b/i,
+  north_america: /\b(usa|u\.s\.a?\.?|united states|north america|americas|canada|canadian|est|pst|cst)\b/i,
+  south_america: /\b(latam|latin america|south america|brazil|argentina)\b/i,
+  asia:          /\b(asia|apac|india|singapore|japan|china|middle east)\b/i,
+  oceania:       /\b(australia|new zealand|oceania|anz)\b/i,
+  africa:        /\b(africa|south africa|nigeria|kenya)\b/i,
+}
+const GLOBAL_REMOTE = /\b(worldwide|anywhere|global|fully remote|any location|international)\b/i
+
+function classifyAvailability(job: JobListing, userCountry: string): JobAvailability {
+  const uc = userCountry.toLowerCase()
+  const cc = (job.country_code ?? '').toLowerCase()
+
+  // On-site role physically in the user's country → directly available.
+  if (cc && cc !== 'remote' && cc === uc) return 'in_country'
+
+  if (job.remote) {
+    const loc = (job.location ?? '').toLowerCase().trim()
+    // Globally open or no stated constraint → eligible.
+    if (!loc || loc === 'remote' || GLOBAL_REMOTE.test(loc)) return 'remote_eligible'
+    // Names the user's own country → eligible. Match the 2-letter code only on
+    // word boundaries ('us' must not match inside 'australia') plus the full name.
+    const codeRe = new RegExp(`\\b${uc}\\b`, 'i')
+    if (codeRe.test(loc) || (COUNTRY_NAMES[uc] && loc.includes(COUNTRY_NAMES[uc]))) return 'remote_eligible'
+    // Names the user's continent → eligible.
+    const userCont = continentOf(uc)
+    if (userCont !== 'unknown' && REGION_KEYWORDS[userCont]?.test(loc)) return 'remote_eligible'
+    // Restricted to a *different* region only → not eligible for this user.
+    const namesOtherRegion = Object.entries(REGION_KEYWORDS)
+      .some(([cont, re]) => cont !== userCont && re.test(loc))
+    if (namesOtherRegion) return 'relocation'
+    // Remote with an ambiguous location → give the benefit of the doubt.
+    return 'remote_eligible'
+  }
+
+  // On-site in a different country → would require relocation.
+  return 'relocation'
+}
+
+function regionLabel(job: JobListing, availability: JobAvailability): string {
+  if (availability === 'in_country')      return 'Near you'
+  if (availability === 'remote_eligible') return job.remote ? 'Remote' : 'Available'
+  return 'Relocation'
+}
+
+const availabilityRank = (a?: JobAvailability): number =>
+  a === 'in_country' ? 0 : a === 'remote_eligible' ? 1 : 2
 
 // ── Query builder ─────────────────────────────────────────────────────────────
 
@@ -641,16 +721,26 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Analyze fit for up to 12 listings (best mix: prioritize remote for unsupported countries)
-    let toAnalyze = listings.slice(0, 14)
-    if (!isSupported) {
-      // For unsupported countries, put remote jobs first
-      const remote = toAnalyze.filter(j => j.remote)
-      const local  = toAnalyze.filter(j => !j.remote)
-      toAnalyze = [...remote, ...local].slice(0, 12)
-    } else {
-      toAnalyze = toAnalyze.slice(0, 12)
-    }
+    // Tag every listing with whether the user could actually take it, then rank
+    // region-available jobs first so we spend the (expensive) fit analysis on
+    // jobs that matter — not on roles the user would have to relocate for.
+    const classified = listings.map(j => {
+      const availability = classifyAvailability(j, detectedCountry)
+      return { ...j, availability, region_label: regionLabel(j, availability) }
+    })
+    classified.sort((a, b) => availabilityRank(a.availability) - availabilityRank(b.availability))
+
+    // Always show every job available in the user's region. Only when there are
+    // too few do we top up with relocation listings — and just enough to reach a
+    // sensible floor, so the list is never empty but also never dominated by
+    // jobs the user would have to move for.
+    const FLOOR = 8
+    const availableInRegion = classified.filter(j => j.availability !== 'relocation')
+    const relocation        = classified.filter(j => j.availability === 'relocation')
+    const pool = availableInRegion.length >= FLOOR
+      ? availableInRegion
+      : [...availableInRegion, ...relocation].slice(0, Math.max(FLOOR, availableInRegion.length))
+    const toAnalyze = pool.slice(0, 12)
 
     const safeCvMeta = {
       detected_domain: safeDomain,
@@ -676,14 +766,21 @@ export async function POST(req: NextRequest) {
       return { listing, fit }
     })
 
-    // Sort by fit_score descending
-    jobs.sort((a, b) => (b.fit?.fit_score ?? 0) - (a.fit?.fit_score ?? 0))
+    // Region-available jobs first, then by fit score within each group.
+    jobs.sort((a, b) => {
+      const ar = availabilityRank(a.listing.availability) - availabilityRank(b.listing.availability)
+      if (ar !== 0) return ar
+      return (b.fit?.fit_score ?? 0) - (a.fit?.fit_score ?? 0)
+    })
+
+    const availableCount = jobs.filter(j => j.listing.availability !== 'relocation').length
 
     return NextResponse.json<JobsResponse>({
       jobs,
       fit_locked:       fitLocked,
       query_used:       queryUsed,
       detected_country: detectedCountry,
+      available_count:  availableCount,
     })
   } catch (err) {
     console.error('[jobs] Error:', err)

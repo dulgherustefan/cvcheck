@@ -12,7 +12,7 @@ const FREE_SCAN_LIMIT   = 1
 const MAX_FILE_SIZE     = 5 * 1024 * 1024          // 5 MB
 const ALLOWED_MIME      = new Set(['application/pdf', 'text/plain'])
 const MIN_CONTENT_CHARS = 50
-const MAX_CONTENT_CHARS = 6000                      // matches constants.ts
+const MAX_CONTENT_CHARS = 14000                     // matches MAX_CONTENT_CHARS in claude.ts
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
