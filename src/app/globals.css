@@ -389,6 +389,20 @@ input, textarea { font-family: var(--font-sans); }
   .hero-kicker::after { animation: none; }
 }
 
+/* No-JS / crawler safety net: the hero's motion elements render at opacity:0
+   (framer-motion initial="hidden") and are revealed by JS. If JS never runs,
+   force them visible so the page is never blank. Inert once html.js is set. */
+html:not(.js) .hero-kicker,
+html:not(.js) .hero-h1,
+html:not(.js) .hero-p,
+html:not(.js) .hero-cta-row,
+html:not(.js) .hero-cta-meta,
+html:not(.js) .hero-works-with,
+html:not(.js) .hero-mockup-wrap {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 .hero-h1 {
   font-family: var(--font-display);
   font-size: clamp(44px, 5.5vw, 72px);
