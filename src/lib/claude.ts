@@ -11,10 +11,12 @@ function getClient(): Anthropic {
   return _client
 }
 
-// A 2-page senior CV easily exceeds 6000 chars (~1500 words); the old limit
-// truncated the bottom of longer CVs so the model never scored later roles.
-// 14000 chars (~3500 words) covers any realistic CV; input cost is negligible.
-const MAX_CONTENT_CHARS = 14000
+// Content caps differ by tier to keep the free scan cheap. A 2-page senior CV
+// can exceed 6000 chars (~1500 words); paid gets 14000 (~3500 words) so nothing
+// is truncated. Free runs on Haiku and is a teaser, so 8000 chars (~3 pages,
+// covers ~95% of CVs) bounds input cost without hurting the surface analysis.
+const MAX_CONTENT_CHARS_PAID = 14000
+const MAX_CONTENT_CHARS_FREE = 8000
 
 // Free tier runs on Haiku (fast, cheap — keeps the free scan sustainable).
 // Paying users get Sonnet, which is materially better at nuanced scoring,
@@ -50,14 +52,14 @@ function clampScores(s: CVScores): CVScores {
   }
 }
 
-function prepareContent(raw: string): string {
+function prepareContent(raw: string, maxChars: number): string {
   return raw
     .replace(/[^\S\n]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .split('\n').map(l => l.trim()).join('\n')
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
     .trim()
-    .slice(0, MAX_CONTENT_CHARS)
+    .slice(0, maxChars)
 }
 
 function extractJson(raw: string): string {
@@ -81,8 +83,8 @@ function sanitizeJson(s: string): string {
 }
 
 export async function getRoast(content: string, tier: Tier): Promise<AnalysisResult> {
-  const prepared = prepareContent(content)
   const isPro = tier === 'pro' || tier === 'premium'
+  const prepared = prepareContent(content, isPro ? MAX_CONTENT_CHARS_PAID : MAX_CONTENT_CHARS_FREE)
   const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE
 
   const message = await getClient().messages.create({
@@ -90,7 +92,10 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
     max_tokens: isPro ? 6000 : 4000,
     // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
     temperature: 0.3,
-    system: systemPrompt,
+    // Cache the (static) system prompt. On the paid Sonnet path this saves ~90%
+    // on the prompt's input tokens for repeat analyses; on free Haiku the prompt
+    // is below the cache minimum so this is a no-op (no write, no charge).
+    system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
     messages: [
       {
         role: 'user',
