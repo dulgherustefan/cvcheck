@@ -11,12 +11,13 @@ function getClient(): Anthropic {
   return _client
 }
 
-// Content caps differ by tier to keep the free scan cheap. A 2-page senior CV
-// can exceed 6000 chars (~1500 words); paid gets 14000 (~3500 words) so nothing
-// is truncated. Free runs on Haiku and is a teaser, so 8000 chars (~3 pages,
-// covers ~95% of CVs) bounds input cost without hurting the surface analysis.
+// Content caps differ by tier to keep the free scan cheap. Paid gets 14000
+// (~3500 words) so nothing on a long senior CV is truncated. Free is a teaser
+// running on Haiku, so 6000 chars (~1500 words, ~2 pages) bounds input cost.
+// The free report only surfaces the top-level read, not a line-by-line pass,
+// so the first 2 pages carry everything it needs.
 const MAX_CONTENT_CHARS_PAID = 14000
-const MAX_CONTENT_CHARS_FREE = 8000
+const MAX_CONTENT_CHARS_FREE = 6000
 
 // Free tier runs on Haiku (fast, cheap — keeps the free scan sustainable).
 // Paying users get Sonnet, which is materially better at nuanced scoring,
@@ -82,6 +83,25 @@ function sanitizeJson(s: string): string {
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // control chars (keep \n \t)
 }
 
+// Em/en dashes are the single most reliable "AI-written" tell. The prompt bans
+// them, but the smaller free-tier model still slips occasionally, so we strip
+// them deterministically from every text field before the user sees the report.
+// A dash used as an aside becomes a comma, which reads naturally in every case.
+function dedash<T>(value: T): T {
+  if (typeof value === 'string') {
+    return value.replace(/\s*[—–]\s*/g, ', ').replace(/ ,/g, ',') as unknown as T
+  }
+  if (Array.isArray(value)) {
+    return value.map(dedash) as unknown as T
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value)) out[k] = dedash(v)
+    return out as T
+  }
+  return value
+}
+
 export async function getRoast(content: string, tier: Tier): Promise<AnalysisResult> {
   const isPro = tier === 'pro' || tier === 'premium'
   const prepared = prepareContent(content, isPro ? MAX_CONTENT_CHARS_PAID : MAX_CONTENT_CHARS_FREE)
@@ -89,7 +109,7 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
 
   const message = await getClient().messages.create({
     model: isPro ? MODEL_PAID : MODEL_FREE,
-    max_tokens: isPro ? 6000 : 4000,
+    max_tokens: isPro ? 6000 : 2500,
     // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
     temperature: 0.3,
     // Cache the (static) system prompt. On the paid Sonnet path this saves ~90%
@@ -178,5 +198,6 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
   parsed.first_impression.tone_signal       = parsed.first_impression?.tone_signal            ?? 'mixed'
   parsed.first_impression.recommended_title = parsed.first_impression?.recommended_title      ?? ''
 
-  return parsed
+  // Final safety net: strip any em/en dashes the model slipped past the prompt rule.
+  return dedash(parsed)
 }
