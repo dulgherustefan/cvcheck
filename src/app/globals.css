@@ -1947,4 +1947,37 @@ html:not(.js) .hero-mockup-wrap {
 .jobmatch-unlock-btn { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 .jobmatch-advice { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
 
+/* ── Result: deliverables (optimized CV + cover letter) ── */
+.deliv { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.deliv-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--bg-elevated); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+}
+.deliv-card-col { flex-direction: column; align-items: stretch; }
+.deliv-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.deliv-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.deliv-sub { margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--text-tertiary); max-width: 380px; }
+.deliv-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.deliv-btn {
+  font-size: 13px; font-weight: 600; color: #07120c; background: var(--accent);
+  border: none; border-radius: var(--radius-md); padding: 8px 16px; cursor: pointer; white-space: nowrap;
+  transition: opacity .15s;
+}
+.deliv-btn:hover { opacity: 0.9; }
+.deliv-btn-ghost {
+  font-size: 13px; font-weight: 500; color: var(--text-secondary); background: none;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 7px 12px; cursor: pointer;
+  white-space: nowrap; transition: border-color .15s, color .15s;
+}
+.deliv-btn-ghost:hover { color: var(--text-heading); border-color: var(--text-tertiary); }
+.deliv-locked { cursor: pointer; border-style: dashed; transition: border-color .15s, background .15s; }
+.deliv-locked:hover { border-color: var(--accent); background: rgba(61,255,160,0.04); }
+.deliv-unlock { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
+.deliv-letter {
+  margin-top: 14px; padding: 14px 16px; background: var(--bg-subtle); border: 1px solid var(--border);
+  border-radius: var(--radius-md); font-family: var(--font-inter, 'Inter'), sans-serif; font-size: 13px;
+  line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word;
+}
+
 

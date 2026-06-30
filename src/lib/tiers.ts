@@ -28,6 +28,8 @@ export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisRes
     actions_locked:         !isPro,     // top_3_actions[].how + example
     job_matching_locked:    !isPremium, // job matching — Premium only
     job_match_locked:       !isPro,     // job_match.missing_keywords + advice
+    optimized_cv_locked:    !isPro,     // full optimized CV rewrite
+    cover_letter_locked:    !isPro,     // tailored cover letter
   }
 }
 

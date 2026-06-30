@@ -131,6 +131,12 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
     jm.missing_keywords = null   // the actual list for this job — Pro+
     jm.advice           = null   // tailored advice — Pro+
   }
+  if (gated.optimized_cv_locked) {
+    (gated as unknown as Record<string, unknown>).optimized_cv = null
+  }
+  if (gated.cover_letter_locked) {
+    (gated as unknown as Record<string, unknown>).cover_letter = null
+  }
   return gated
 }
 

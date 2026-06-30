@@ -125,8 +125,9 @@ export async function getRoast(content: string, tier: Tier, jobDescription?: str
 
   const message = await getClient().messages.create({
     model: isPro ? MODEL_PAID : MODEL_FREE,
-    // Job match adds a small object; give free a little headroom only when used.
-    max_tokens: isPro ? 6000 : (hasJd ? 3000 : 2500),
+    // Pro also emits a full optimized CV (+ a cover letter when a job is pasted),
+    // so it needs more output room. Free stays tight.
+    max_tokens: isPro ? 9000 : (hasJd ? 3000 : 2500),
     // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
     temperature: 0.3,
     // Cache the (static) system prompt. On the paid Sonnet path this saves ~90%
@@ -229,6 +230,17 @@ export async function getRoast(content: string, tier: Tier, jobDescription?: str
     jm.advice = typeof jm.advice === 'string' ? jm.advice : ''
   } else {
     parsed.job_match = null
+  }
+
+  // ── Optimized CV + cover letter (Pro only; free never generates them) ──────
+  if (isPro) {
+    parsed.optimized_cv = typeof parsed.optimized_cv === 'string' && parsed.optimized_cv.trim()
+      ? parsed.optimized_cv.trim() : null
+    parsed.cover_letter = hasJd && typeof parsed.cover_letter === 'string' && parsed.cover_letter.trim()
+      ? parsed.cover_letter.trim() : null
+  } else {
+    parsed.optimized_cv = null
+    parsed.cover_letter = null
   }
 
   // Final safety net: strip any em/en dashes the model slipped past the prompt rule.

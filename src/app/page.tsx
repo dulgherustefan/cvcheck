@@ -70,6 +70,15 @@ function useAnimatedBars() {
   return ref
 }
 
+function downloadTextFile(filename: string, text: string) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 function ScoreRing({ score }: { score: number }) {
   const r = 54, circ = 2 * Math.PI * r
   const color = score >= 66 ? 'var(--score-high)' : score >= 40 ? 'var(--score-mid)' : 'var(--score-low)'
@@ -471,6 +480,80 @@ function JobMatchCard({ jm, locked, onUnlock }: { jm: JobTargetAnalysis; locked:
   )
 }
 
+function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnlock: () => void }) {
+  const [copied, setCopied] = useState(false)
+  const [letterOpen, setLetterOpen] = useState(false)
+  const hasJob = !!result.job_match
+  const optimized = result.optimized_cv
+  const letter = result.cover_letter
+
+  const copyLetter = () => {
+    if (!letter) return
+    navigator.clipboard?.writeText(letter).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800) }).catch(() => {})
+  }
+
+  return (
+    <div className="deliv">
+      {/* Optimized CV */}
+      {optimized ? (
+        <div className="deliv-card">
+          <div className="deliv-info">
+            <div className="deliv-title">
+              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+              Optimized CV
+            </div>
+            <p className="deliv-sub">An ATS-clean rewrite of your CV with stronger verbs and quantified bullets, ready to paste.</p>
+          </div>
+          <button className="deliv-btn" onClick={() => downloadTextFile('optimized-cv.txt', optimized)}>Download</button>
+        </div>
+      ) : result.optimized_cv_locked ? (
+        <div className="deliv-card deliv-locked" onClick={onUnlock}>
+          <div className="deliv-info">
+            <div className="deliv-title">
+              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+              Optimized CV
+            </div>
+            <p className="deliv-sub">Get a full ATS-clean rewrite of your CV, ready to download.</p>
+          </div>
+          <span className="deliv-unlock">Unlock with Pro — €1.99</span>
+        </div>
+      ) : null}
+
+      {/* Cover letter — only relevant when a job was pasted */}
+      {letter ? (
+        <div className="deliv-card deliv-card-col">
+          <div className="deliv-row">
+            <div className="deliv-info">
+              <div className="deliv-title">
+                <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+                Cover letter for this job
+              </div>
+              <p className="deliv-sub">Tailored to the job you pasted, using your real experience.</p>
+            </div>
+            <div className="deliv-actions">
+              <button className="deliv-btn-ghost" onClick={() => setLetterOpen(o => !o)}>{letterOpen ? 'Hide' : 'Preview'}</button>
+              <button className="deliv-btn-ghost" onClick={copyLetter}>{copied ? 'Copied' : 'Copy'}</button>
+              <button className="deliv-btn" onClick={() => downloadTextFile('cover-letter.txt', letter)}>Download</button>
+            </div>
+          </div>
+          {letterOpen && <pre className="deliv-letter">{letter}</pre>}
+        </div>
+      ) : hasJob && result.cover_letter_locked ? (
+        <div className="deliv-card deliv-locked" onClick={onUnlock}>
+          <div className="deliv-info">
+            <div className="deliv-title">
+              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+              Cover letter for this job
+            </div>
+            <p className="deliv-sub">Get a tailored cover letter for the job you pasted, built from your real experience.</p>
+          </div>
+          <span className="deliv-unlock">Unlock with Pro — €1.99</span>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
   result:GatedAnalysisResult; isPro:boolean; user:{email?:string}|null; token:string|null
   setShowUpgradeModal:(v:boolean)=>void; setShowPlansModal:(v:boolean)=>void; setShowAuthModal:(v:boolean)=>void
@@ -504,6 +587,8 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
       </div>
 
       {result.job_match && <JobMatchCard jm={result.job_match} locked={result.job_match_locked} onUnlock={unlock}/>}
+
+      <Deliverables result={result} onUnlock={unlock}/>
 
       {result.quick_win && (
         <div className="quick-win">

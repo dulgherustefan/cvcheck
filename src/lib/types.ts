@@ -122,6 +122,9 @@ export interface AnalysisResult {
 
   job_match?: JobTargetAnalysis | null  // only when a target job was pasted
 
+  optimized_cv?: string | null   // Pro+: full ATS-clean rewrite of the CV
+  cover_letter?: string | null   // Pro+: tailored letter, only when a job was pasted
+
   tier: Tier
 }
 
@@ -136,6 +139,8 @@ export interface GatedAnalysisResult extends AnalysisResult {
   actions_locked: boolean        // top_3_actions[].how + example hidden
   job_matching_locked: boolean   // job matching — Premium only
   job_match_locked: boolean      // job_match.missing_keywords + advice hidden (free)
+  optimized_cv_locked: boolean   // optimized_cv hidden (free)
+  cover_letter_locked: boolean   // cover_letter hidden (free)
 }
 
 export interface AnalysisError {
