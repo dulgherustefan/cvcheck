@@ -1939,8 +1939,20 @@ html:not(.js) .hero-mockup-wrap {
 .hero-jd-head { display: flex; align-items: center; justify-content: space-between; }
 .hero-jd-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 .hero-jd-opt { font-weight: 400; color: var(--text-tertiary); }
-.hero-jd-close { background: none; border: none; font-size: 12px; color: var(--text-tertiary); cursor: pointer; }
-.hero-jd-close:hover { color: var(--score-low); }
+.hero-jd-close {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: 1px solid var(--border-strong); border-radius: 999px;
+  font-size: 12px; font-weight: 500; color: var(--text-tertiary);
+  padding: 4px 10px 4px 8px; cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.hero-jd-close svg { flex-shrink: 0; opacity: 0.8; }
+.hero-jd-close:hover {
+  color: var(--score-low);
+  border-color: rgba(255,95,95,0.4);
+  background: rgba(255,95,95,0.07);
+}
+.hero-jd-close:hover svg { opacity: 1; }
 .hero-jd-textarea {
   width: 100%; resize: vertical; min-height: 80px;
   background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md);

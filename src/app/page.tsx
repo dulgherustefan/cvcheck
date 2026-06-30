@@ -1233,7 +1233,10 @@ export default function Home() {
                 <div className="hero-jd-open">
                   <div className="hero-jd-head">
                     <span className="hero-jd-label">Paste the job description <span className="hero-jd-opt">(optional)</span></span>
-                    <button type="button" className="hero-jd-close" onClick={()=>{setShowJd(false);setJobDescription('')}}>Remove</button>
+                    <button type="button" className="hero-jd-close" onClick={()=>{setShowJd(false);setJobDescription('')}} aria-label="Remove job description">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      Remove
+                    </button>
                   </div>
                   <textarea
                     className="hero-jd-textarea"
