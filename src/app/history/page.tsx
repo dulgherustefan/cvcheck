@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { createSupabaseBrowser } from '@/lib/supabase'
-import type { Rating, CVScores, FirstImpression, ImpactAnalysis, ATSAnalysis, RedFlag, CareerStory, FormatAnalysis, CredibilityAnalysis, PriorityAction } from '@/lib/types'
+import type { Rating, CVScores, FirstImpression, ImpactAnalysis, ATSAnalysis, RedFlag, CareerStory, FormatAnalysis, CredibilityAnalysis, PriorityAction, JobTargetAnalysis } from '@/lib/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,9 @@ interface HistoryEntry {
   format: FormatAnalysis | null
   credibility: CredibilityAnalysis | null
   top_3_actions: PriorityAction[] | null
+  job_match: JobTargetAnalysis | null
+  optimized_cv: string | null
+  cover_letter: string | null
   tier?: 'free' | 'pro' | 'premium'
 }
 
@@ -66,11 +69,21 @@ const RATING_COLORS: Record<Rating, string> = {
   excellent: '#3DFFA0',
 }
 
+function downloadTextFile(filename: string, text: string) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
 const LIST_SELECT = [
   'id', 'created_at', 'source', 'total_score', 'rating',
   'detected_domain', 'detected_level', 'summary', 'scores',
   'first_impression', 'impact', 'ats', 'red_flags',
   'career_story', 'format', 'credibility', 'top_3_actions', 'tier',
+  'job_match', 'optimized_cv', 'cover_letter',
 ].join(', ')
 
 const PAGE_SIZE = 20
@@ -468,6 +481,39 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                   </a>
                 </div>
               )}
+            </DrawerSection>
+          )}
+
+          {/* Job match (only when a job was pasted for this analysis) */}
+          {entry.job_match && (
+            <DrawerSection title="Job Match">
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: entry.job_match.match_score >= 70 ? '#3DFFA0' : entry.job_match.match_score >= 45 ? '#FFD23F' : '#FF5F5F' }}>{entry.job_match.match_score}%</span>
+                <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{entry.job_match.verdict === 'strong_fit' ? 'Strong fit' : entry.job_match.verdict === 'possible_fit' ? 'Possible fit' : 'Weak fit'}</span>
+              </div>
+              {isPro && entry.job_match.missing_keywords && entry.job_match.missing_keywords.length > 0 ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {entry.job_match.missing_keywords.map((k, i) => (
+                    <span key={i} style={{ fontSize: 12, padding: '4px 9px', borderRadius: 6, border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>{k}</span>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: 'var(--text-tertiary)', margin: 0 }}>{entry.job_match.missing_keywords_count} requirement{entry.job_match.missing_keywords_count !== 1 ? 's' : ''} this job wanted that the CV did not show.</p>
+              )}
+            </DrawerSection>
+          )}
+
+          {/* Downloadable deliverables */}
+          {isPro && (entry.optimized_cv || entry.cover_letter) && (
+            <DrawerSection title="Downloads">
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {entry.optimized_cv && (
+                  <button onClick={() => downloadTextFile('optimized-cv.txt', entry.optimized_cv!)} style={{ padding: '9px 16px', background: 'var(--accent)', color: 'var(--text-inverse)', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Download optimized CV</button>
+                )}
+                {entry.cover_letter && (
+                  <button onClick={() => downloadTextFile('cover-letter.txt', entry.cover_letter!)} style={{ padding: '9px 16px', background: 'var(--bg)', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Download cover letter</button>
+                )}
+              </div>
             </DrawerSection>
           )}
 
