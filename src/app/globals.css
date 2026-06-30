@@ -1898,6 +1898,33 @@ html:not(.js) .hero-mockup-wrap {
   box-shadow: 0 1px 0 var(--border-strong), var(--shadow-sm);
 }
 
+/* ── Cookie consent banner ── */
+.consent-banner {
+  position: fixed; bottom: 16px; left: 16px; right: 16px; max-width: 540px;
+  margin: 0 auto; z-index: 1000;
+  background: var(--bg-elevated); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow-lg);
+}
+.consent-text { flex: 1; margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
+.consent-link { color: var(--accent); text-decoration: none; }
+.consent-link:hover { text-decoration: underline; }
+.consent-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.consent-btn-reject {
+  font-size: 13px; font-weight: 500; color: var(--text-secondary); background: none;
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md); padding: 8px 14px; cursor: pointer;
+}
+.consent-btn-reject:hover { color: var(--text-heading); border-color: var(--text-tertiary); }
+.consent-btn-accept {
+  font-size: 13px; font-weight: 600; color: var(--text-inverse); background: var(--accent);
+  border: none; border-radius: var(--radius-md); padding: 8px 18px; cursor: pointer;
+}
+.consent-btn-accept:hover { opacity: 0.9; }
+@media (max-width: 640px) {
+  .consent-banner { flex-direction: column; align-items: stretch; gap: 12px; }
+  .consent-actions { justify-content: flex-end; }
+}
+
 /* ── Hero: optional job-description targeting ── */
 .hero-jd { margin-top: 12px; }
 .hero-jd-toggle {

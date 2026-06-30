@@ -3,6 +3,7 @@ import Script from 'next/script'
 import { ThemeScript } from '@/components/ThemeScript'
 import { Inter, DM_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
+import { ConsentBanner } from '@/components/ConsentBanner'
 import './globals.css'
 
 const GA_ID = 'G-PCXBRDLGBZ'
@@ -178,8 +179,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
+var __c; try { __c = localStorage.getItem('cvcheck_analytics_consent'); } catch (e) {}
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: __c === 'granted' ? 'granted' : 'denied',
+  wait_for_update: 500
+});
 gtag('config', '${GA_ID}');`}
         </Script>
+        <ConsentBanner/>
       </body>
     </html>
   )
