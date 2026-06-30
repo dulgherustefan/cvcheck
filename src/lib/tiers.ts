@@ -41,10 +41,11 @@ export const PLANS = {
     period: 'one-time',
     description: 'Full breakdown for this CV',
     features: [
+      'Optimized CV, ready to download',
+      'Cover letter for a job you paste',
       'Bullet rewrites — your exact text, improved',
       'How to fix every red flag',
-      'Missing ATS keywords for your domain',
-      'Career gaps & seniority analysis',
+      'Missing ATS keywords + job requirements',
       'Top 3 priority actions with examples',
       'Saved to history',
     ],

@@ -14,7 +14,11 @@ const faqs = [
   },
   {
     q: "What's the difference between Pro and Premium?",
-    a: 'Pro is a one-time purchase that unlocks the actionable layer on top of the free report: rewritten bullet points based on your actual CV text, a step-by-step fix for every red flag, the ATS keywords your CV is missing for your target role, a detailed breakdown of any career gaps, and your top three priority actions with concrete examples. Premium is a monthly subscription that includes everything in Pro, plus unlimited CV analyses and full job matching with a fit score, strengths, and gaps for every job we find, not just the first two.',
+    a: 'Pro is a one-time purchase that unlocks the actionable layer on top of the free report. You get a full ATS-clean rewrite of your CV that you can download, rewritten bullet points based on your actual text, a step-by-step fix for every red flag, the ATS keywords you are missing, and your top three priority actions with examples. If you pasted a job, Pro also gives you the specific requirements you are missing for it plus a tailored cover letter built from your real experience. Premium is a monthly subscription that includes everything in Pro, plus unlimited analyses and full job matching with a fit score, strengths, and gaps for every job we find, not just the first two.',
+  },
+  {
+    q: 'Can I check my CV against a specific job?',
+    a: 'Yes. When you start an analysis there is an optional field where you can paste a job posting. CVCheck then scores how well your CV matches that job, shows the requirements you already cover, and counts the ones you are missing. On the free tier you see the match score and how many requirements are missing. Pro lists the exact missing requirements and adds a cover letter tailored to that job, written from your real experience.',
   },
   {
     q: 'How does the ATS compatibility check work?',

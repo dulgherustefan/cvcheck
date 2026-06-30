@@ -828,8 +828,8 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
 }
 
 const PLAN_DEFS = {
-  free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats — bullets with/without metrics','Red flag count + severity','ATS verdict','Career trajectory + format verdict','History saved (requires account)'] },
-  pro:     { label:'Pro',     price:'€1.99', period:'one-time', features:['Everything in Free','Bullet rewrites on your actual text','How to fix every red flag','Missing ATS keywords for your domain','Career gaps & seniority analysis','Top 3 priority actions with how-to + examples'] },
+  free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats — bullets with/without metrics','Red flag count + severity','ATS verdict','Match score vs a job you paste','History saved (requires account)'] },
+  pro:     { label:'Pro',     price:'€1.99', period:'one-time', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','Bullet rewrites on your actual text','How to fix every red flag','Missing ATS keywords + job requirements','Top 3 priority actions with examples'] },
   premium: { label:'Premium', price:'€5.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Job matching — live listings matched to your profile'] },
 }
 
@@ -1411,7 +1411,7 @@ export default function Home() {
               <div className="section-head">
                 <div data-sr data-sr-delay="0" className="eyebrow-badge">AI CV Analysis</div>
                 <h2 data-sr data-sr-delay="0.08" className="section-h2">Every recruiter bias, every ATS gap. Exposed.</h2>
-                <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions.</p>
+                <p data-sr data-sr-delay="0.16" className="section-body">CVCheck reads your CV the way a recruiter does in 7 seconds, then goes deeper: weak verbs, missing keywords, and credibility gaps across 7 dimensions. Paste a job and it scores how well you match it. Upgrade and it hands back a rewritten, ATS-clean CV and a cover letter built from your real experience.</p>
                 <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">Analyze My CV for Free ↑</button>
               </div>
 
@@ -1644,8 +1644,8 @@ export default function Home() {
 
               <div className="pricing-grid">
                 {([
-                  { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Career trajectory','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
-                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','AI bullet rewrites on your text','How-to-fix for every red flag','Missing ATS keywords','Career gap analysis','Top 3 actions with how-to + examples'], cta:'Get Pro — €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
+                  { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Match score vs a job you paste','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
+                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:'Get Pro — €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
                   { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
                 ] as const).map((p,i)=>(
                   <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
