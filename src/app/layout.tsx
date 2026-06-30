@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: '%s · CVCheck',
   },
   description:
-    'Free CV checker powered by AI. Upload your CV and get a score out of 100, fix red flags, rewrite weak bullets, and find matching jobs — in under 30 seconds.',
+    'Free CV checker powered by AI. Get a score out of 100, fix red flags, rewrite weak bullets, and match your CV to any job description. In under 30 seconds, no signup.',
   keywords: [
     // High-volume direct intent
     'free cv checker', 'cv checker free', 'check my cv', 'cv checker online',
@@ -53,6 +53,9 @@ export const metadata: Metadata = {
     'cv optimizer', 'resume bullet rewrite', 'improve my cv',
     // Job matching
     'cv job matching', 'resume job matching', 'job match cv',
+    'match cv to job description', 'tailor cv to job', 'tailor resume to job description',
+    // Cover letter (new)
+    'ai cover letter generator', 'free cover letter generator', 'cover letter from cv',
     // Long-tail
     'cv checker online free no signup', 'ai powered cv checker',
     'free resume analysis', 'cv analysis tool free',

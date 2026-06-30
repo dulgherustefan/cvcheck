@@ -1181,7 +1181,7 @@ export default function Home() {
           <div className="hero-centered-wrap">
 
             <motion.div className="hero-kicker" variants={heroKickerVariants} initial="hidden" animate="visible">
-              Announcing our free CV scoring engine
+              Free CV check · No signup · Results in seconds
             </motion.div>
 
             <motion.h1 className="hero-h1" variants={heroH1Variants} initial="hidden" animate="visible">
@@ -1190,7 +1190,7 @@ export default function Home() {
             </motion.h1>
 
             <motion.p className="hero-p" variants={heroPVariants} initial="hidden" animate="visible">
-              Upload your CV and get a full AI diagnosis: score, red flags, ATS gaps, and rewritten bullets. In seconds.
+              See your score, find what is costing you interviews, and match your CV against any job. Free, and no account to start.
             </motion.p>
 
             <motion.div className="hero-cta-row" variants={heroCtaRowVariants} initial="hidden" animate="visible">
@@ -1255,7 +1255,7 @@ export default function Home() {
               <span className="hero-cta-meta-text">
                 {tier==='free'&&analysisCount>=1
                   ? <><button className="footer-upgrade-link" onClick={()=>setShowUpgradeModal(true)}>Unlock Pro for €1.99</button> to analyze again</>
-                  : '1 free scan · no account required'}
+                  : '1 free scan · no account · your CV is never used to train AI'}
               </span>
             </motion.div>
 
