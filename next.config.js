@@ -29,13 +29,14 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' https://js.stripe.com",   // unsafe-inline needed for Next.js inline scripts
+              "script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.googletagmanager.com",   // unsafe-inline needed for Next.js inline scripts; googletagmanager for GA4
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https://fonts.gstatic.com",
               // Adzuna, Remotive, Jobicy, The Muse, Arbeitnow are fetched server-side only —
               // they must NOT appear here (adding them lets any XSS exfiltrate data to those domains)
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+              // Google Analytics (GA4) beacons go to *.google-analytics.com / *.analytics.google.com
+              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com",
               "frame-src https://js.stripe.com https://hooks.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",

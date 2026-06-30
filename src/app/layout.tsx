@@ -1,8 +1,11 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { ThemeScript } from '@/components/ThemeScript'
 import { Inter, DM_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
 import './globals.css'
+
+const GA_ID = 'G-PCXBRDLGBZ'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -167,7 +170,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
         />
       </head>
-      <body className={`${inter.variable} ${dmMono.variable} ${bricolage.variable}`}><PageTransition>{children}</PageTransition></body>
+      <body className={`${inter.variable} ${dmMono.variable} ${bricolage.variable}`}>
+        <PageTransition>{children}</PageTransition>
+        {/* Google Analytics (GA4) */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive"/>
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+        </Script>
+      </body>
     </html>
   )
 }
