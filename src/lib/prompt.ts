@@ -513,3 +513,46 @@ Return ONLY this JSON:
 
 // Backward compat
 export const SYSTEM_PROMPT = SYSTEM_PROMPT_PRO
+
+// ─────────────────────────────────────────────────────────────
+// JOB-TARGET ADDENDA — appended only when the user pastes a job
+// ─────────────────────────────────────────────────────────────
+// The user message will contain a "TARGET JOB" block. These tell the model to
+// ALSO emit a top-level "job_match" object. Kept deliberately short on free to
+// avoid inflating per-scan token cost.
+
+export const JD_ADDENDUM_PAID = `
+
+─────────────────────────────────────────────
+TARGET JOB MATCH  [extra output — a TARGET JOB was provided]
+─────────────────────────────────────────────
+The user message ends with a TARGET JOB block. Compare the CV against THAT job only.
+Add this top-level object to your JSON (same language as the rest):
+
+"job_match": {
+  "match_score": 0,                  // 0-100, honest fit of THIS CV for THIS job
+  "verdict": "weak_fit",             // "strong_fit" | "possible_fit" | "weak_fit"
+  "matched_keywords": [],            // up to 6 concrete requirements the CV already proves
+  "missing_keywords_count": 0,       // how many important requirements are absent
+  "missing_keywords": [],            // up to 8 specific requirements/skills the job wants that the CV lacks
+  "advice": ""                       // one sentence, max 25 words: the highest-impact change to fit THIS job
+}
+Score honestly. A generic CV against a specialised job should score low. Only list keywords the job text actually asks for.`
+
+export const JD_ADDENDUM_FREE = `
+
+─────────────────────────────────────────────
+TARGET JOB MATCH  [extra output — a TARGET JOB was provided]
+─────────────────────────────────────────────
+The user message ends with a TARGET JOB block. Compare the CV against THAT job only.
+Add this top-level object to your JSON (same language as the rest):
+
+"job_match": {
+  "match_score": 0,                  // 0-100, honest fit of THIS CV for THIS job
+  "verdict": "weak_fit",             // "strong_fit" | "possible_fit" | "weak_fit"
+  "matched_keywords": [],            // up to 4 requirements the CV already proves
+  "missing_keywords_count": 0,       // how many important requirements are absent
+  "missing_keywords": [],            // leave EMPTY [] (locked)
+  "advice": ""                       // leave EMPTY "" (locked)
+}
+Score honestly. Fill match_score, verdict, matched_keywords, and missing_keywords_count. Keep missing_keywords and advice empty.`

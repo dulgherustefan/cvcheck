@@ -15,7 +15,7 @@ import { useTier } from '@/hooks/useTier'
 import type {
   GatedAnalysisResult, Rating,
   RedFlagSeverity, BulletRewrite, PriorityAction, RedFlag,
-  JobsResponse, JobMatch as JobMatchType,
+  JobsResponse, JobMatch as JobMatchType, JobTargetAnalysis,
 } from '@/lib/types'
 import {
   SCORE_DIMENSIONS, RATING_LABELS, RATING_COLORS,
@@ -421,6 +421,56 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
   )
 }
 
+function JobMatchCard({ jm, locked, onUnlock }: { jm: JobTargetAnalysis; locked: boolean; onUnlock: () => void }) {
+  const color = jm.match_score >= 70 ? 'var(--score-high)' : jm.match_score >= 45 ? 'var(--score-mid)' : 'var(--score-low)'
+  const verdictLabel = jm.verdict === 'strong_fit' ? 'Strong fit' : jm.verdict === 'possible_fit' ? 'Possible fit' : 'Weak fit'
+  return (
+    <div className="jobmatch-card">
+      <div className="jobmatch-head">
+        <div className="jobmatch-title">
+          <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1ZM9 5h6v2H9Z"/></svg>
+          Match for this job
+        </div>
+        <div className="jobmatch-score" style={{ color }}>
+          {jm.match_score}<span className="jobmatch-score-pct">%</span>
+          <span className="jobmatch-verdict" style={{ color }}>{verdictLabel}</span>
+        </div>
+      </div>
+      <div className="jobmatch-bar"><div className="jobmatch-bar-fill" style={{ width: `${jm.match_score}%`, background: color }}/></div>
+
+      {jm.matched_keywords.length > 0 && (
+        <div className="jobmatch-group">
+          <div className="jobmatch-group-label">What already matches</div>
+          <div className="jobmatch-chips">
+            {jm.matched_keywords.map(k => <span key={k} className="jobmatch-chip jobmatch-chip-yes">{k}</span>)}
+          </div>
+        </div>
+      )}
+
+      <div className="jobmatch-group">
+        <div className="jobmatch-group-label">
+          Missing for this job{jm.missing_keywords_count > 0 ? ` (${jm.missing_keywords_count})` : ''}
+        </div>
+        {locked ? (
+          <div className="jobmatch-locked" onClick={onUnlock}>
+            <span>{jm.missing_keywords_count > 0
+              ? `${jm.missing_keywords_count} requirement${jm.missing_keywords_count !== 1 ? 's' : ''} this job wants that your CV doesn't show`
+              : 'See the requirements your CV is missing'}</span>
+            <span className="jobmatch-unlock-btn">Unlock with Pro — €1.99</span>
+          </div>
+        ) : (
+          <>
+            <div className="jobmatch-chips">
+              {(jm.missing_keywords ?? []).map(k => <span key={k} className="jobmatch-chip jobmatch-chip-no">{k}</span>)}
+            </div>
+            {jm.advice && <p className="jobmatch-advice">{jm.advice}</p>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
   result:GatedAnalysisResult; isPro:boolean; user:{email?:string}|null; token:string|null
   setShowUpgradeModal:(v:boolean)=>void; setShowPlansModal:(v:boolean)=>void; setShowAuthModal:(v:boolean)=>void
@@ -452,6 +502,8 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
           </div>
         </div>
       </div>
+
+      {result.job_match && <JobMatchCard jm={result.job_match} locked={result.job_match_locked} onUnlock={unlock}/>}
 
       {result.quick_win && (
         <div className="quick-win">
@@ -906,6 +958,8 @@ export default function Home() {
   const [mode,        setMode]        = useState<InputMode>('url')
   const [url,         setUrl]         = useState('')
   const [file,        setFile]        = useState<File|null>(null)
+  const [jobDescription, setJobDescription] = useState('')
+  const [showJd,      setShowJd]      = useState(false)
   const [isDragging,  setIsDragging]  = useState(false)
   const [appState, setAppState] = useState<AppState>('idle')
   const [result, setResult]     = useState<GatedAnalysisResult|null>(null)
@@ -954,11 +1008,13 @@ export default function Home() {
     safeSetAppState('loading'); setError(''); safeSetResult(null)
     try {
       let res:Response
+      const jd = jobDescription.trim()
       if (mode==='pdf'&&file) {
         const form=new FormData(); form.append('file',file)
+        if (jd) form.append('jobDescription', jd)
         res=await fetch('/api/roast',{method:'POST',body:form,headers:session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{}})
       } else {
-        res=await fetch('/api/roast',{method:'POST',headers:{'Content-Type':'application/json',...(session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},body:JSON.stringify({url:url.trim()})})
+        res=await fetch('/api/roast',{method:'POST',headers:{'Content-Type':'application/json',...(session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},body:JSON.stringify({url:url.trim(),...(jd?{jobDescription:jd}:{})})})
       }
       const data=await res.json()
       if (!res.ok) {
@@ -973,7 +1029,7 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, url, file, session])
 
-  const reset = () => { appStateRef.current='idle'; resultRef.current=null; setAppState('idle'); setResult(null); setError('');setUrl('');setFile(null);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
+  const reset = () => { appStateRef.current='idle'; resultRef.current=null; setAppState('idle'); setResult(null); setError('');setUrl('');setFile(null);setJobDescription('');setShowJd(false);setPendingSave(null);setSavedToHistory(false);setShareUrl(null) }
   const copyShare = async () => {
     if (!result) return
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
@@ -1082,6 +1138,30 @@ export default function Home() {
               )}
             </motion.div>
 
+            <motion.div className="hero-jd" variants={heroCtaMetaVariants} initial="hidden" animate="visible">
+              {!showJd ? (
+                <button type="button" className="hero-jd-toggle" onClick={()=>setShowJd(true)}>
+                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 7h-3V5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1ZM9 5h6v2H9Z"/></svg>
+                  Targeting a specific job? Match your CV against it
+                </button>
+              ) : (
+                <div className="hero-jd-open">
+                  <div className="hero-jd-head">
+                    <span className="hero-jd-label">Paste the job description <span className="hero-jd-opt">(optional)</span></span>
+                    <button type="button" className="hero-jd-close" onClick={()=>{setShowJd(false);setJobDescription('')}}>Remove</button>
+                  </div>
+                  <textarea
+                    className="hero-jd-textarea"
+                    placeholder="Paste the job posting you're applying for. You'll get a match score and the requirements your CV is missing."
+                    value={jobDescription}
+                    onChange={e=>setJobDescription(e.target.value)}
+                    rows={4}
+                    maxLength={6000}
+                  />
+                </div>
+              )}
+            </motion.div>
+
             <motion.div className="hero-cta-meta" variants={heroCtaMetaVariants} initial="hidden" animate="visible">
               <div className="hero-cta-toggle">
                 <button onClick={()=>setMode('url')} className={`hero-toggle-btn ${mode==='url'?'hero-toggle-active':''}`}>URL</button>
@@ -1110,6 +1190,10 @@ export default function Home() {
                 </span>
               ))}
             </motion.div>
+
+            <motion.p className="hero-pricecompare" variants={heroWorksWithVariants} initial="hidden" animate="visible">
+              Tools like Jobscan and Resume Worded charge $50 a month for this. Here it&apos;s free to start, €1.99 for the full report.
+            </motion.p>
 
             <motion.div className="hero-mockup-wrap" variants={heroMockupVariants} initial="hidden" animate="visible">
               <div className="mockup-window mockupLift">

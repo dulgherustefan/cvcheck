@@ -13,6 +13,7 @@ const MAX_FILE_SIZE     = 5 * 1024 * 1024          // 5 MB
 const ALLOWED_MIME      = new Set(['application/pdf', 'text/plain'])
 const MIN_CONTENT_CHARS = 50
 const MAX_CONTENT_CHARS = 14000                     // matches MAX_CONTENT_CHARS in claude.ts
+const MAX_JD_CHARS      = 6000                      // hard cap; claude.ts caps tighter per tier
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -125,6 +126,11 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
       example: null,
     })) as unknown as typeof gated.top_3_actions
   }
+  if (gated.job_match_locked && gated.job_match) {
+    const jm = gated.job_match as unknown as Record<string, unknown>
+    jm.missing_keywords = null   // the actual list for this job — Pro+
+    jm.advice           = null   // tailored advice — Pro+
+  }
   return gated
 }
 
@@ -135,6 +141,7 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get('content-type') ?? ''
     let content = ''
     let source: string | undefined
+    let jobDescription = ''
 
     const userId = await getUserIdFromRequest(req)
     const tier   = await getTierForUser(userId)
@@ -174,6 +181,8 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData()
       const file = formData.get('file') as File | null
       const url  = formData.get('url') as string | null
+      const jd   = formData.get('jobDescription')
+      if (typeof jd === 'string') jobDescription = jd
 
       if (file) {
         // ── Server-side file validation ──────────────────────────────────────
@@ -236,12 +245,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 })
       }
     } else if (contentType.includes('application/json')) {
-      let body: { url?: string }
+      let body: { url?: string; jobDescription?: string }
       try {
         body = await req.json()
       } catch {
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
       }
+      if (typeof body?.jobDescription === 'string') jobDescription = body.jobDescription
       const url = body?.url
       if (!url || typeof url !== 'string') {
         return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
@@ -281,7 +291,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Could not extract enough content to analyze' }, { status: 422 })
     }
 
-    const result = await getRoast(content, tier)
+    // Optional job-target. Cap hard here; claude.ts caps tighter per tier.
+    jobDescription = jobDescription.trim().slice(0, MAX_JD_CHARS)
+
+    const result = await getRoast(content, tier, jobDescription || undefined)
     const gated  = gateResult(result, tier)
 
     // ── Critical: strip locked data server-side, don't rely on UI alone ──────

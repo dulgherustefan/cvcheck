@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO } from './prompt'
+import { SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO, JD_ADDENDUM_FREE, JD_ADDENDUM_PAID } from './prompt'
 import type { AnalysisResult, CVScores, Rating, Tier } from './types'
 import { randomUUID } from 'crypto'
 
@@ -102,14 +102,31 @@ function dedash<T>(value: T): T {
   return value
 }
 
-export async function getRoast(content: string, tier: Tier): Promise<AnalysisResult> {
+// Job-description caps. The JD is opt-in (most free scans send none, so cost is
+// unchanged). When present, free gets a tight cap so the extra input stays small.
+const MAX_JD_CHARS_PAID = 4000
+const MAX_JD_CHARS_FREE = 1200
+
+export async function getRoast(content: string, tier: Tier, jobDescription?: string): Promise<AnalysisResult> {
   const isPro = tier === 'pro' || tier === 'premium'
   const prepared = prepareContent(content, isPro ? MAX_CONTENT_CHARS_PAID : MAX_CONTENT_CHARS_FREE)
-  const systemPrompt = isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE
+
+  const jd = (jobDescription ?? '').trim()
+  const hasJd = jd.length >= 30   // ignore trivially short pastes
+  const preparedJd = hasJd ? prepareContent(jd, isPro ? MAX_JD_CHARS_PAID : MAX_JD_CHARS_FREE) : ''
+
+  // Only pay for the job-match instructions when a job was actually pasted.
+  const systemPrompt = (isPro ? SYSTEM_PROMPT_PRO : SYSTEM_PROMPT_FREE)
+    + (hasJd ? (isPro ? JD_ADDENDUM_PAID : JD_ADDENDUM_FREE) : '')
+
+  const userMessage = hasJd
+    ? `Analyze this CV/portfolio content:\n\n${prepared}\n\n─── TARGET JOB ───\n${preparedJd}`
+    : `Analyze this CV/portfolio content:\n\n${prepared}`
 
   const message = await getClient().messages.create({
     model: isPro ? MODEL_PAID : MODEL_FREE,
-    max_tokens: isPro ? 6000 : 2500,
+    // Job match adds a small object; give free a little headroom only when used.
+    max_tokens: isPro ? 6000 : (hasJd ? 3000 : 2500),
     // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
     temperature: 0.3,
     // Cache the (static) system prompt. On the paid Sonnet path this saves ~90%
@@ -119,7 +136,7 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
     messages: [
       {
         role: 'user',
-        content: `Analyze this CV/portfolio content:\n\n${prepared}`,
+        content: userMessage,
       },
     ],
   })
@@ -197,6 +214,22 @@ export async function getRoast(content: string, tier: Tier): Promise<AnalysisRes
   parsed.first_impression                   = parsed.first_impression                         ?? {}
   parsed.first_impression.tone_signal       = parsed.first_impression?.tone_signal            ?? 'mixed'
   parsed.first_impression.recommended_title = parsed.first_impression?.recommended_title      ?? ''
+
+  // ── Job match (only when a target job was pasted) ─────────────────────────
+  if (hasJd && parsed.job_match && typeof parsed.job_match === 'object') {
+    const jm = parsed.job_match
+    jm.match_score = Math.max(0, Math.min(100, Math.round(Number(jm.match_score) || 0)))
+    jm.verdict = ['strong_fit', 'possible_fit', 'weak_fit'].includes(jm.verdict as string)
+      ? jm.verdict : (jm.match_score >= 70 ? 'strong_fit' : jm.match_score >= 45 ? 'possible_fit' : 'weak_fit')
+    jm.matched_keywords = Array.isArray(jm.matched_keywords) ? jm.matched_keywords.slice(0, 6) : []
+    jm.missing_keywords = Array.isArray(jm.missing_keywords) ? jm.missing_keywords.slice(0, 8) : []
+    jm.missing_keywords_count = Number.isFinite(jm.missing_keywords_count)
+      ? Math.max(0, Math.round(jm.missing_keywords_count))
+      : jm.missing_keywords.length
+    jm.advice = typeof jm.advice === 'string' ? jm.advice : ''
+  } else {
+    parsed.job_match = null
+  }
 
   // Final safety net: strip any em/en dashes the model slipped past the prompt rule.
   return dedash(parsed)

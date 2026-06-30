@@ -27,6 +27,7 @@ export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisRes
     missing_signals_locked: !isPro,     // credibility.signals_missing
     actions_locked:         !isPro,     // top_3_actions[].how + example
     job_matching_locked:    !isPremium, // job matching — Premium only
+    job_match_locked:       !isPro,     // job_match.missing_keywords + advice
   }
 }
 

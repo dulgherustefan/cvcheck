@@ -74,6 +74,16 @@ export interface PriorityAction {
   example: string                    // Pro only
 }
 
+// ── Job-target match (only present when the user pastes a job description) ─────
+export interface JobTargetAnalysis {
+  match_score: number                // 0-100, how well the CV fits the pasted job
+  verdict: 'strong_fit' | 'possible_fit' | 'weak_fit'
+  matched_keywords: string[]         // requirements the CV already covers — all tiers
+  missing_keywords_count: number     // how many key requirements are missing — all tiers
+  missing_keywords: string[]         // the actual missing requirements — Pro+ only
+  advice: string                     // one tailored line for this job — Pro+ only
+}
+
 // ── Scores ───────────────────────────────────────────────────────────────────
 export interface CVScores {
   first_impression: number     // 0-15
@@ -110,6 +120,8 @@ export interface AnalysisResult {
   credibility: CredibilityAnalysis
   top_3_actions: PriorityAction[]
 
+  job_match?: JobTargetAnalysis | null  // only when a target job was pasted
+
   tier: Tier
 }
 
@@ -123,6 +135,7 @@ export interface GatedAnalysisResult extends AnalysisResult {
   missing_signals_locked: boolean // credibility.signals_missing hidden
   actions_locked: boolean        // top_3_actions[].how + example hidden
   job_matching_locked: boolean   // job matching — Premium only
+  job_match_locked: boolean      // job_match.missing_keywords + advice hidden (free)
 }
 
 export interface AnalysisError {
