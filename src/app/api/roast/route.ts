@@ -306,12 +306,17 @@ export async function POST(req: NextRequest) {
     // ── Critical: strip locked data server-side, don't rely on UI alone ──────
     const safeGated = applyServerSideGating(gated)
 
+    // Share link works instantly for every result, signed in or not — this is
+    // the whole viral loop, so it can't depend on a second authenticated round trip.
+    const shareToken = crypto.randomUUID()
+
     if (userId) {
       const { error: insertError } = await supabaseAdmin
         .from('roasts')
         .upsert({
           id:              result.analysis_id,
           user_id:         userId,
+          share_token:     shareToken,
           source:          source ?? null,
           total_score:     result.total_score,
           rating:          result.rating,
@@ -361,9 +366,58 @@ export async function POST(req: NextRequest) {
           .eq('user_id', userId)
         if (resetError) console.error('[roast] Failed to reset pro credit:', resetError.code)
       }
+    } else if (ip && ip !== 'unknown') {
+      // Anonymous scan — still persist a row (free-tier data only, no locked
+      // fields exist to leak) so the share link works and it can be claimed
+      // if this visitor signs up within 24h.
+      const anonRow: Record<string, unknown> = {
+        id:              result.analysis_id,
+        user_id:         null,
+        ip_address:      ip,
+        share_token:     shareToken,
+        source:          source ?? null,
+        total_score:     result.total_score,
+        rating:          result.rating,
+        detected_domain: result.detected_domain,
+        detected_level:  result.detected_level,
+        summary:           result.summary,
+        quick_win:         result.quick_win ?? null,
+        scores:            result.scores,
+        first_impression:  result.first_impression,
+        impact:            result.impact,
+        ats:               result.ats,
+        red_flags:         result.red_flags,
+        buzzwords_detected:result.buzzwords_detected ?? [],
+        career_story:      result.career_story,
+        format:            result.format,
+        credibility:       result.credibility,
+        top_3_actions:     result.top_3_actions,
+        job_match:         result.job_match ?? null,
+        optimized_cv:      result.optimized_cv ?? null,
+        cover_letter:      result.cover_letter ?? null,
+        observations:      null,
+        improvements:      null,
+        top_priority:      null,
+        tier,
+      }
+      const { error: insertError } = await supabaseAdmin
+        .from('roasts').upsert(anonRow, { onConflict: 'id', ignoreDuplicates: true })
+      if (insertError) {
+        console.error('[roast] Failed to save anonymous roast:', insertError.code)
+        // ip_address column may not exist yet (pending migration 0003) — retry
+        // without it so the share link still works today. 42703 = missing
+        // column (direct Postgres); PGRST204 = missing column in PostgREST's
+        // schema cache (what Supabase actually returns here).
+        if (insertError.code === '42703' || insertError.code === 'PGRST204') {
+          delete anonRow.ip_address
+          const { error: retryError } = await supabaseAdmin
+            .from('roasts').upsert(anonRow, { onConflict: 'id', ignoreDuplicates: true })
+          if (retryError) console.error('[roast] Anonymous roast retry also failed:', retryError.code)
+        }
+      }
     }
 
-    return NextResponse.json(safeGated)
+    return NextResponse.json({ ...safeGated, share_token: shareToken })
   } catch (err) {
     // Never expose internal error details to client
     console.error('[roast] Unhandled error:', err)

@@ -100,6 +100,7 @@ export type Rating = 'needs_work' | 'below_average' | 'average' | 'good' | 'stro
 // ── Full result (what AI returns) ─────────────────────────────────────────────
 export interface AnalysisResult {
   analysis_id: string
+  share_token?: string
   source?: string
   total_score: number          // 0-100
   rating: Rating

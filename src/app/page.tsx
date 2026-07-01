@@ -1120,10 +1120,9 @@ export default function Home() {
     if (shareUrl) { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(()=>setCopied(false),2500); return }
     setShareLoading(true)
     try {
-      const res=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({roast_id:result.analysis_id})})
-      if (!res.ok) throw new Error()
-      const { token } = await res.json()
-      const u=`${window.location.origin}/share/${token}`; setShareUrl(u)
+      // share_token is minted server-side in /api/roast for every result (signed in or not)
+      if (!result.share_token) throw new Error()
+      const u=`${window.location.origin}/share/${result.share_token}`; setShareUrl(u)
       await navigator.clipboard.writeText(u); setCopied(true); setTimeout(()=>setCopied(false),2500)
     } catch {
       const fallback=`My CV scored ${result.total_score}/100 on CVCheck. Check yours free: https://cvcheck.app`
