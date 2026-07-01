@@ -1388,15 +1388,6 @@ html:not(.js) .hero-mockup-wrap {
 .section-body { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 52ch; margin-bottom: 24px; }
 .section-btn { background: var(--accent); color: var(--text-inverse); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: var(--radius-md); margin-bottom: 40px; border: none; cursor: pointer; }
 
-/* ── Steps section ── */
-.steps-section { padding: 96px 0; border-top: 1px solid var(--border); }
-.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin-top: 48px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.step-card { background: var(--bg-elevated); padding: 28px 22px; }
-.step-icon { margin-bottom: 16px; }
-.step-num { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; }
-.step-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--text-heading); letter-spacing: -0.02em; margin-bottom: 8px; }
-.step-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.65; }
-
 /* ── Testimonial ── */
 .testimonial-section { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg-elevated); }
 .testimonial-card { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 36px 40px; }
