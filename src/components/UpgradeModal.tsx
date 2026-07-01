@@ -103,6 +103,12 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
         .um-submit:hover:not(:disabled)   { opacity: 0.8 !important; }
         .um-close:hover { background: var(--bg-muted) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; }
         .um-back:hover  { color: var(--text-primary) !important; }
+        @media (max-width: 480px) {
+          .um-body { padding: 22px 18px 20px !important; }
+          .um-features-grid { grid-template-columns: 1fr !important; }
+          .um-premium-row { flex-wrap: wrap !important; }
+          .um-premium-row > button { width: 100% !important; }
+        }
       `}</style>
 
       {/* Overlay */}
@@ -162,7 +168,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
           {/* ── PLANS STEP ── */}
           {step === 'plans' && (
-            <div style={{ padding: '32px 32px 32px' }}>
+            <div className="um-body" style={{ padding: '32px 32px 32px' }}>
 
               {/* Header */}
               <div style={{ marginBottom: 28, paddingRight: 32 }}>
@@ -230,7 +236,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     </div>
                   </div>
 
-                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
+                  <ul className="um-features-grid" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
                     {PLANS.pro.features.map(f => <FeatureItem key={f} text={f}/>)}
                   </ul>
 
@@ -261,7 +267,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
                 {/* Premium — compact row */}
                 <div
-                  className="um-plan"
+                  className="um-plan um-premium-row"
                   style={{
                     background: 'var(--bg)',
                     border: '1px solid var(--border)',
@@ -329,7 +335,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
 
           {/* ── LOGIN GATE STEP ── */}
           {step === 'login' && (
-            <div style={{ padding: '36px 32px 32px' }}>
+            <div className="um-body" style={{ padding: '36px 32px 32px' }}>
 
               {/* Back link */}
               <button
