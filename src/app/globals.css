@@ -49,6 +49,16 @@
   --shadow-md: 0 4px 20px rgba(42,37,31,0.08);
   --shadow-lg: 0 8px 40px rgba(42,37,31,0.10);
   --shadow-xl: 0 20px 80px rgba(42,37,31,0.12);
+
+  /* Warm, layered lift for floating surfaces (mockups, popovers). Tinted with
+     the ink color (42,37,31) instead of pure black so it never muddies cream. */
+  --shadow-lift: 0 2px 4px rgba(42,37,31,0.04), 0 8px 20px rgba(42,37,31,0.07), 0 24px 48px rgba(42,37,31,0.09);
+
+  /* Easing curves — referenced across the file; previously undefined, so those
+     transitions silently fell back to plain ease. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 html {
@@ -62,7 +72,10 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  /* Subtle paper grain — grayscale fractal noise at very low opacity so the
+     cream reads as stock, not a flat fill. Tiles seamlessly (stitchTiles). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)' opacity='0.05'/%3E%3C/svg%3E");
   color: var(--text-primary);
   min-height: 100vh;
 }
@@ -250,7 +263,9 @@ input, textarea { font-family: var(--font-sans); }
 .navbar {
   position: sticky; top: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 40px;
+  /* Full-bleed bar, but content aligned to the 1100px page column (inner 1020px)
+     so the logo lines up with the hero, sections and footer on wide screens. */
+  padding: 0 max(40px, calc((100% - 1020px) / 2));
   height: 58px;
   background: rgba(251,248,242,0.85);
   backdrop-filter: blur(16px);
@@ -263,7 +278,9 @@ input, textarea { font-family: var(--font-sans); }
   color: var(--text-heading);
   letter-spacing: -0.01em;
 }
-.logo-img { border-radius: 5px; }
+.logo-img { border-radius: 5px; transition: transform 0.4s var(--ease-spring); }
+.navbar-logo { cursor: default; }
+.navbar-logo:hover .logo-img { transform: rotate(-12deg) scale(1.08); }
 .navbar-links { display: flex; list-style: none; gap: 32px; position: absolute; left: 50%; transform: translateX(-50%); }
 .navbar-right { display: flex; align-items: center; gap: 10px; }
 
@@ -1263,7 +1280,8 @@ html:not(.js) .hero-mockup-wrap {
 @media (max-width: 960px) {
   .navbar { padding: 0 24px; }
   .navbar-links { display: none; }
-  .section-wrap, .section-wrap-md, .section-wrap-sm, .section-wrap-lg { padding: 0 24px; }
+  .section-wrap, .section-wrap-md, .section-wrap-sm, .section-wrap-lg,
+  .footer-inner, .trust-strip-inner { padding: 0 24px; }
   .landing-section, .landing-section-alt, .landing-section-subtle, .steps-section, .pricing-section, .testimonial-section, .section-alerts { padding: 72px 0; }
   .section-head { margin-bottom: 40px; }
   .lmock-grid, .lmock-jobs-grid, .lmock-alerts-wrap { grid-template-columns: 1fr; gap: 32px; }
@@ -1317,7 +1335,7 @@ html:not(.js) .hero-mockup-wrap {
 .mockup-dot-y { background: #C7871B; opacity: 0.6; }
 .mockup-dot-g { background: #1E9E5A; opacity: 0.6; }
 .mockup-bar { flex: 1; height: 18px; background: var(--bg-muted); border-radius: var(--radius-sm); }
-.mockupLift { box-shadow: 0 1px 1px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4), 0 12px 40px rgba(0,0,0,0.5); }
+.mockupLift { box-shadow: var(--shadow-lift); }
 
 /* ── Analysis mockup ── */
 .analysis-mockup-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 0; }
