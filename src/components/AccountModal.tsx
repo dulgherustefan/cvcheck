@@ -67,7 +67,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         ._acc-row:hover { background: var(--bg-subtle) !important; }
         ._acc-danger:hover {
           background: rgba(255,95,95,0.06) !important;
-          color: #FF5F5F !important;
+          color: #D14343 !important;
         }
         ._acc-close {
           transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.14s cubic-bezier(0.34,1.56,0.64,1) !important;
@@ -86,7 +86,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
           background: var(--accent) !important;
           color: var(--text-inverse) !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 4px 14px rgba(61,255,160,0.35) !important;
+          box-shadow: 0 4px 14px rgba(210,106,74,0.35) !important;
         }
         ._acc-upgrade-btn:active { transform: scale(0.97) !important; }
         ._acc-accordion {
@@ -100,7 +100,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
         ._acc-pw-submit:hover:not(:disabled) {
           opacity: 0.92 !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 4px 14px rgba(61,255,160,0.30) !important;
+          box-shadow: 0 4px 14px rgba(210,106,74,0.30) !important;
         }
         ._acc-pw-submit:active:not(:disabled) { transform: scale(0.97) !important; }
       `}</style>
@@ -166,7 +166,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 18, fontWeight: 800, flexShrink: 0,
                 fontFamily: 'var(--font-display)',
-                boxShadow: '0 4px 12px rgba(61,255,160,0.30)',
+                boxShadow: '0 4px 12px rgba(210,106,74,0.30)',
               }}>
                 {initials}
               </div>
@@ -271,7 +271,7 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
 
                     {pwError && (
                       <div style={{
-                        fontSize: 12, color: '#FF5F5F',
+                        fontSize: 12, color: '#D14343',
                         padding: '8px 12px',
                         background: 'rgba(255,95,95,0.06)',
                         border: '1px solid rgba(255,95,95,0.15)',
@@ -288,8 +288,8 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                       <div style={{
                         fontSize: 12, color: 'var(--accent)',
                         padding: '8px 12px',
-                        background: 'rgba(61,255,160,0.06)',
-                        border: '1px solid rgba(61,255,160,0.15)',
+                        background: 'rgba(210,106,74,0.06)',
+                        border: '1px solid rgba(210,106,74,0.15)',
                         borderRadius: 8,
                         display: 'flex', gap: 7, alignItems: 'center',
                       }}>

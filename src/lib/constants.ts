@@ -59,9 +59,9 @@ export const RED_FLAG_LABELS = {
 } as const
 
 export const RED_FLAG_COLORS = {
-  dealbreaker: '#FF5F5F',
-  warning: '#FFD23F',
-  minor: '#9896A8',
+  dealbreaker: '#D14343',
+  warning: '#C7871B',
+  minor: '#6B6459',
 } as const
 
 // ── Rating labels & colors ────────────────────────────────────────────────────
@@ -74,15 +74,15 @@ export const RATING_LABELS = {
   excellent:     'Excellent',
 } as const
 
-// Coherent warm→mint ramp anchored on the theme's score colors
-// (--score-low #FF5F5F, --score-mid #FFD23F, --score-high #3DFFA0).
+// Semantic rating ramp, tuned to stay legible on the light (cream) theme
+// (--score-low #D14343, --score-mid #C7871B, --score-high #1E9E5A).
 export const RATING_COLORS = {
-  needs_work:    '#FF5F5F',
-  below_average: '#FF8F5F',
-  average:       '#FFD23F',
-  good:          '#B8E85F',
-  strong:        '#5FE8A8',
-  excellent:     '#3DFFA0',
+  needs_work:    '#D14343',
+  below_average: '#E07B3E',
+  average:       '#C7871B',
+  good:          '#7A9E2E',
+  strong:        '#3E9E6B',
+  excellent:     '#1E9E5A',
 } as const
 
 // ── Detected level labels ─────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ export const ATS_VERDICT_LABELS = {
 } as const
 
 export const ATS_VERDICT_COLORS = {
-  friendly:     '#3DFFA0',
-  minor_issues: '#FFD23F',
-  major_issues: '#FF5F5F',
+  friendly:     '#1E9E5A',
+  minor_issues: '#C7871B',
+  major_issues: '#D14343',
 } as const

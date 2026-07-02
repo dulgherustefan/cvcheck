@@ -21,3 +21,6 @@ out
 # logs
 *.log
 npm-debug.log*
+
+# brainstorming companion scratch files
+.superpowers/

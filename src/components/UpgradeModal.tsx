@@ -251,7 +251,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                       transition: 'opacity 0.15s', fontFamily: 'var(--font-sans)',
-                      boxShadow: '0 4px 14px rgba(61,255,160,0.35)',
+                      boxShadow: '0 4px 14px rgba(210,106,74,0.35)',
                       opacity: loading && loading !== 'pro' ? 0.5 : 1,
                     }}
                   >
@@ -438,7 +438,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                     background: 'var(--accent)', border: 'none',
                     borderRadius: 8,
                     color: 'var(--text-inverse)', fontSize: 14, fontWeight: 700,
-                    boxShadow: '0 4px 14px rgba(61,255,160,0.30)',
+                    boxShadow: '0 4px 14px rgba(210,106,74,0.30)',
                     cursor: authLoading ? 'not-allowed' : 'pointer',
                     opacity: authLoading ? 0.65 : 1,
                     transition: 'all 0.15s', fontFamily: 'var(--font-sans)',

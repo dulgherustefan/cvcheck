@@ -18,7 +18,7 @@ export function HeroDotGrid() {
     const GAP = 28
     const DOT_R = 1.5
     const GLOW_RADIUS = 120
-    const ACCENT = { r: 61, g: 255, b: 160 }
+    const ACCENT = { r: 210, g: 106, b: 74 }
 
     let raf: number
     let cols: number, rows: number
@@ -51,7 +51,7 @@ export function HeroDotGrid() {
           } else {
             context.beginPath()
             context.arc(x, y, DOT_R, 0, Math.PI * 2)
-            context.fillStyle = 'rgba(255,255,255,0.18)'
+            context.fillStyle = 'rgba(42,37,31,0.12)'
             context.fill()
           }
         }

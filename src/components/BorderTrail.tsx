@@ -33,7 +33,7 @@ export function BorderTrail({ size = 120, duration = 6 }: BorderTrailProps) {
           height: size,
           borderRadius: '50%',
           background:
-            'radial-gradient(circle, rgba(61,255,160,0.55) 0%, rgba(61,255,160,0) 70%)',
+            'radial-gradient(circle, rgba(210,106,74,0.55) 0%, rgba(210,106,74,0) 70%)',
           // Travel the rectangular perimeter of the parent.
           offsetPath: `rect(0 auto auto 0 round ${size}px)`,
         }}

@@ -13,15 +13,15 @@ const RATING_LABEL: Record<string, string> = {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 75) return '#3DFFA0'
-  if (score >= 50) return '#FFD23F'
-  return '#FF5F5F'
+  if (score >= 75) return '#1E9E5A'
+  if (score >= 50) return '#C7871B'
+  return '#D14343'
 }
 
 function ratingColor(rating: string): string {
-  if (['strong', 'excellent'].includes(rating)) return '#3DFFA0'
-  if (['good', 'average'].includes(rating))     return '#FFD23F'
-  return '#FF5F5F'
+  if (['strong', 'excellent'].includes(rating)) return '#1E9E5A'
+  if (['good', 'average'].includes(rating))     return '#C7871B'
+  return '#D14343'
 }
 
 // SVG circle arc for score ring
@@ -38,7 +38,7 @@ function describeArc(cx: number, cy: number, r: number, pct: number) {
 // Satori rasterizes it directly — avoids transform-handling quirks.
 const LOGO_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">' +
-  '<g transform="translate(0,500) scale(0.1,-0.1)" fill="#3DFFA0">' +
+  '<g transform="translate(0,500) scale(0.1,-0.1)" fill="#D26A4A">' +
   '<path d="M1739 4226 c-2 -2 -26 -7 -53 -10 -113 -15 -297 -93 -412 -172 -74 -52 -202 -185 -248 -257 -43 -68 -83 -148 -107 -217 -24 -68 -59 -257 -59 -320 0 -65 36 -259 60 -322 32 -84 32 -84 76 -43 170 159 358 254 614 311 111 25 365 22 490 -4 224 -48 433 -153 587 -295 43 -39 45 -40 56 -22 40 68 81 281 76 402 -4 125 -39 303 -59 303 -5 0 -7 6 -4 14 5 12 -59 159 -76 176 -3 3 -12 18 -19 33 -22 42 -121 152 -182 203 -138 114 -302 188 -476 213 -69 11 -255 15 -264 7z"/>' +
   '<path d="M2935 4214 c-56 -13 -91 -24 -140 -44 -11 -5 -28 -11 -38 -14 -15 -5 -7 -18 48 -81 76 -87 122 -157 176 -264 39 -80 98 -239 103 -281 2 -14 8 -55 15 -92 18 -106 14 -288 -8 -412 -11 -60 -18 -113 -15 -118 3 -4 0 -8 -5 -8 -6 0 -11 -8 -11 -18 0 -10 -4 -22 -8 -27 -4 -6 -14 -28 -21 -50 -32 -98 -122 -250 -208 -352 -23 -28 -43 -55 -43 -60 0 -4 -10 -14 -21 -21 -20 -13 -21 -14 -3 -26 30 -20 173 -60 259 -72 41 -5 205 -6 235 0 34 6 125 18 125 17 0 -1 34 10 75 24 248 87 434 238 548 448 30 54 82 195 97 262 4 17 9 39 11 50 16 71 16 239 0 336 -38 227 -121 393 -272 543 -68 68 -200 160 -216 150 -6 -4 -8 -3 -5 3 5 8 -38 31 -118 62 -43 17 -123 40 -173 50 -75 16 -315 12 -387 -5z"/>' +
   '<path d="M1660 2915 c-132 -27 -313 -104 -370 -157 -11 -10 -23 -18 -28 -18 -15 0 -189 -177 -222 -226 -132 -196 -207 -499 -169 -686 42 -206 81 -313 159 -428 50 -75 194 -222 260 -267 115 -78 278 -143 411 -164 88 -14 289 -6 369 15 59 14 170 52 177 60 3 3 -6 16 -20 30 -22 22 -76 88 -136 166 -30 40 -82 135 -114 210 -69 160 -99 311 -100 500 0 185 28 326 99 495 9 22 16 42 16 45 0 3 3 10 8 15 4 6 17 26 28 46 33 59 46 82 59 98 66 89 83 112 83 116 0 3 19 22 41 42 l41 38 -31 13 c-18 7 -37 9 -43 6 -6 -4 -8 -3 -5 3 7 10 -73 35 -172 53 -74 14 -263 11 -341 -5z"/>' +
@@ -47,14 +47,14 @@ const LOGO_SVG =
 const LOGO_URI = `data:image/svg+xml;utf8,${encodeURIComponent(LOGO_SVG)}`
 
 // ── Shared chrome ──────────────────────────────────────────────────────────
-const BG       = '#0A0A0B'
-const ELEVATED = '#111113'
-const MUTED    = '#1E1E24'
-const HEADING  = '#FFFFFF'
-const SECOND   = '#9896A8'
-const TERTIARY = '#54525E'
-const BORDER   = 'rgba(255,255,255,0.08)'
-const ACCENT   = '#3DFFA0'
+const BG       = '#FBF8F2'
+const ELEVATED = '#FFFFFF'
+const MUTED    = '#EBE5D8'
+const HEADING  = '#191510'
+const SECOND   = '#6B6459'
+const TERTIARY = '#9A9184'
+const BORDER   = 'rgba(42,37,31,0.10)'
+const ACCENT   = '#D26A4A'
 
 function Logo({ size = 40 }: { size?: number }) {
   // eslint-disable-next-line @next/next/no-img-element
@@ -90,12 +90,12 @@ export async function GET(req: NextRequest) {
   const accentStripe = { position: 'absolute' as const, top: 0, left: 0, right: 0, height: 4, background: ACCENT, display: 'flex' }
   const dotGrid = {
     position: 'absolute' as const, inset: 0,
-    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)',
+    backgroundImage: 'radial-gradient(circle, rgba(42,37,31,0.05) 1px, transparent 1px)',
     backgroundSize: '32px 32px', display: 'flex',
   }
   const glow = {
     position: 'absolute' as const, top: -200, right: -120, width: 560, height: 560,
-    background: 'radial-gradient(circle, rgba(61,255,160,0.10) 0%, transparent 70%)', display: 'flex',
+    background: 'radial-gradient(circle, rgba(210,106,74,0.10) 0%, transparent 70%)', display: 'flex',
   }
 
   // ── Brand card (no score) — homepage / generic OG ──────────────────────────

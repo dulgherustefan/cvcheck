@@ -124,7 +124,7 @@ export function AuthModal({ onClose, defaultMode = 'login' }: AuthModalProps) {
         ._auth-submit:hover:not(:disabled) {
           opacity: 0.92 !important;
           transform: translateY(-2px) !important;
-          box-shadow: 0 6px 20px rgba(61,255,160,0.40) !important;
+          box-shadow: 0 6px 20px rgba(210,106,74,0.40) !important;
         }
         ._auth-submit:active:not(:disabled) {
           transform: scale(0.97) !important;

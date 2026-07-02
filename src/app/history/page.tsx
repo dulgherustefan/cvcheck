@@ -61,12 +61,12 @@ const RATING_LABELS: Record<Rating, string> = {
 }
 
 const RATING_COLORS: Record<Rating, string> = {
-  needs_work: '#FF5F5F',
+  needs_work: '#D14343',
   below_average: '#FF8F5F',
-  average: '#FFD23F',
+  average: '#C7871B',
   good: '#B8E85F',
   strong: '#5FE8A8',
-  excellent: '#3DFFA0',
+  excellent: '#1E9E5A',
 }
 
 function downloadTextFile(filename: string, text: string) {
@@ -240,9 +240,9 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
   }, [onClose])
 
   const severityColor = (s: string) => {
-    if (s === 'dealbreaker') return '#FF5F5F'
-    if (s === 'warning') return '#FFD23F'
-    return '#9896A8'
+    if (s === 'dealbreaker') return '#D14343'
+    if (s === 'warning') return '#C7871B'
+    return '#6B6459'
   }
 
   return (
@@ -381,7 +381,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                   textTransform: 'uppercase' as const,
-                  color: entry.first_impression.passes_7_second_test ? '#3DFFA0' : '#FF5F5F',
+                  color: entry.first_impression.passes_7_second_test ? '#1E9E5A' : '#D14343',
                   background: entry.first_impression.passes_7_second_test ? 'var(--accent-subtle)' : 'rgba(255,95,95,0.08)',
                   border: `1px solid ${entry.first_impression.passes_7_second_test ? 'var(--accent-border)' : 'rgba(255,95,95,0.2)'}`,
                   padding: '4px 10px', borderRadius: 20, alignSelf: 'flex-start',
@@ -475,7 +475,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                     background: 'var(--accent)', color: 'var(--text-inverse)',
                     borderRadius: 9, fontSize: 13, fontWeight: 700,
                     textDecoration: 'none',
-                    boxShadow: '0 4px 12px rgba(61,255,160,0.30)',
+                    boxShadow: '0 4px 12px rgba(210,106,74,0.30)',
                   }}>
                     Unlock full analysis — €1.99
                   </a>
@@ -488,7 +488,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
           {entry.job_match && (
             <DrawerSection title="Job Match">
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: entry.job_match.match_score >= 70 ? '#3DFFA0' : entry.job_match.match_score >= 45 ? '#FFD23F' : '#FF5F5F' }}>{entry.job_match.match_score}%</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: entry.job_match.match_score >= 70 ? '#1E9E5A' : entry.job_match.match_score >= 45 ? '#C7871B' : '#D14343' }}>{entry.job_match.match_score}%</span>
                 <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{entry.job_match.verdict === 'strong_fit' ? 'Strong fit' : entry.job_match.verdict === 'possible_fit' ? 'Possible fit' : 'Weak fit'}</span>
               </div>
               {isPro && entry.job_match.missing_keywords && entry.job_match.missing_keywords.length > 0 ? (
@@ -527,7 +527,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                 <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const,
-                    color: entry.career_story.progression_clear ? '#3DFFA0' : '#FFD23F',
+                    color: entry.career_story.progression_clear ? '#1E9E5A' : '#C7871B',
                     padding: '3px 9px', borderRadius: 20,
                     background: entry.career_story.progression_clear ? 'var(--accent-subtle)' : 'rgba(255,210,63,0.10)',
                     border: `1px solid ${entry.career_story.progression_clear ? 'var(--accent-border)' : 'rgba(255,210,63,0.22)'}`,
@@ -631,7 +631,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
               fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
               textTransform: 'uppercase' as const,
               padding: '3px 9px', borderRadius: 20, flexShrink: 0,
-              color: isApplied ? '#3DFFA0' : 'var(--accent)',
+              color: isApplied ? '#1E9E5A' : 'var(--accent)',
               background: isApplied ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
               border: `1px solid ${isApplied ? 'var(--accent-border)' : 'var(--accent-border)'}`,
             }}>
@@ -673,7 +673,7 @@ function SavedJobCard({ job, token, onStatusChange }: {
               <button
                 onClick={() => handleAction('apply')} disabled={loading}
                 style={{
-                  fontSize: 12, fontWeight: 600, color: '#3DFFA0',
+                  fontSize: 12, fontWeight: 600, color: '#1E9E5A',
                   background: 'var(--accent-subtle)', border: '1px solid var(--accent-border)',
                   borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
                   fontFamily: 'var(--font-sans)', opacity: loading ? 0.5 : 1,
@@ -739,7 +739,7 @@ function EmptyState() {
         background: 'var(--accent)', color: 'var(--text-inverse)',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
-        boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
+        boxShadow: '0 4px 14px rgba(210,106,74,0.28)',
       }}>
         Analyze a CV
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -773,7 +773,7 @@ function EmptySavedJobs() {
         background: 'var(--accent)', color: 'var(--text-inverse)',
         borderRadius: 10, fontSize: 14, fontWeight: 700,
         textDecoration: 'none',
-        boxShadow: '0 4px 14px rgba(61,255,160,0.28)',
+        boxShadow: '0 4px 14px rgba(210,106,74,0.28)',
       }}>
         Find matching jobs
         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
