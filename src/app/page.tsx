@@ -1313,6 +1313,7 @@ export default function Home() {
 
             <motion.div className="hero-cta-meta" variants={heroCtaMetaVariants} initial="hidden" animate="visible">
               <div className="hero-cta-toggle">
+                <span className={`hero-toggle-indicator ${mode==='pdf'?'hero-toggle-indicator-right':''}`} aria-hidden="true"/>
                 <button onClick={()=>setMode('url')} className={`hero-toggle-btn ${mode==='url'?'hero-toggle-active':''}`}>URL</button>
                 <button onClick={()=>setMode('pdf')} className={`hero-toggle-btn ${mode==='pdf'?'hero-toggle-active':''}`}>PDF</button>
               </div>

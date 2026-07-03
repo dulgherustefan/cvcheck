@@ -98,10 +98,10 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
         .um-cta-pro:hover:not(:disabled) { opacity: 0.8 !important; }
         .um-cta-dark:hover:not(:disabled) { opacity:0.82 !important; }
         .um-google:hover:not(:disabled)   { border-color: var(--border-strong) !important; background: var(--bg-subtle) !important; }
-        .um-tab-active { background: var(--bg-elevated) !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important; border: 1px solid var(--border) !important; }
+        .um-tab-active { background: var(--bg-elevated) !important; color: var(--text-primary) !important; box-shadow: 0 1px 4px rgba(42,37,31,0.08) !important; border: 1px solid var(--border) !important; }
         .um-field:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
         .um-submit:hover:not(:disabled)   { opacity: 0.8 !important; }
-        .um-close:hover { background: var(--bg-muted) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; }
+        .um-close:hover { background: var(--bg-muted) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; transform: rotate(90deg) !important; }
         .um-back:hover  { color: var(--text-primary) !important; }
         @media (max-width: 480px) {
           .um-body { padding: 22px 18px 20px !important; }
@@ -136,7 +136,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
             maxWidth: step === 'login' ? 440 : 580,
             maxHeight: '92vh',
             overflowY: 'auto',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.28), 0 8px 24px rgba(0,0,0,0.12)',
+            boxShadow: '0 32px 80px rgba(42,37,31,0.18), 0 8px 24px rgba(42,37,31,0.10)',
             animation: 'modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             transition: 'max-width 0.3s ease',
             overflow: 'hidden',
@@ -157,7 +157,8 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
               background: 'var(--bg)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)',
               color: 'var(--text-tertiary)', cursor: 'pointer',
-              transition: 'all 0.15s', zIndex: 1,
+              transition: 'background 0.15s, border-color 0.15s, color 0.15s, transform 0.25s var(--ease-spring)',
+              zIndex: 1,
               fontFamily: 'var(--font-sans)',
             }}
           >

@@ -509,31 +509,6 @@ html:not(.js) .hero-mockup-wrap {
   flex-wrap: wrap; justify-content: center;
 }
 
-.hero-cta-toggle {
-  display: inline-flex;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--bg-elevated);
-}
-
-.hero-toggle-btn {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 6px 14px;
-  background: transparent; border: none;
-  color: var(--text-secondary); cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-}
-
-.hero-toggle-btn:hover { color: var(--text-primary); }
-
-.hero-toggle-active {
-  background: var(--accent-subtle);
-  color: var(--accent) !important;
-}
-
 .hero-cta-meta-text { color: var(--text-tertiary); font-size: 12px; font-family: var(--font-mono); letter-spacing: 0.04em; }
 
 .hero-mode-toggle {
@@ -1200,15 +1175,24 @@ html:not(.js) .hero-mockup-wrap {
 
 /* ── Plans modal ── */
 .modal-backdrop { position: fixed; inset: 0; z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); }
-.plans-modal { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; animation: fadeUp 0.25s cubic-bezier(0.16,1,0.3,1) both; }
+.plans-modal { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: fadeUp 0.25s cubic-bezier(0.16,1,0.3,1) both; }
 .plans-modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 28px 28px 0; margin-bottom: 24px; }
 .plans-modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-heading); letter-spacing: -0.03em; }
 .plans-modal-sub   { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-.plans-modal-close { width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-subtle); color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
-.plans-modal-close:hover { border-color: var(--border-strong); color: var(--text-primary); }
-.plans-modal-body { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); margin: 0 28px 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-.plan-card { background: var(--bg-elevated); padding: 24px; }
-.plan-card-featured { background: var(--bg-subtle); }
+.plans-modal-close { width: 28px; height: 28px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-subtle); color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.2s var(--ease-spring); }
+.plans-modal-close:hover { border-color: var(--border-strong); color: var(--text-primary); transform: rotate(90deg); }
+.plans-modal-body { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: stretch; margin: 0 28px 28px; }
+.plan-card {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 22px; position: relative;
+  display: flex; flex-direction: column;
+  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s, border-color 0.2s;
+}
+.plan-card-normal:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+/* Featured tier lifted out of the row, mirroring the main pricing section */
+.plan-card-featured { border-color: var(--accent-border); box-shadow: var(--shadow-lg); transform: scale(1.035); z-index: 1; }
+.plan-card-body { display: flex; flex-direction: column; flex: 1; }
+.plan-cta { margin-top: auto; }
 .plan-card-header { margin-bottom: 16px; }
 .plan-card-labels { display: flex; gap: 6px; margin-bottom: 10px; }
 .plan-tier-label { font-family: var(--font-display); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -1334,6 +1318,7 @@ html:not(.js) .hero-mockup-wrap {
   .pricing-card { border: 1px solid var(--border); border-radius: var(--radius-lg); }
   .pricing-card-featured { transform: none; }
   .plans-modal-body { grid-template-columns: 1fr; }
+  .plan-card-featured { transform: none; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
   .result-content { padding: 24px; }
   .score-hero-inner { flex-direction: column; gap: 20px; }
@@ -1621,8 +1606,6 @@ html:not(.js) .hero-mockup-wrap {
 
 .loading-steps { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
 
-.plan-card-body { }
-
 .section-alerts { padding: 96px 0; border-top: 1px solid var(--border); background: var(--bg-elevated); }
 
 .shimmerBtn { position: relative; overflow: hidden; }
@@ -1874,14 +1857,28 @@ html:not(.js) .hero-mockup-wrap {
   flex-wrap: wrap;
 }
 
+/* Segmented control with a sliding pill indicator, instead of a flat
+   background swap, so switching URL/PDF reads as one continuous control. */
 .hero-cta-toggle {
-  display: inline-flex;
+  position: relative;
+  display: flex;
+  width: fit-content;
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
+  background: var(--bg-elevated);
 }
 
+.hero-toggle-indicator {
+  position: absolute; inset: 0; z-index: 0;
+  width: 50%;
+  background: var(--accent-subtle);
+  transition: transform 0.32s var(--ease-spring);
+}
+.hero-toggle-indicator-right { transform: translateX(100%); }
+
 .hero-toggle-btn {
+  position: relative; z-index: 1; flex: 1;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
@@ -1892,7 +1889,7 @@ html:not(.js) .hero-mockup-wrap {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s var(--ease-out-expo), background 0.2s var(--ease-out-expo);
+  transition: color 0.2s var(--ease-out-expo);
 }
 
 .hero-toggle-btn:hover {
@@ -1900,7 +1897,6 @@ html:not(.js) .hero-mockup-wrap {
 }
 
 .hero-toggle-active {
-  background: var(--accent-subtle);
   color: var(--accent);
 }
 
