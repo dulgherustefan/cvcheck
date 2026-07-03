@@ -69,7 +69,7 @@ export const LANDING_PAGES: LandingPage[] = [
     faq: [
       { q: 'What is an ATS?', a: 'An applicant tracking system is the software employers use to collect and filter applications. It parses your resume into text and fields, then ranks or screens candidates before a recruiter reviews them.' },
       { q: 'Is the ATS checker really free?', a: 'Yes. The ATS verdict, your score out of 100, and your red flags are free with no account. The full report with missing keywords and fixes is a one-time €1.99.' },
-      { q: 'What can I upload?', a: 'A PDF resume, a LinkedIn profile URL, a portfolio site, a GitHub profile, or a Notion page. CVCheck reads whichever you give it.' },
+      { q: 'What can I upload?', a: 'A PDF resume, a portfolio site URL, or a GitHub profile URL. CVCheck reads whichever you give it.' },
       { q: 'Will it show the exact keywords I am missing?', a: 'The free check tells you whether keyword coverage is a problem. The full report lists the specific missing keywords for your field so you can add the ones that matter.' },
     ],
     related: ['rate-my-resume', 'resume-review'],
@@ -150,7 +150,7 @@ export const LANDING_PAGES: LandingPage[] = [
       { q: 'How is this different from asking a friend?', a: 'It is instant, objective, and based on the patterns recruiters and ATS systems actually use, rather than a polite opinion. You get specifics: the exact red flags and the first impression in writing.' },
       { q: 'Do I need to create an account?', a: 'No. You can review a resume for free with no signup, and your resume is never used to train AI.' },
       { q: 'How long does the review take?', a: 'About thirty seconds. Paste a link or upload a PDF and the analysis comes back right away.' },
-      { q: 'Can I review a LinkedIn profile instead of a file?', a: 'Yes. You can paste a LinkedIn URL, a portfolio site, a GitHub profile, or a Notion page, or upload a PDF resume.' },
+      { q: 'Can I review a URL instead of uploading a file?', a: 'Yes. You can paste a portfolio site or a GitHub profile URL, or upload a PDF resume.' },
     ],
     related: ['rate-my-resume', 'ats-resume-checker'],
   },

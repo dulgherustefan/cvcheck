@@ -133,10 +133,56 @@ async function safeFetch(url: string, maxRedirects = 5): Promise<string> {
   throw new Error('Too many redirects.')
 }
 
+// ── GitHub profiles ─────────────────────────────────────────────────────────
+// github.com renders profile data (bio, pinned repos) via a lazy-loaded
+// turbo-frame that isn't present in the initial HTML, so plain scraping
+// returns nothing useful. Use the public REST API instead — no auth needed,
+// no scraping fragility.
+
+const GITHUB_PROFILE_RE = /^https?:\/\/(www\.)?github\.com\/([a-zA-Z0-9-]{1,39})\/?$/i
+
+async function scrapeGithubProfile(username: string): Promise<string> {
+  const headers = { 'User-Agent': 'cvcheck.app', 'Accept': 'application/vnd.github+json' }
+  const timeout = () => AbortSignal.timeout(10_000)
+
+  const userRes = await fetch(`https://api.github.com/users/${username}`, { headers, signal: timeout() })
+  if (userRes.status === 404) throw new Error('GitHub user not found.')
+  if (!userRes.ok) throw new Error(`GitHub API returned HTTP ${userRes.status}`)
+  const user = await userRes.json()
+
+  const reposRes = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=10`, { headers, signal: timeout() })
+  const repos: Array<{ fork: boolean; name: string; description: string | null; language: string | null; stargazers_count: number }> =
+    reposRes.ok ? await reposRes.json() : []
+
+  const lines: string[] = []
+  if (user.name) lines.push(`[Name] ${user.name}`)
+  if (user.bio) lines.push(`[Bio] ${user.bio}`)
+  if (user.company) lines.push(`[Company] ${user.company}`)
+  if (user.location) lines.push(`[Location] ${user.location}`)
+  if (user.blog) lines.push(`[Website] ${user.blog}`)
+  lines.push(`[Public repos] ${user.public_repos ?? 0}`)
+  lines.push(`[Followers] ${user.followers ?? 0}`)
+
+  repos.filter(r => !r.fork).forEach(repo => {
+    const parts = [repo.name]
+    if (repo.description) parts.push(repo.description)
+    if (repo.language) parts.push(`(${repo.language})`)
+    if (repo.stargazers_count) parts.push(`${repo.stargazers_count} stars`)
+    lines.push(`[Repo] ${parts.join(', ')}`)
+  })
+
+  return lines.join('\n')
+}
+
 // ── Main scraper ──────────────────────────────────────────────────────────────
 
 export async function scrapeUrl(url: string): Promise<string> {
   const normalised = url.startsWith('http') ? url : `https://${url}`
+
+  const githubMatch = normalised.match(GITHUB_PROFILE_RE)
+  if (githubMatch) {
+    return scrapeGithubProfile(githubMatch[2])
+  }
 
   let html: string
   try {
