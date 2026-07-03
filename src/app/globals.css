@@ -237,6 +237,17 @@ input, textarea { font-family: var(--font-sans); }
 .dd-row:hover svg { color: var(--accent); }
 .dd-danger:hover { background: rgba(209,67,67,0.08); color: var(--score-low); }
 .dd-danger:hover svg { color: var(--score-low); }
+/* Free-tier upsell row (adopted from the 21st.dev user-dropdown "Upgrade to Pro"
+   pattern) — accent-forward item with a trailing price badge. */
+.dd-upsell { color: var(--accent); font-weight: 500; }
+.dd-upsell svg { color: var(--accent) !important; }
+.dd-upsell:hover { background: var(--accent-subtle); color: var(--accent-hover); }
+.dd-badge {
+  margin-left: auto;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.02em;
+  color: var(--text-inverse); background: var(--accent);
+  border-radius: 100px; padding: 2px 8px;
+}
 
 /* ── Nav buttons ── */
 .nav-btn {

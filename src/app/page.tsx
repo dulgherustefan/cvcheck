@@ -897,7 +897,9 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
   const initials = (user.email??'U').slice(0,2).toUpperCase()
   useEffect(() => {
     const h=(e:MouseEvent)=>{ if (ref.current&&!ref.current.contains(e.target as Node)) setOpen(false) }
-    document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h)
+    const k=(e:KeyboardEvent)=>{ if (e.key==='Escape') setOpen(false) }
+    document.addEventListener('mousedown',h); document.addEventListener('keydown',k)
+    return ()=>{ document.removeEventListener('mousedown',h); document.removeEventListener('keydown',k) }
   }, [])
   return (
     <div ref={ref} className="account-dropdown">
@@ -919,7 +921,15 @@ function AccountDropdown({ user, tier, onOpenAccount, onOpenPlans, onSignOut }: 
             <button role="menuitem" className="dd-row" onClick={()=>{onOpenAccount();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>My account</button>
             <button role="menuitem" className="dd-row" onClick={()=>{router.push('/history');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>History</button>
             <button role="menuitem" className="dd-row" onClick={()=>{router.push('/history?tab=saved');setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Saved jobs</button>
-            <button role="menuitem" className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
+            {tier==='free' ? (
+              <button role="menuitem" className="dd-row dd-upsell" onClick={()=>{onOpenPlans();setOpen(false)}}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Upgrade to Pro
+                <span className="dd-badge">€1.99</span>
+              </button>
+            ) : (
+              <button role="menuitem" className="dd-row" onClick={()=>{onOpenPlans();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Plans</button>
+            )}
           </div>
           <div className="dropdown-section dropdown-divider">
             <button role="menuitem" className="dd-danger" onClick={()=>{onSignOut();setOpen(false)}}><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round"/></svg>Sign out</button>
