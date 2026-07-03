@@ -1050,6 +1050,9 @@ export default function Home() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showAccountModal, setShowAccountModal] = useState(false)
   const [showPlansModal,   setShowPlansModal]   = useState(false)
+  const [showMobileMenu,   setShowMobileMenu]   = useState(false)
+  const mobileToggleRef = useRef<HTMLButtonElement>(null)
+  const mobileMenuRef   = useRef<HTMLDivElement>(null)
   const [mode,        setMode]        = useState<InputMode>('url')
   const [url,         setUrl]         = useState('')
   const [file,        setFile]        = useState<File|null>(null)
@@ -1094,6 +1097,20 @@ export default function Home() {
     const supabase=createSupabaseBrowser()
     supabase.from('roasts').insert({ id:pendingSave.analysis_id, user_id:user.id, source:pendingSave.source??null, total_score:pendingSave.total_score, rating:pendingSave.rating, summary:pendingSave.summary, scores:pendingSave.scores, first_impression:pendingSave.first_impression, impact:pendingSave.impact, ats:pendingSave.ats, red_flags:pendingSave.red_flags, career_story:pendingSave.career_story, format:pendingSave.format, credibility:pendingSave.credibility, top_3_actions:pendingSave.top_3_actions, detected_domain:pendingSave.detected_domain, detected_level:pendingSave.detected_level, tier:pendingSave.tier }).then(({error})=>{ if (!error){setSavedToHistory(true);setPendingSave(null)} })
   }, [user, session, pendingSave, savedToHistory])
+
+  useEffect(() => {
+    if (!showMobileMenu) return
+    document.body.style.overflow = 'hidden'
+    const k=(e:KeyboardEvent)=>{ if (e.key==='Escape') setShowMobileMenu(false) }
+    const h=(e:MouseEvent)=>{
+      const t=e.target as Node
+      if (mobileToggleRef.current?.contains(t)) return
+      if (mobileMenuRef.current&&!mobileMenuRef.current.contains(t)) setShowMobileMenu(false)
+    }
+    document.addEventListener('keydown', k)
+    document.addEventListener('mousedown', h)
+    return ()=>{ document.body.style.overflow=''; document.removeEventListener('keydown', k); document.removeEventListener('mousedown', h) }
+  }, [showMobileMenu])
 
   const handleDrop = useCallback((e:DragEvent<HTMLDivElement>)=>{ e.preventDefault();setIsDragging(false); const f=e.dataTransfer.files[0]; if (f?.type==='application/pdf') setFile(f) }, [])
 
@@ -1154,6 +1171,12 @@ export default function Home() {
 
   useScrollReveal(appState === 'idle' || appState === 'error')
 
+  const NAV_LINKS: [string, string][] = [['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing'],['FAQ','/faq']]
+  const goToNavLink = (href: string) => {
+    if (href.startsWith('#')) { const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}); return } }
+    router.push(href)
+  }
+
   return (
     <div className="page-root">
       {showAuthModal    && <AuthModal onClose={()=>setShowAuthModal(false)}/>}
@@ -1167,20 +1190,50 @@ export default function Home() {
           CVCheck
         </div>
         <ul className="navbar-links nav-links-desktop">
-          {[['CV Analysis','#analysis'],['Job Matching','#jobs'],['Job Alerts','#alerts'],['Pricing','#pricing'],['FAQ','/faq']].map(([label,href])=>(
-            <li key={href}><button onClick={()=>{ if (href.startsWith('#')) { const el = document.querySelector(href); if (el) { el.scrollIntoView({behavior:'smooth'}); return } } router.push(href) }} className="nav-link">{label}</button></li>
+          {NAV_LINKS.map(([label,href])=>(
+            <li key={href}><button onClick={()=>goToNavLink(href)} className="nav-link">{label}</button></li>
           ))}
         </ul>
         <div className="navbar-right">
+          <button
+            ref={mobileToggleRef}
+            onClick={()=>setShowMobileMenu(v=>!v)}
+            className={`navbar-mobile-toggle ${showMobileMenu?'navbar-mobile-toggle-open':''}`}
+            aria-label={showMobileMenu?'Close menu':'Open menu'}
+            aria-expanded={showMobileMenu}
+          >
+            <span className="hamburger-bar"/>
+            <span className="hamburger-bar"/>
+            <span className="hamburger-bar"/>
+          </button>
           {!authLoading&&(user?(
             <AccountDropdown user={user} tier={tier} onOpenAccount={()=>setShowAccountModal(true)} onOpenPlans={()=>setShowPlansModal(true)} onSignOut={handleSignOut}/>
           ):(
-            <>
+            <div className="navbar-desktop-auth">
               <button onClick={()=>setShowAuthModal(true)} className="nav-btn btn-outline nav-btn-login">Log in</button>
               <button onClick={()=>setShowAuthModal(true)} className="nav-btn-accent btn-primary shimmerBtn">Sign up</button>
-            </>
+            </div>
           ))}
         </div>
+
+        {showMobileMenu && (
+          <div ref={mobileMenuRef} className="navbar-mobile-menu" role="menu">
+            <ul className="navbar-mobile-links">
+              {NAV_LINKS.map(([label,href])=>(
+                <li key={href}><button role="menuitem" onClick={()=>{goToNavLink(href);setShowMobileMenu(false)}} className="navbar-mobile-link">{label}</button></li>
+              ))}
+            </ul>
+            {!authLoading && !user && (
+              <>
+                <hr className="navbar-mobile-divider"/>
+                <div className="navbar-mobile-actions">
+                  <button onClick={()=>{setShowAuthModal(true);setShowMobileMenu(false)}} className="nav-btn btn-outline nav-btn-login">Log in</button>
+                  <button onClick={()=>{setShowAuthModal(true);setShowMobileMenu(false)}} className="nav-btn-accent btn-primary shimmerBtn">Sign up</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
       <main className="page-main">
