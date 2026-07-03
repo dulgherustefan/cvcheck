@@ -1606,14 +1606,16 @@ export default function Home() {
                 <h2 data-sr data-sr-delay="0.08" className="section-h2">Done before your coffee gets cold.</h2>
               </div>
 
-              <div className="steps-grid steps-grid-mt">
+              <div className="steps-flow">
+                <div className="steps-line" aria-hidden="true" />
                 {[
                   {n:'01',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>, title:'Upload Your CV', desc:'Drop a PDF or paste a URL. No account needed to start.'},
                   {n:'02',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>, title:'Get Your Score', desc:'AI scores 7 dimensions and flags every red flag in seconds.'},
                   {n:'03',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>, title:'Fix & Rewrite', desc:'Get AI-rewritten bullets, missing keywords, and how-to fixes.'},
                   {n:'04',icon:<svg width="22" height="22" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>, title:'Apply Smarter', desc:'Match to jobs with a fit score. Get weekly alerts. Land interviews.'},
                 ].map((s,i)=>(
-                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className="step-card card-hover">
+                  <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className="step-card">
+                    <div className="step-node">{i + 1}</div>
                     <div className="step-icon">{s.icon}</div>
                     <div className="step-num">STEP {s.n}</div>
                     <div className="step-title">{s.title}</div>
