@@ -1705,8 +1705,8 @@ export default function Home() {
             </div>
             {[
               { title:'Product', links:[{label:'CV Analysis',href:'/#analysis'},{label:'Job Matching',href:'/#jobs'},{label:'Job Alerts',href:'/#alerts'},{label:'Pricing',href:'/#pricing'}] },
-              { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'},{label:'FAQ',href:'/faq'}] },
-              { title:'Support', links:[{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
+              { title:'Free tools', links:[{label:'ATS Resume Checker',href:'/ats-resume-checker'},{label:'Rate My Resume',href:'/rate-my-resume'},{label:'Resume Review',href:'/resume-review'}] },
+              { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'},{label:'FAQ',href:'/faq'},{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
             ].map(col=>(
               <div key={col.title}>
                 <div className="footer-col-title">{col.title}</div>

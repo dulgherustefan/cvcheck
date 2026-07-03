@@ -2050,4 +2050,64 @@ html:not(.js) .hero-mockup-wrap {
   line-height: 1.6; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word;
 }
 
+/* ── SEO landing pages ── */
+.landing-bullets {
+  list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin: 36px 0 8px;
+}
+.landing-bullet {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 16px 18px; background: var(--bg-elevated);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.landing-bullet-title { font-size: 14px; font-weight: 600; color: var(--text-heading); }
+.landing-bullet-desc  { font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+
+.landing-block { margin-top: 40px; }
+.landing-block-h2 {
+  font-family: var(--font-display); font-size: 22px; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text-heading); margin-bottom: 12px;
+}
+.landing-block-p {
+  font-size: 15px; line-height: 1.75; color: var(--text-secondary);
+  max-width: 64ch; margin-bottom: 12px;
+}
+.landing-block-p:last-child { margin-bottom: 0; }
+
+.landing-faq { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.landing-faq:last-child { border-bottom: none; }
+.landing-faq-q {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--text-heading); margin-bottom: 6px;
+}
+.landing-faq-a { font-size: 14px; line-height: 1.7; color: var(--text-secondary); max-width: 64ch; }
+
+.landing-cta-final {
+  margin-top: 44px; padding: 32px; text-align: center;
+  background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-xl);
+}
+.landing-cta-final .landing-block-h2 { margin-bottom: 8px; }
+.landing-cta-final .landing-block-p { margin: 0 auto 20px; max-width: none; }
+.landing-cta-final .section-btn { margin-bottom: 0; }
+
+.landing-related {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);
+}
+.landing-related-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-tertiary);
+}
+.landing-related-link {
+  font-size: 13px; font-weight: 500; color: var(--accent);
+  border: 1px solid var(--accent-border); border-radius: 100px; padding: 6px 14px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.landing-related-link:hover { background: var(--accent-subtle); border-color: var(--accent); }
+
+@media (max-width: 640px) {
+  .landing-bullets { grid-template-columns: 1fr; }
+  .landing-cta-final { padding: 24px 20px; }
+}
+
 
