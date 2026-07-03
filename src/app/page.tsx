@@ -981,12 +981,6 @@ const heroMockupVariants: Variants = {
 // Sources analyzed, each with a monochrome brand mark (inherits currentColor)
 const HERO_WORKS_ITEMS = [
   {
-    name: 'LinkedIn',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 18.34v-7.7H5.78v7.7h2.56zM7.06 9.5a1.49 1.49 0 1 0 0-2.98 1.49 1.49 0 0 0 0 2.98zm11.28 8.84v-4.22c0-2.26-1.21-3.31-2.82-3.31-1.3 0-1.88.72-2.2 1.22v-1.05h-2.56c.03.72 0 7.7 0 7.7h2.56v-4.3c0-.23.02-.46.08-.62.18-.46.6-.94 1.3-.94.92 0 1.29.7 1.29 1.72v4.14h2.55z"/></svg>
-    ),
-  },
-  {
     name: 'PDF CVs',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h2M8 17h5"/></svg>
@@ -1259,7 +1253,7 @@ export default function Home() {
                 <>
                   <input
                     type="url"
-                    placeholder="linkedin.com/in/yourname or portfolio URL"
+                    placeholder="yourportfolio.com or GitHub profile URL"
                     value={url}
                     onChange={e=>setUrl(e.target.value)}
                     onKeyDown={e=>e.key==='Enter'&&submit()}
