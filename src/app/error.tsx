@@ -27,7 +27,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         Unexpected error
       </h1>
       <p style={{ color: 'var(--text-secondary)', maxWidth: '420px', marginBottom: '28px' }}>
-        Something went wrong on our end. Try again — if it keeps happening, refresh the page.
+        Something went wrong on our end. Try again, and refresh the page if it keeps happening.
       </p>
       <button onClick={reset} className="btn-primary" style={{
         background: 'var(--accent)', color: 'var(--text-inverse)',

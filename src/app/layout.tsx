@@ -80,13 +80,13 @@ export const metadata: Metadata = {
     siteName: 'CVCheck',
     title: 'CVCheck · Free CV Checker & AI Feedback',
     description:
-      'Get an honest AI score for your CV — free. See exactly what recruiters notice, what to fix, and land more interviews.',
+      'Get an honest AI score for your CV, free. See exactly what recruiters notice, what to fix, and land more interviews.',
     images: [
       {
         url: '/api/og',
         width: 1200,
         height: 630,
-        alt: 'CVCheck — Free AI CV Checker',
+        alt: 'CVCheck: Free AI CV Checker',
       },
     ],
     locale: 'en_US',
@@ -121,7 +121,7 @@ const schemaOrg = {
       name: 'Pro',
       price: '1.99',
       priceCurrency: 'EUR',
-      description: 'Full CV analysis with bullet rewrites, red flag fixes, missing ATS keywords, and priority actions — one-time payment',
+      description: 'Full CV analysis with bullet rewrites, red flag fixes, missing ATS keywords, and priority actions (one-time payment)',
     },
     {
       '@type': 'Offer',

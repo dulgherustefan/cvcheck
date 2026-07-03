@@ -477,7 +477,7 @@ function DetailDrawer({ entry, onClose }: { entry: HistoryEntry; onClose: () => 
                     textDecoration: 'none',
                     boxShadow: '0 4px 12px rgba(210,106,74,0.30)',
                   }}>
-                    Unlock full analysis — €1.99
+                    Unlock full analysis · €1.99
                   </a>
                 </div>
               )}

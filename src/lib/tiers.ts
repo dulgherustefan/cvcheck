@@ -43,13 +43,13 @@ export const PLANS = {
     features: [
       'Optimized CV, ready to download',
       'Cover letter for a job you paste',
-      'Bullet rewrites — your exact text, improved',
+      'Bullet rewrites on your exact text, improved',
       'How to fix every red flag',
       'Missing ATS keywords + job requirements',
       'Top 3 priority actions with examples',
       'Saved to history',
     ],
-    cta: 'Unlock Full Analysis — €1.99',
+    cta: 'Unlock Full Analysis · €1.99',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PRO_PRICE_ID',
   },
   premium: {
@@ -60,11 +60,11 @@ export const PLANS = {
     features: [
       'Everything in Pro',
       'Unlimited analyses',
-      'Job matching — live listings matched to your profile',
+      'Job matching: live listings matched to your profile',
       'Full history on all scans',
       'Track CV progress over time',
     ],
-    cta: 'Start Premium — €5.99/mo',
+    cta: 'Start Premium · €5.99/mo',
     stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
   },
 } as const

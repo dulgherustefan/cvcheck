@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
               <span style={{ color: ACCENT }}>Brutally honest.</span>
             </div>
             <span style={{ fontSize: 24, color: SECOND, marginTop: 28, lineHeight: 1.4, maxWidth: 760 }}>
-              A free AI score out of 100 — red flags, ATS gaps, and rewritten bullets in seconds.
+              A free AI score out of 100, plus red flags, ATS gaps, and rewritten bullets in seconds.
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 88px', borderTop: `1px solid ${BORDER}`, position: 'relative' }}>

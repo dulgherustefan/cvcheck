@@ -45,7 +45,7 @@ export const LANDING_PAGES: LandingPage[] = [
     ctaLabel: 'Check my resume free',
     bulletsLabel: 'Free on every check',
     bullets: [
-      { title: 'ATS compatibility verdict', desc: 'Friendly, minor issues, or problems detected — with the reasons behind it.' },
+      { title: 'ATS compatibility verdict', desc: 'Friendly, minor issues, or problems detected, with the reasons behind it.' },
       { title: 'Score out of 100', desc: 'ATS compatibility is 20 of the 100 points, scored alongside six other dimensions.' },
       { title: 'Red flags, ranked', desc: 'Dealbreakers, warnings, and minor issues that break parsing or hurt your chances.' },
       { title: 'No account needed', desc: 'One free scan, no signup, and your resume is never used to train AI.' },
@@ -54,7 +54,7 @@ export const LANDING_PAGES: LandingPage[] = [
       {
         h2: 'What an ATS actually checks',
         body: [
-          'An applicant tracking system parses your resume into plain text and fields before anyone reads it. If it cannot cleanly find your job titles, dates, and skills, your application can be ranked down or filtered out — no matter how strong the experience behind it is.',
+          'An applicant tracking system parses your resume into plain text and fields before anyone reads it. If it cannot cleanly find your job titles, dates, and skills, your application can get ranked down or filtered out, no matter how strong the experience behind it is.',
           'The usual culprits are multi-column layouts, tables, text inside images, non-standard section headings, and a job title the recruiter would never search for. CVCheck reads your resume the way a parser would and flags the parts that do not survive the trip.',
         ],
       },
@@ -76,7 +76,7 @@ export const LANDING_PAGES: LandingPage[] = [
   },
   {
     slug: 'rate-my-resume',
-    title: 'Rate My Resume — Free AI Resume Score',
+    title: 'Rate My Resume: Free AI Resume Score',
     metaDescription:
       'Get an honest score for your resume out of 100, graded across the seven dimensions recruiters and ATS systems actually judge. Free, no signup, results in seconds.',
     eyebrow: 'Rate My Resume',
@@ -95,7 +95,7 @@ export const LANDING_PAGES: LandingPage[] = [
         h2: 'The seven things we score',
         body: [
           'Your score is the sum of seven weighted dimensions, so the breakdown tells you where to spend your effort: first impression (15), impact and achievements (25), ATS compatibility (20), red flags (20), career story (10), format (5), and credibility (5).',
-          'Impact and red flags carry the most weight because they are what actually decide interviews — quantified results and the absence of dealbreakers move the needle far more than a clean font.',
+          'Impact and red flags carry the most weight because they are what actually decide interviews. Quantified results and the absence of dealbreakers move the needle far more than a clean font.',
         ],
       },
       {
@@ -110,18 +110,18 @@ export const LANDING_PAGES: LandingPage[] = [
       { q: 'How is the score calculated?', a: 'It is the sum of seven weighted dimensions totalling 100 points: first impression, impact and achievements, ATS compatibility, red flags, career story, format, and credibility.' },
       { q: 'How honest is the rating?', a: 'It is tuned to be blunt rather than flattering. The scoring reflects what recruiters and ATS systems check, so the feedback is closer to a hiring manager than a friend being polite.' },
       { q: 'Is rating my resume free?', a: 'Yes. The score and full breakdown are free with no signup. Bullet rewrites and priority fixes are in the one-time €1.99 report.' },
-      { q: 'What counts as a good score?', a: 'Most first drafts land in the 50s and 60s. Anything in the 80s is genuinely strong. The breakdown matters more than the number — a low dimension is your fastest win.' },
+      { q: 'What counts as a good score?', a: 'Most first drafts land in the 50s and 60s. Anything in the 80s is genuinely strong. The breakdown matters more than the number: a low dimension is your fastest win.' },
     ],
     related: ['ats-resume-checker', 'resume-review'],
   },
   {
     slug: 'resume-review',
-    title: 'Free Resume Review — Instant AI Feedback',
+    title: 'Free Resume Review: Instant AI Feedback',
     metaDescription:
       'Get an instant, honest resume review: what a recruiter notices in seven seconds, your red flags, and exactly what is costing you interviews. Free AI feedback, no signup.',
     eyebrow: 'Resume Review',
     h1: 'Free resume review',
-    lead: 'A recruiter spends about seven seconds on your resume before deciding. Get that first impression in writing — along with the red flags, weak bullets, and quick wins that decide whether you get the interview.',
+    lead: 'A recruiter spends about seven seconds on your resume before deciding. Get that first impression in writing, plus the red flags, weak bullets, and quick wins that decide whether you get the interview.',
     ctaLabel: 'Review my resume free',
     bulletsLabel: 'In your free review',
     bullets: [
@@ -134,8 +134,8 @@ export const LANDING_PAGES: LandingPage[] = [
       {
         h2: 'See your resume the way a recruiter does',
         body: [
-          'The review opens with the recruiter’s first impression: what job and seniority level your resume communicates in the first few seconds, and whether that matches the roles you are targeting.',
-          'This is the gap that sinks most applications — a strong candidate whose resume reads a level junior, or in the wrong function entirely. Seeing it written down is usually the fastest fix on the page.',
+          "The review opens with the recruiter's first impression: what job and seniority level your resume communicates in the first few seconds, and whether that matches the roles you are targeting.",
+          'This is the gap that sinks most applications: a strong candidate whose resume reads a level junior, or in the wrong function entirely. Seeing it written down is usually the fastest fix on the page.',
         ],
       },
       {
@@ -147,7 +147,7 @@ export const LANDING_PAGES: LandingPage[] = [
       },
     ],
     faq: [
-      { q: 'How is this different from asking a friend?', a: 'It is instant, objective, and based on the patterns recruiters and ATS systems actually use, rather than a polite opinion. You get specifics — the exact red flags and the first impression in writing.' },
+      { q: 'How is this different from asking a friend?', a: 'It is instant, objective, and based on the patterns recruiters and ATS systems actually use, rather than a polite opinion. You get specifics: the exact red flags and the first impression in writing.' },
       { q: 'Do I need to create an account?', a: 'No. You can review a resume for free with no signup, and your resume is never used to train AI.' },
       { q: 'How long does the review take?', a: 'About thirty seconds. Paste a link or upload a PDF and the analysis comes back right away.' },
       { q: 'Can I review a LinkedIn profile instead of a file?', a: 'Yes. You can paste a LinkedIn URL, a portfolio site, a GitHub profile, or a Notion page, or upload a PDF resume.' },

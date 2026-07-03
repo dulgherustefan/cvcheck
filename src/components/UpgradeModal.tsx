@@ -357,7 +357,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
               {/* Header */}
               <div style={{ marginBottom: 24, paddingRight: 32 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px' }}>
-                  {pendingPlan === 'pro' ? 'Pro — €1.99 one-time' : 'Premium — €5.99/month'}
+                  {pendingPlan === 'pro' ? 'Pro · €1.99 one-time' : 'Premium · €5.99/month'}
                 </p>
                 <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-heading)', margin: '0 0 8px', lineHeight: 1.25, fontFamily: 'var(--font-display)' }}>
                   Sign in to continue

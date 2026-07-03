@@ -63,10 +63,10 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
   const level  = roast.detected_level  ?? ''
 
   return {
-    title: `${roast.total_score}/100 CV Score — ${domain}${level ? ` · ${level}` : ''} | CVCheck`,
+    title: `${roast.total_score}/100 CV Score · ${domain}${level ? ` · ${level}` : ''} | CVCheck`,
     description: `This ${domain} CV scored ${roast.total_score}/100 (${rating}). See the full breakdown and check your own CV free.`,
     openGraph: {
-      title: `CV Score: ${roast.total_score}/100 — ${rating}`,
+      title: `CV Score: ${roast.total_score}/100 · ${rating}`,
       description: `${domain}${level ? ` · ${level}` : ''} · See the full AI analysis and check yours free on CVCheck.`,
       url: `https://cvcheck.app/share/${token}`,
       siteName: 'CVCheck',
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     },
     twitter: {
       card: 'summary_large_image',
-      title: `CV Score: ${roast.total_score}/100 — ${rating}`,
+      title: `CV Score: ${roast.total_score}/100 · ${rating}`,
       description: `${domain}${level ? ` · ${level}` : ''} · Check your own CV free on CVCheck.`,
       images: [`/api/og?score=${roast.total_score}&rating=${roast.rating}`],
     },
@@ -294,7 +294,7 @@ export default async function SharePage({ params }: SharePageProps) {
                 ))}
                 {redFlags.length > 3 && (
                   <p style={{ fontSize: 11.5, color: 'var(--text-tertiary)', margin: '4px 0 0 2px' }}>
-                    +{redFlags.length - 3} more issues — full breakdown in the complete analysis
+                    +{redFlags.length - 3} more issues, full breakdown in the complete analysis
                   </p>
                 )}
               </div>
@@ -319,7 +319,7 @@ export default async function SharePage({ params }: SharePageProps) {
                 How does your CV score?
               </h2>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-                Get your score, full breakdown, ATS check, and rewrite suggestions — in 30 seconds.
+                Get your score, full breakdown, ATS check, and rewrite suggestions in 30 seconds.
               </p>
             </div>
             <Link href="/" style={{

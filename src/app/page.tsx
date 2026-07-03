@@ -215,7 +215,7 @@ function LockedPreview({ count, label, sublabel, onUnlock }: { count?:number|str
         </div>
       </div>
       <div className="locked-preview-btn">
-        Unlock — €1.99 <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        Unlock · €1.99 <svg width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
     </div>
   )
@@ -421,7 +421,7 @@ function JobMatchesSection({ result, token, isPremium, onUnlock }: { result:Gate
             <div className="jobs-locked-cta">
               <p className="jobs-unlock-title">{filteredJobs.length-FREE_LIMIT} more matching jobs</p>
               <p className="jobs-unlock-sub">Unlock all matches + skill gap analysis for every role</p>
-              <button onClick={onUnlock} className="jobs-unlock-premium">Unlock with Premium — €5.99/mo</button>
+              <button onClick={onUnlock} className="jobs-unlock-premium">Unlock with Premium · €5.99/mo</button>
             </div>
           )}
         </div>
@@ -465,7 +465,7 @@ function JobMatchCard({ jm, locked, onUnlock }: { jm: JobTargetAnalysis; locked:
             <span>{jm.missing_keywords_count > 0
               ? `${jm.missing_keywords_count} requirement${jm.missing_keywords_count !== 1 ? 's' : ''} this job wants that your CV doesn't show`
               : 'See the requirements your CV is missing'}</span>
-            <span className="jobmatch-unlock-btn">Unlock with Pro — €1.99</span>
+            <span className="jobmatch-unlock-btn">Unlock with Pro · €1.99</span>
           </div>
         ) : (
           <>
@@ -515,7 +515,7 @@ function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnl
             </div>
             <p className="deliv-sub">Get a full ATS-clean rewrite of your CV, ready to download.</p>
           </div>
-          <span className="deliv-unlock">Unlock with Pro — €1.99</span>
+          <span className="deliv-unlock">Unlock with Pro · €1.99</span>
         </div>
       ) : null}
 
@@ -547,7 +547,7 @@ function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnl
             </div>
             <p className="deliv-sub">Get a tailored cover letter for the job you pasted, built from your real experience.</p>
           </div>
-          <span className="deliv-unlock">Unlock with Pro — €1.99</span>
+          <span className="deliv-unlock">Unlock with Pro · €1.99</span>
         </div>
       ) : null}
     </div>
@@ -635,7 +635,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             </div>
             <h2 className="panel-h2">Impact & Achievements</h2>
           </div>
-          {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites — €1.99" onClick={unlock}/>}
+          {result.rewrites_locked&&<UnlockBtn label="Unlock rewrites · €1.99" onClick={unlock}/>}
         </div>
         <div className="impact-stats-grid">
           {[
@@ -663,7 +663,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             </div>
             <h2 className="panel-h2">ATS Compatibility</h2>
           </div>
-          {result.keywords_locked&&<UnlockBtn label="See missing keywords — €1.99" onClick={unlock}/>}
+          {result.keywords_locked&&<UnlockBtn label="See missing keywords · €1.99" onClick={unlock}/>}
         </div>
         <div className="ats-meta">
           <span className={`ats-verdict ats-verdict-${result.ats.verdict}`}>{ATS_VERDICT_LABELS[result.ats.verdict]}</span>
@@ -693,7 +693,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
               <h2 className="panel-h2">Red Flags</h2>
               <span className="flag-count">{result.red_flags.length}</span>
             </div>
-            {result.how_to_fix_locked&&<UnlockBtn label="Unlock fixes — €1.99" onClick={unlock}/>}
+            {result.how_to_fix_locked&&<UnlockBtn label="Unlock fixes · €1.99" onClick={unlock}/>}
           </div>
           <div className="red-flags-list">
             {result.red_flags.map((flag,i)=><RedFlagCard key={i} flag={flag} howToFixLocked={result.how_to_fix_locked} onUnlock={unlock}/>)}
@@ -799,7 +799,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             </div>
             <h2 className="panel-h2">Top 3 Priority Actions</h2>
           </div>
-          {result.actions_locked&&<UnlockBtn label="Unlock how-to + examples — €1.99" onClick={unlock}/>}
+          {result.actions_locked&&<UnlockBtn label="Unlock how-to + examples · €1.99" onClick={unlock}/>}
         </div>
         <div className="top-3-list">
           {result.top_3_actions.map((action,i)=><ActionCard key={i} action={action} index={i} detailsLocked={result.actions_locked} onUnlock={unlock}/>)}
@@ -814,7 +814,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
             <p className="upgrade-cta-body">Pro shows your bullet rewrites, how to fix every red flag, ATS keywords, and 3 priority actions with examples. €1.99, once.</p>
           </div>
           <div className="upgrade-cta-actions">
-            <button onClick={()=>setShowUpgradeModal(true)} className="upgrade-btn-primary">Unlock Pro — €1.99</button>
+            <button onClick={()=>setShowUpgradeModal(true)} className="upgrade-btn-primary">Unlock Pro · €1.99</button>
             <button onClick={()=>setShowPlansModal(true)} className="upgrade-btn-secondary">See all plans</button>
           </div>
         </div>
@@ -828,9 +828,9 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
 }
 
 const PLAN_DEFS = {
-  free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats — bullets with/without metrics','Red flag count + severity','ATS verdict','Match score vs a job you paste','History saved (requires account)'] },
+  free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats: bullets with/without metrics','Red flag count + severity','ATS verdict','Match score vs a job you paste','History saved (requires account)'] },
   pro:     { label:'Pro',     price:'€1.99', period:'one-time', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','Bullet rewrites on your actual text','How to fix every red flag','Missing ATS keywords + job requirements','Top 3 priority actions with examples'] },
-  premium: { label:'Premium', price:'€5.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Job matching — live listings matched to your profile'] },
+  premium: { label:'Premium', price:'€5.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Job matching: live listings matched to your profile'] },
 }
 
 function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; userId?:string; userEmail?:string; onClose:()=>void; onBuy:()=>void }) {
@@ -876,7 +876,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
                   <ul className="plan-features">
                     {p.features.map(f=><li key={f} className="plan-feature"><svg width="12" height="12" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
                   </ul>
-                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} className="plan-cta">{buying===pk?'Loading…':pk==='pro'?'Get Pro — €1.99':'Get Premium — €5.99/mo'}</button>}
+                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} className="plan-cta">{buying===pk?'Loading…':pk==='pro'?'Get Pro · €1.99':'Get Premium · €5.99/mo'}</button>}
                 </div>
               </div>
             )
@@ -1716,7 +1716,7 @@ export default function Home() {
               <div className="pricing-grid">
                 {([
                   { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Match score vs a job you paste','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
-                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:'Get Pro — €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
+                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:'Get Pro · €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
                   { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
                 ] as const).map((p,i)=>(
                   <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — CVCheck',
+  title: 'Privacy Policy · CVCheck',
   description: 'How CVCheck handles your data.',
 }
 
@@ -78,16 +78,16 @@ export default function PrivacyPage() {
           <Section title="What we collect">
             <p>When you use CVCheck, we collect:</p>
             <ul>
-              <li><strong>The content you submit</strong> — your CV text (extracted from PDF or pasted directly). This is sent to Anthropic&apos;s Claude API to generate your analysis and is not stored beyond what&apos;s needed to show you your results.</li>
-              <li><strong>Your email address</strong> — if you create an account or sign in with Google. Used to identify your account, send analysis notifications, and contact you about your subscription.</li>
-              <li><strong>Payment information</strong> — handled entirely by Stripe. We never see or store your card number or payment details.</li>
-              <li><strong>Basic usage data</strong> — which features you use and anonymized page views. Used solely to improve the product.</li>
-              <li><strong>Your IP address</strong> — used to enforce the one free analysis limit for anonymous users. Not stored long-term.</li>
+              <li><strong>The content you submit</strong>: your CV text (extracted from PDF or pasted directly). This is sent to Anthropic&apos;s Claude API to generate your analysis and is not stored beyond what&apos;s needed to show you your results.</li>
+              <li><strong>Your email address</strong>: if you create an account or sign in with Google. Used to identify your account, send analysis notifications, and contact you about your subscription.</li>
+              <li><strong>Payment information</strong>: handled entirely by Stripe. We never see or store your card number or payment details.</li>
+              <li><strong>Basic usage data</strong>: which features you use and anonymized page views. Used solely to improve the product.</li>
+              <li><strong>Your IP address</strong>: used to enforce the one free analysis limit for anonymous users. Not stored long-term.</li>
             </ul>
           </Section>
 
           <Section title="What we do with your data">
-            <p>Your CV content is sent to Anthropic&apos;s API to generate the analysis. Anthropic does not train models on API inputs — see their policy at{' '}
+            <p>Your CV content is sent to Anthropic&apos;s API to generate the analysis. Anthropic does not train models on API inputs. See their policy at{' '}
               <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
                 anthropic.com/legal/privacy
               </a>.
@@ -99,9 +99,9 @@ export default function PrivacyPage() {
           <Section title="Legal basis for processing (GDPR)">
             <p>We process your personal data under the following legal bases as defined by GDPR:</p>
             <ul>
-              <li><strong>Contractual necessity</strong> — to provide the service you requested (analyzing your CV, managing your account, processing payments).</li>
-              <li><strong>Legitimate interest</strong> — to improve the product using anonymized usage data and to prevent abuse.</li>
-              <li><strong>Consent</strong> — for optional communications such as job alert emails. You can withdraw consent at any time.</li>
+              <li><strong>Contractual necessity</strong>: to provide the service you requested (analyzing your CV, managing your account, processing payments).</li>
+              <li><strong>Legitimate interest</strong>: to improve the product using anonymized usage data and to prevent abuse.</li>
+              <li><strong>Consent</strong>: for optional communications such as job alert emails. You can withdraw consent at any time.</li>
             </ul>
           </Section>
 
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="Data storage and transfers">
-            <p>Your data is stored on Supabase infrastructure hosted in the EU (Frankfurt region). Stripe stores payment details on their PCI-DSS compliant servers. Anthropic processes CV content on their servers — their infrastructure may be located outside the EU, but they are bound by their privacy policy and data processing terms.</p>
+            <p>Your data is stored on Supabase infrastructure hosted in the EU (Frankfurt region). Stripe stores payment details on their PCI-DSS compliant servers. Anthropic processes CV content on their servers, and their infrastructure may sit outside the EU, but they are bound by their privacy policy and data processing terms.</p>
           </Section>
 
           <Section title="Data retention">
@@ -120,12 +120,12 @@ export default function PrivacyPage() {
           <Section title="Your rights (GDPR)">
             <p>As a user in the EU/EEA, you have the following rights:</p>
             <ul>
-              <li><strong>Access</strong> — request a copy of the personal data we hold about you.</li>
-              <li><strong>Rectification</strong> — ask us to correct inaccurate data.</li>
-              <li><strong>Erasure</strong> — delete your account and all associated data from your account settings, or by emailing us.</li>
-              <li><strong>Portability</strong> — request your data in a machine-readable format.</li>
-              <li><strong>Objection</strong> — object to processing based on legitimate interest.</li>
-              <li><strong>Withdraw consent</strong> — unsubscribe from job alerts at any time via the 1-click link in any email we send.</li>
+              <li><strong>Access</strong>: request a copy of the personal data we hold about you.</li>
+              <li><strong>Rectification</strong>: ask us to correct inaccurate data.</li>
+              <li><strong>Erasure</strong>: delete your account and all associated data from your account settings, or by emailing us.</li>
+              <li><strong>Portability</strong>: request your data in a machine-readable format.</li>
+              <li><strong>Objection</strong>: object to processing based on legitimate interest.</li>
+              <li><strong>Withdraw consent</strong>: unsubscribe from job alerts at any time via the 1-click link in any email we send.</li>
             </ul>
             <p>To exercise any of these rights, email us at <a href="mailto:hello@cvcheck.app" style={{ color: 'var(--accent)' }}>hello@cvcheck.app</a>. We will respond within 30 days.</p>
             <p>You also have the right to lodge a complaint with your national data protection authority. In Romania, this is the <a href="https://www.dataprotection.ro" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>ANSPDCP</a>.</p>

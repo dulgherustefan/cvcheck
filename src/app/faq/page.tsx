@@ -10,11 +10,11 @@ const faqs = [
   },
   {
     q: 'Is CVCheck really free?',
-    a: 'Yes. The free tier includes your total score, an overall rating, your detected domain and seniority level, a full first impression breakdown, impact statistics, a count and severity rating for red flags, an ATS verdict, a career trajectory summary, and a format verdict. You also get access to your analysis history if you create a free account, plus the first two job matches for your profile.',
+    a: 'Yes. The free tier includes your total score, an overall rating, your detected domain and seniority level, a full first impression breakdown, impact statistics, a red flag count with severity, an ATS verdict, a career trajectory summary, and a format verdict. Create a free account and you also get analysis history plus your first two job matches.',
   },
   {
     q: "What's the difference between Pro and Premium?",
-    a: 'Pro is a one-time purchase that unlocks the actionable layer on top of the free report. You get a full ATS-clean rewrite of your CV that you can download, rewritten bullet points based on your actual text, a step-by-step fix for every red flag, the ATS keywords you are missing, and your top three priority actions with examples. If you pasted a job, Pro also gives you the specific requirements you are missing for it plus a tailored cover letter built from your real experience. Premium is a monthly subscription that includes everything in Pro, plus unlimited analyses and full job matching with a fit score, strengths, and gaps for every job we find, not just the first two.',
+    a: 'Pro is a one-time purchase that unlocks the actionable layer on top of the free report: a full ATS-clean CV rewrite you can download, bullet points rewritten from your actual text, a step-by-step fix for every red flag, the ATS keywords you are missing, and your top three priority actions with examples. If you pasted a job, Pro also shows the specific requirements you are missing plus a tailored cover letter built from your real experience. Premium is a monthly subscription. It includes everything in Pro, plus unlimited analyses and full job matching, with a fit score, strengths, and gaps for every job we find, not just the first two.',
   },
   {
     q: 'Can I check my CV against a specific job?',

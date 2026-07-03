@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     await getResend().emails.send({
       from:    FROM_EMAIL,
       to:      auth.email,
-      subject: '✓ Job alerts activated — CVCheck',
+      subject: '✓ Job alerts activated · CVCheck',
       html:    buildConfirmationEmail({
         email: auth.email,
         domain: detected_domain,
