@@ -538,7 +538,7 @@ html:not(.js) .hero-mockup-wrap {
 
 /* ── Works with strip ── */
 .hero-works-with {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 8px;
   margin-top: 40px;
   flex-wrap: wrap; justify-content: center;
 }
@@ -546,29 +546,40 @@ html:not(.js) .hero-mockup-wrap {
   font-family: var(--font-mono);
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-tertiary);
+  margin-right: 4px;
 }
 .hero-works-row {
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center;
 }
+/* Supported inputs as discrete chips — reads as an intentional "works with"
+   rack rather than a plain dotted list. */
 .hero-works-item {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 500;
+  font-size: 12.5px; font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: 0.01em;
-  transition: color 0.15s;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: 100px;
+  padding: 5px 12px;
+  box-shadow: var(--shadow-xs);
+  transition: color 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 .hero-works-item svg {
   width: 14px; height: 14px;
   flex-shrink: 0;
-  opacity: 0.7;
+  opacity: 0.75;
+  color: var(--accent);
   transition: opacity 0.15s, color 0.15s;
 }
-.hero-works-item:hover { color: var(--text-primary); }
-.hero-works-item:hover svg { opacity: 1; color: var(--accent); }
-.hero-works-sep {
-  color: var(--text-tertiary);
-  font-size: 13px;
+.hero-works-item:hover {
+  color: var(--text-heading);
+  border-color: var(--accent-border);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
+.hero-works-item:hover svg { opacity: 1; }
+.hero-works-sep { display: none; }
 .hero-works-separator { color: var(--text-tertiary); font-size: 13px; margin: 0 4px; }
 
 /* ── Hero mockup ── */
@@ -1131,9 +1142,17 @@ html:not(.js) .hero-mockup-wrap {
 /* ── Pricing ── */
 .pricing-section { padding: 96px 0; border-top: 1px solid var(--border); }
 .pricing-intro { font-size: 15px; color: var(--text-secondary); margin-bottom: 48px; }
-.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
-.pricing-card { background: var(--bg-elevated); padding: 32px 28px; position: relative; }
-.pricing-card-featured { background: var(--bg-subtle); }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; margin-bottom: 28px; }
+.pricing-card {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px 28px; position: relative;
+  display: flex; flex-direction: column;
+  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s, border-color 0.2s;
+}
+.pricing-card .pricing-cta { margin-top: auto; }
+.pricing-card-normal:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+/* Featured tier lifted out of the row — the standard "recommended plan" emphasis */
+.pricing-card-featured { border-color: var(--accent-border); box-shadow: var(--shadow-lg); transform: scale(1.04); z-index: 2; }
 .pricing-card-featured > *:not([aria-hidden]):not(.pricing-badge) { position: relative; z-index: 1; }
 .pricing-badge {
   position: absolute; top: 20px; right: 20px; z-index: 2;
@@ -1302,6 +1321,7 @@ html:not(.js) .hero-mockup-wrap {
   .steps-line { display: none; }
   .pricing-grid { grid-template-columns: 1fr; background: none; border: none; gap: 12px; }
   .pricing-card { border: 1px solid var(--border); border-radius: var(--radius-lg); }
+  .pricing-card-featured { transform: none; }
   .plans-modal-body { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
   .result-content { padding: 24px; }
