@@ -374,6 +374,24 @@ input, textarea { font-family: var(--font-sans); }
   max-width: 1100px; margin: 0 auto; padding: 0 40px;
 }
 
+/* Registration marks — the crop/register crosses a document carries when it's
+   prepped for print or grading. Frames the hero like a proof of the CV itself.
+   Sits behind the (centered, narrow) copy, in the column gutter, so it never
+   overlaps text. Desktop-only refinement. */
+.hero-frame {
+  position: absolute; top: -4px; left: 6px; right: 6px; height: 650px; z-index: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13'%3E%3Cpath d='M6.5 0v13M0 6.5h13' stroke='%23D26A4A' stroke-width='1' opacity='0.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13'%3E%3Cpath d='M6.5 0v13M0 6.5h13' stroke='%23D26A4A' stroke-width='1' opacity='0.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13'%3E%3Cpath d='M6.5 0v13M0 6.5h13' stroke='%23D26A4A' stroke-width='1' opacity='0.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13'%3E%3Cpath d='M6.5 0v13M0 6.5h13' stroke='%23D26A4A' stroke-width='1' opacity='0.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position:
+    left top, right top, left bottom, right bottom;
+}
+@media (max-width: 900px) { .hero-frame { display: none; } }
+
 .hero-kicker {
   position: relative; overflow: hidden;
   display: inline-flex; align-items: center;
@@ -1329,13 +1347,23 @@ html:not(.js) .hero-mockup-wrap {
   padding: 10px 16px; border-bottom: 1px solid var(--border);
   background: var(--bg-subtle);
 }
-.mockup-dots { display: flex; gap: 5px; }
-.mockup-dot-r, .mockup-dot-y, .mockup-dot-g { width: 9px; height: 9px; border-radius: 50%; }
-.mockup-dot-r { background: #D14343; opacity: 0.6; }
-.mockup-dot-y { background: #C7871B; opacity: 0.6; }
-.mockup-dot-g { background: #1E9E5A; opacity: 0.6; }
-.mockup-bar { flex: 1; height: 18px; background: var(--bg-muted); border-radius: var(--radius-sm); }
 .mockupLift { box-shadow: var(--shadow-lift); }
+
+/* Document tab titlebar — the mockup reads as a file being reviewed, not a
+   generic browser chrome (traffic-light dots are the templated default). */
+.doc-tab {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+.doc-tab svg { color: var(--text-tertiary); flex-shrink: 0; }
+.doc-status {
+  margin-left: auto;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+  color: var(--accent); background: var(--accent-subtle);
+  border: 1px solid var(--accent-border); border-radius: 100px;
+  padding: 3px 10px; white-space: nowrap;
+}
 
 /* ── Analysis mockup ── */
 .analysis-mockup-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 0; }

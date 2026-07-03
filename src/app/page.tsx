@@ -1178,6 +1178,7 @@ export default function Home() {
         <section className="section-hero">
           <HeroDotGrid />
           <div className="hero-centered-wrap">
+            <div className="hero-frame" aria-hidden="true" />
 
             <motion.div className="hero-kicker" variants={heroKickerVariants} initial="hidden" animate="visible">
               Free CV check · No signup · Results in seconds
@@ -1285,10 +1286,11 @@ export default function Home() {
             <motion.div className="hero-mockup-wrap" variants={heroMockupVariants} initial="hidden" animate="visible">
               <div className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
-                  <div className="mockup-dots">
-                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  <div className="doc-tab">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+                    cv_report.pdf
                   </div>
-                  <div className="mockup-bar"/>
+                  <span className="doc-status">SCORE 73/100</span>
                 </div>
                 <div className="analysis-mockup-grid">
                   <div className="analysis-mockup-left">
@@ -1419,10 +1421,11 @@ export default function Home() {
 
               <div data-sr data-sr-delay="0.28" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
-                  <div className="mockup-dots">
-                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  <div className="doc-tab">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+                    cv_report.pdf
                   </div>
-                  <div className="mockup-bar"/>
+                  <span className="doc-status">SCORE 73/100</span>
                 </div>
                 <div className="analysis-mockup-grid">
                   <div className="analysis-mockup-left">
@@ -1495,10 +1498,11 @@ export default function Home() {
               </div>
               <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
-                  <div className="mockup-dots">
-                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  <div className="doc-tab">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    job_matches
                   </div>
-                  <div className="mockup-bar"/>
+                  <span className="doc-status">7 MATCHES</span>
                 </div>
                 <div className="lmock-jobs-grid">
                   <div className="lmock-jobs-left">
@@ -1563,10 +1567,11 @@ export default function Home() {
 
               <div data-sr data-sr-delay="0.3" className="mockup-window mockupLift">
                 <div className="mockup-titlebar">
-                  <div className="mockup-dots">
-                    <div className="mockup-dot-r"/><div className="mockup-dot-y"/><div className="mockup-dot-g"/>
+                  <div className="doc-tab">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m4 6 8 7 8-7"/></svg>
+                    weekly_digest
                   </div>
-                  <div className="mockup-bar"/>
+                  <span className="doc-status">MON 09:00</span>
                 </div>
                 <div className="lmock-alerts">
                   <div className="lmock-alerts-header">
