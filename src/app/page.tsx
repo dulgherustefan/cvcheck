@@ -1178,8 +1178,6 @@ export default function Home() {
         <section className="section-hero">
           <HeroDotGrid />
           <div className="hero-centered-wrap">
-            <div className="hero-frame" aria-hidden="true" />
-
             <motion.div className="hero-kicker" variants={heroKickerVariants} initial="hidden" animate="visible">
               Free CV check · No signup · Results in seconds
             </motion.div>
