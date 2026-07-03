@@ -1683,11 +1683,23 @@ export default function Home() {
                 <div data-sr data-sr-delay="0" className="eyebrow-badge">Testimonial</div>
                 <h2 data-sr data-sr-delay="0.08" className="section-h2">The most honest feedback your CV will ever get.</h2>
               </div>
-              <div className="testimonial-card testimonial-mt">
+              <div data-sr data-sr-delay="0.12" className="testimonial-card testimonial-mt">
+                <span className="testimonial-mark" aria-hidden="true">&ldquo;</span>
+                <div className="testimonial-stars" aria-label="5 out of 5">
+                  {[0,1,2,3,4].map(i=>(
+                    <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg>
+                  ))}
+                </div>
                 <blockquote className="testimonial-quote">
-                  "I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags."
+                  I had no idea my CV was this weak until CVCheck told me exactly why. Got two interview calls the week after fixing the red flags.
                 </blockquote>
-                <p className="testimonial-author">Mihai D., Product Manager, Bucharest</p>
+                <div className="testimonial-person">
+                  <span className="testimonial-avatar" aria-hidden="true">MD</span>
+                  <div className="testimonial-person-meta">
+                    <div className="testimonial-name">Mihai D.</div>
+                    <div className="testimonial-role">Product Manager · Bucharest</div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
