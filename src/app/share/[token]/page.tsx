@@ -65,6 +65,12 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
   return {
     title: `${roast.total_score}/100 CV Score · ${domain}${level ? ` · ${level}` : ''} | CVCheck`,
     description: `This ${domain} CV scored ${roast.total_score}/100 (${rating}). See the full breakdown and check your own CV free.`,
+    // Share pages are user-generated, near-identical in structure, and often
+    // personal. Keep them out of the index (thin/duplicate content drags down
+    // site-wide quality signals and wastes crawl budget) but follow links so
+    // equity still flows back to the homepage. OG tags below still work for
+    // social sharing — noindex doesn't affect social scrapers.
+    robots: { index: false, follow: true },
     openGraph: {
       title: `CV Score: ${roast.total_score}/100 · ${rating}`,
       description: `${domain}${level ? ` · ${level}` : ''} · See the full AI analysis and check yours free on CVCheck.`,

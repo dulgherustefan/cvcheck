@@ -155,6 +155,30 @@ const schemaOrg = {
   ],
 }
 
+// Organization node — helps Google build the knowledge panel / brand entity and
+// associates the logo with the brand across search surfaces.
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'CVCheck',
+  url: 'https://cvcheck.app',
+  logo: 'https://cvcheck.app/logo.png',
+  description:
+    'AI-powered CV and resume checker. Free score out of 100, ATS compatibility, red flags, bullet rewrites, and job matching.',
+  email: 'hello@cvcheck.app',
+}
+
+// WebSite node — declares the site entity and its name to crawlers. No
+// SearchAction: the site has no on-site search endpoint, and declaring a
+// non-functional one would be a false signal.
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'CVCheck',
+  url: 'https://cvcheck.app',
+  publisher: { '@type': 'Organization', name: 'CVCheck', url: 'https://cvcheck.app' },
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -169,6 +193,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body className={`${inter.variable} ${dmMono.variable} ${bricolage.variable}`}>

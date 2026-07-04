@@ -98,6 +98,42 @@ export async function GET(req: NextRequest) {
     background: 'radial-gradient(circle, rgba(210,106,74,0.10) 0%, transparent 70%)', display: 'flex',
   }
 
+  // ── Landing card (headline param, no score) — per-page OG for SEO pages ─────
+  const headline = searchParams.get('headline')?.slice(0, 80)
+  const eyebrow  = searchParams.get('eyebrow')?.slice(0, 40)
+  if (!hasScore && headline) {
+    return new ImageResponse(
+      (
+        <div style={frame}>
+          <div style={accentStripe} />
+          <div style={dotGrid} />
+          <div style={glow} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 88px', position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 36 }}>
+              <Logo size={44} />
+              <span style={{ fontSize: 25, fontWeight: 700, color: HEADING, letterSpacing: '-0.03em' }}>CVCheck</span>
+            </div>
+            {eyebrow ? (
+              <span style={{ fontSize: 22, fontWeight: 600, color: ACCENT, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20, display: 'flex' }}>
+                {eyebrow}
+              </span>
+            ) : null}
+            <span style={{ fontSize: 66, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.05, color: HEADING, display: 'flex', maxWidth: 940 }}>
+              {headline}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 88px', borderTop: `1px solid ${BORDER}`, position: 'relative' }}>
+            <span style={{ fontSize: 17, color: TERTIARY }}>cvcheck.app</span>
+            <div style={{ display: 'flex', padding: '12px 26px', background: ACCENT, borderRadius: 8, fontSize: 16, fontWeight: 700, color: BG }}>
+              Free, no signup →
+            </div>
+          </div>
+        </div>
+      ),
+      { width: 1200, height: 630 },
+    )
+  }
+
   // ── Brand card (no score) — homepage / generic OG ──────────────────────────
   if (!hasScore) {
     return new ImageResponse(

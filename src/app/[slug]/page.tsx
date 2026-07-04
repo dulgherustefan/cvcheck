@@ -16,6 +16,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const page = getLandingPage(slug)
   if (!page) return {}
   const url = `https://cvcheck.app/${page.slug}`
+  // Per-page OG image: distinct social/SERP card carrying this page's own
+  // headline instead of the shared generic brand card.
+  const ogImage = `/api/og?headline=${encodeURIComponent(page.h1)}&eyebrow=${encodeURIComponent(page.eyebrow)}`
   return {
     title: page.title,
     description: page.metaDescription,
@@ -26,13 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       siteName: 'CVCheck',
       title: `${page.title} · CVCheck`,
       description: page.metaDescription,
-      images: [{ url: '/api/og', width: 1200, height: 630, alt: page.h1 }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: page.h1 }],
     },
     twitter: {
       card: 'summary_large_image',
       title: page.title,
       description: page.metaDescription,
-      images: ['/api/og'],
+      images: [ogImage],
     },
   }
 }

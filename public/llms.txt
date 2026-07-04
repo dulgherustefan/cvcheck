@@ -1,0 +1,39 @@
+# CVCheck
+
+> CVCheck is a free, AI-powered CV and resume checker. Paste a portfolio or GitHub URL, or upload a PDF, and get a score out of 100 in seconds: first impression, ATS compatibility, red flags ranked by severity, and a match score against any job description you paste. No signup to see your score. A one-time EUR 1.99 report unlocks rewritten bullet points, missing ATS keywords, a tailored cover letter, and a downloadable ATS-clean rewrite.
+
+## How the score works
+
+The overall score out of 100 is the sum of seven weighted dimensions:
+- First impression (15 points): what a recruiter understands in the first 7 seconds
+- Impact and achievements (25 points): quantified results, strong verbs, bullet quality
+- ATS compatibility (20 points): searchable title, parser-friendly format, keyword coverage
+- Red flags (20 points): absence of dealbreakers, warnings, and polish issues
+- Career story (10 points): clear trajectory, progression, seniority match
+- Format (5 points): length, density, section order, consistency
+- Credibility (5 points): portfolio, brands, proof points, certifications
+
+The full free tier shows the score, every dimension, the first impression, red flags with severity, and the ATS verdict. It is not a locked teaser.
+
+## What is free vs paid
+
+Free (no account): overall score, seven-dimension breakdown, first impression, red flags with severity, ATS verdict, job match score, fit verdict, and a count of missing keywords.
+
+Pro (one-time EUR 1.99): the exact missing ATS keywords, bullet rewrites on your real text, how to fix every red flag, top three priority actions with examples, a downloadable ATS-clean CV rewrite, and a tailored cover letter (when a job description is pasted).
+
+Premium (EUR 5.99/month): unlimited checks and live job matching with fit scores.
+
+## Free tools
+
+- [ATS Resume Checker](https://cvcheck.app/ats-resume-checker): check whether your resume passes an applicant tracking system
+- [Rate My Resume](https://cvcheck.app/rate-my-resume): honest resume score out of 100
+- [Resume Review](https://cvcheck.app/resume-review): instant feedback on what a recruiter notices first
+- [CV Checker](https://cvcheck.app/cv-checker): score your CV and see what to fix
+- [Job Match Checker](https://cvcheck.app/resume-job-match): match your resume against a specific job description
+- [Cover Letter Generator](https://cvcheck.app/cover-letter-generator): a cover letter written from your real resume and a job description
+
+## Reference
+
+- [FAQ](https://cvcheck.app/faq)
+- [Privacy Policy](https://cvcheck.app/privacy): CV content is sent to Anthropic's API for analysis and is never used to train AI models
+- [Terms of Service](https://cvcheck.app/terms)
