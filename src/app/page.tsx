@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect, DragEvent } from 'react'
-import { motion, type Variants } from 'framer-motion'
+import { motion, MotionConfig, type Variants } from 'framer-motion'
 import { HeroDotGrid } from '@/components/HeroDotGrid'
 import { RotatingText } from '@/components/RotatingText'
 import { BorderTrail } from '@/components/BorderTrail'
@@ -1166,6 +1166,7 @@ export default function Home() {
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="page-root">
       {showAuthModal    && <AuthModal onClose={()=>setShowAuthModal(false)}/>}
       {showUpgradeModal && <UpgradeModal onClose={()=>setShowUpgradeModal(false)} roastId={result?.analysis_id} userId={user?.id} userEmail={user?.email}/>}
@@ -1541,8 +1542,7 @@ export default function Home() {
           <section id="jobs" className="landing-section landing-section-base">
             <div className="section-wrap-md">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Matching</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">Jobs that actually fit, with a score to prove it.</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">Jobs that actually fit, with a score to prove it.</h2>
                 <p data-sr data-sr-delay="0.16" className="section-body">CVCheck automatically matches you with relevant roles from Adzuna and Remotive. Premium users see a full fit score, strengths, and gaps for every job.</p>
                 <button data-sr data-sr-delay="0.22" onClick={scrollToUpload} className="shimmerBtn btn-primary section-btn">See My Matched Jobs ↑</button>
               </div>
@@ -1609,8 +1609,7 @@ export default function Home() {
           <section id="alerts" className="section-alerts">
             <div className="section-wrap-md">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">Job Alerts</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">New matched jobs in your inbox every Monday.</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">New matched jobs in your inbox every Monday.</h2>
                 <p data-sr data-sr-delay="0.16" className="section-body">Subscribe once and get weekly job alerts tailored to your CV's domain and level, with fit scores so you only open the ones worth your time.</p>
                 <button data-sr data-sr-delay="0.22" onClick={scrollToAlerts} className="shimmerBtn btn-primary section-btn">Enable Job Alerts ↓</button>
               </div>
@@ -1654,8 +1653,7 @@ export default function Home() {
           <section className="steps-section">
             <div className="section-wrap-md">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">How it works</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">Done before your coffee gets cold.</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">Done before your coffee gets cold.</h2>
               </div>
 
               <div className="steps-flow">
@@ -1681,8 +1679,7 @@ export default function Home() {
           <section className="landing-section landing-section-elevated">
             <div className="section-wrap-md">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">Domains</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">Works for every domain and level.</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">Works for every domain and level.</h2>
                 <p data-sr data-sr-delay="0.16" className="section-body">CVCheck detects your field and seniority automatically.</p>
               </div>
               <div className="domain-tags-wrap">
@@ -1696,8 +1693,7 @@ export default function Home() {
           <section id="pricing" className="pricing-section">
             <div className="section-wrap-md">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">Pricing</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">No tricks. No "contact us."</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">No tricks. No "contact us."</h2>
                 <p data-sr data-sr-delay="0.16" className="section-body">Start free. Pay once for Pro. Subscribe for unlimited.</p>
               </div>
 
@@ -1732,8 +1728,7 @@ export default function Home() {
           <section className="testimonial-section">
             <div className="section-wrap-sm">
               <div className="section-head">
-                <div data-sr data-sr-delay="0" className="eyebrow-badge">Testimonial</div>
-                <h2 data-sr data-sr-delay="0.08" className="section-h2">The most honest feedback your CV will ever get.</h2>
+                <h2 data-sr data-sr-delay="0" className="section-h2">The most honest feedback your CV will ever get.</h2>
               </div>
               <div data-sr data-sr-delay="0.12" className="testimonial-card testimonial-mt">
                 <span className="testimonial-mark" aria-hidden="true">&ldquo;</span>
@@ -1793,5 +1788,6 @@ export default function Home() {
       </footer>
 
     </div>
+    </MotionConfig>
   )
 }

@@ -418,6 +418,14 @@ input, textarea { font-family: var(--font-sans); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-kicker::after { animation: none; }
+
+  /* Scroll-reveal (.sr / .sr-scale) is plain CSS, outside framer-motion's
+     MotionConfig reducedMotion="user" — neutralize it here so every section
+     appears in its final state instantly instead of sliding/fading in. */
+  .sr, .sr-scale {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
 }
 
 /* No-JS / crawler safety net: the hero's motion elements render at opacity:0
@@ -1353,6 +1361,12 @@ html:not(.js) .hero-mockup-wrap {
   background: var(--bg-elevated); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden;
   margin: 0 auto; max-width: 960px;
+  transition: transform 0.4s var(--ease-out-expo), box-shadow 0.4s var(--ease-out-expo);
+}
+.mockup-window:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+@media (prefers-reduced-motion: reduce) {
+  .mockup-window { transition: none; }
+  .mockup-window:hover { transform: none; }
 }
 .mockup-titlebar {
   display: flex; align-items: center; gap: 10px;

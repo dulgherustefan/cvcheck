@@ -24,3 +24,8 @@ npm-debug.log*
 
 # brainstorming companion scratch files
 .superpowers/
+
+# agent skill tooling (installed per-machine via `npx skills`, not app code)
+.agents/skills/
+.claude/skills/
+skills-lock.json
