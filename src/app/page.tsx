@@ -150,8 +150,8 @@ function RedFlagCard({ flag, howToFixLocked, onUnlock }: { flag:{flag:string;sev
       </div>
       {howToFixLocked ? (
         <div onClick={onUnlock} className="flag-how-locked">
-          <span className="flag-how-blurred">Review the context and add specific evidence.</span>
-          <span className="flag-how-lock"><LockIcon size={10}/></span>
+          <span className="flag-how-locked-label">How to fix this</span>
+          <span className="flag-how-lock">Unlock · €1.99 <LockIcon size={10}/></span>
         </div>
       ) : flag.how_to_fix ? (
         <p className="flag-how-text"><span className="flag-how-prefix">Fix · </span>{flag.how_to_fix}</p>
@@ -820,7 +820,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
         </div>
       )}
 
-      <JobMatchesSection result={result} token={token} isPremium={result.tier==='premium'||result.tier==='pro'} onUnlock={()=>setShowPlansModal(true)}/>
+      <JobMatchesSection result={result} token={token} isPremium={!result.job_matching_locked} onUnlock={()=>setShowPlansModal(true)}/>
 
       {!user&&<div className="signin-prompt"><button onClick={()=>setShowAuthModal(true)} className="signin-link">Sign in</button> to save this to your history. Free for all accounts.</div>}
     </div>
@@ -1476,7 +1476,7 @@ export default function Home() {
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
                     cv_report.pdf
                   </div>
-                  <span className="doc-status">SCORE 73/100</span>
+                  <span className="doc-status">SCORE 58/100</span>
                 </div>
                 <div className="analysis-mockup-grid">
                   <div className="analysis-mockup-left">
@@ -1484,19 +1484,19 @@ export default function Home() {
                       <div className="lmock-score-wrap">
                         <svg width="88" height="88" viewBox="0 0 88 88">
                           <circle cx="44" cy="44" r="36" fill="none" stroke="var(--bg-muted)" strokeWidth="5"/>
-                          <circle cx="44" cy="44" r="36" fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeDasharray="164 226" transform="rotate(-90 44 44)"/>
+                          <circle cx="44" cy="44" r="36" fill="none" stroke="var(--score-mid)" strokeWidth="5" strokeLinecap="round" strokeDasharray="131 226" transform="rotate(-90 44 44)"/>
                         </svg>
                         <div className="score-ring-center">
-                          <div className="lmock-score-num">73</div>
+                          <div className="lmock-score-num">58</div>
                           <div className="lmock-score-denom">/100</div>
                         </div>
                       </div>
                       <div>
-                        <div className="lmock-score-label">Good</div>
-                        <div className="lmock-score-desc">Strong foundation. 3 critical gaps holding you back.</div>
+                        <div className="lmock-score-label">Needs Work</div>
+                        <div className="lmock-score-desc">Unquantified bullets and a thin skills section are costing interviews.</div>
                       </div>
                     </div>
-                    {[{label:'First Impression',pct:73},{label:'Impact & Achievements',pct:68},{label:'ATS Compatibility',pct:70},{label:'Red Flags',pct:70},{label:'Career Story',pct:60}].map(d=>(
+                    {[{label:'First Impression',pct:55},{label:'Impact & Achievements',pct:38},{label:'ATS Compatibility',pct:52},{label:'Red Flags',pct:45},{label:'Career Story',pct:65}].map(d=>(
                       <div key={d.label} className="lmock-bar-row">
                         <div className="lmock-bar-header"><span>{d.label}</span><span className="lmock-bar-pct">{d.pct}%</span></div>
                         <div className="lmock-bar-track"><div className={`lmock-bar-fill pct-${Math.round(d.pct/5)*5}`}/></div>
@@ -1520,8 +1520,8 @@ export default function Home() {
                     <div>
                       <div className="section-label">ATS Keywords</div>
                       <div className="keyword-list">
-                        {['Figma ✓','UX Research ✓','Prototyping ✓'].map(k=><span key={k} className="keyword-tag keyword-present">{k}</span>)}
-                        {['Design Systems ✗','A/B Testing ✗'].map(k=><span key={k} className="keyword-tag keyword-missing">{k}</span>)}
+                        {['Figma ✓','UX Research ✓'].map(k=><span key={k} className="keyword-tag keyword-present">{k}</span>)}
+                        {['Prototyping ✗','Design Systems ✗','A/B Testing ✗'].map(k=><span key={k} className="keyword-tag keyword-missing">{k}</span>)}
                       </div>
                     </div>
                     <div className="lmock-flags-mt">
@@ -1667,7 +1667,6 @@ export default function Home() {
                   <div key={s.n} data-sr data-sr-delay={`${i * 0.1}`} className="step-card">
                     <div className="step-node">{i + 1}</div>
                     <div className="step-icon">{s.icon}</div>
-                    <div className="step-num">STEP {s.n}</div>
                     <div className="step-title">{s.title}</div>
                     <div className="step-desc">{s.desc}</div>
                   </div>

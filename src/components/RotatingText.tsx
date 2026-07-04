@@ -7,13 +7,15 @@ interface RotatingTextProps {
   interval?: number
 }
 
-export function RotatingText({ texts, interval = 2400 }: RotatingTextProps) {
+export function RotatingText({ texts, interval = 5000 }: RotatingTextProps) {
   const [index, setIndex] = useState(0)
   const [animating, setAnimating] = useState(false)
+  const [paused, setPaused] = useState(false)
   const trackRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    if (texts.length <= 1) return
+    if (texts.length <= 1 || paused) return
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const id = setInterval(() => {
       setAnimating(true)
       setTimeout(() => {
@@ -22,12 +24,16 @@ export function RotatingText({ texts, interval = 2400 }: RotatingTextProps) {
       }, 240)
     }, interval)
     return () => clearInterval(id)
-  }, [texts.length, interval])
+  }, [texts.length, interval, paused])
 
   return (
     <span
       className={`rotating-text-outer${animating ? ' rotating-text-exit' : ''}`}
       aria-label={texts[index]}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
     >
       <span
         ref={trackRef}

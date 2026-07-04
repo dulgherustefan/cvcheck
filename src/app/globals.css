@@ -22,7 +22,7 @@
   --text-primary:   #2A251F;
   --text-heading:   #191510;
   --text-secondary: #6B6459;
-  --text-tertiary:  #9A9184;
+  --text-tertiary:  #6D6559; /* was #9A9184: 2.93:1 on --bg, failed WCAG AA (4.5:1) at every real-copy site */
   --text-inverse:   #FFFFFF;
 
   --border:        rgba(42,37,31,0.10);
@@ -910,14 +910,17 @@ html:not(.js) .hero-mockup-wrap {
 .flag-how-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
 .flag-how-prefix { color: var(--accent); font-weight: 500; }
 .flag-how-locked {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 10px 12px; border-radius: var(--radius-sm);
   background: var(--bg-muted); cursor: pointer;
   transition: background 0.15s;
 }
 .flag-how-locked:hover { background: var(--bg-elevated); }
-.flag-how-blurred { font-size: 12px; color: var(--text-tertiary); filter: blur(4px); flex: 1; }
-.flag-how-lock { color: var(--text-tertiary); }
+.flag-how-locked-label { font-size: 12px; color: var(--text-secondary); flex: 1; }
+.flag-how-lock {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; color: var(--accent-text); white-space: nowrap;
+}
 
 /* ── Bullet rewrite ── */
 .bullet-rewrite { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 8px; }
@@ -1071,16 +1074,6 @@ html:not(.js) .hero-mockup-wrap {
 .lmock-job-skills { display: flex; flex-wrap: wrap; gap: 5px; }
 .lmock-skill-tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-tertiary); border: 1px solid var(--border); }
 
-.lmock-job-locked { filter: blur(3px); opacity: 0.4; pointer-events: none; }
-.lmock-locked-overlay {
-  position: relative; margin-top: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
-.lmock-locked-badge {
-  font-size: 11px; color: var(--text-tertiary);
-  background: var(--bg-muted); border: 1px solid var(--border);
-  border-radius: var(--radius-md); padding: 8px 16px;
-}
 
 /* ── Alerts email mockup ── */
 .lmock-alert-job { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
@@ -1117,7 +1110,6 @@ html:not(.js) .hero-mockup-wrap {
 }
 .step-card:hover .step-node { transform: translateX(-50%) scale(1.12); }
 .step-icon { margin-bottom: 14px; color: var(--accent); display: flex; }
-.step-num { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 8px; }
 .step-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-heading); letter-spacing: -0.02em; margin-bottom: 8px; }
 .step-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.65; }
 
