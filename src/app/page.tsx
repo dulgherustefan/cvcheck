@@ -1771,7 +1771,7 @@ export default function Home() {
             </div>
             {[
               { title:'Product', links:[{label:'CV Analysis',href:'/#analysis'},{label:'Job Matching',href:'/#jobs'},{label:'Job Alerts',href:'/#alerts'},{label:'Pricing',href:'/#pricing'}] },
-              { title:'Free tools', links:[{label:'ATS Resume Checker',href:'/ats-resume-checker'},{label:'Rate My Resume',href:'/rate-my-resume'},{label:'Resume Review',href:'/resume-review'}] },
+              { title:'Free tools', links:[{label:'ATS Resume Checker',href:'/ats-resume-checker'},{label:'Rate My Resume',href:'/rate-my-resume'},{label:'Resume Review',href:'/resume-review'},{label:'CV Checker',href:'/cv-checker'},{label:'Job Match Checker',href:'/resume-job-match'},{label:'Cover Letter Generator',href:'/cover-letter-generator'}] },
               { title:'Company', links:[{label:'Privacy Policy',href:'/privacy'},{label:'Terms of Service',href:'/terms'},{label:'FAQ',href:'/faq'},{label:'Contact',href:'mailto:hello@cvcheck.app'}] },
             ].map(col=>(
               <div key={col.title}>

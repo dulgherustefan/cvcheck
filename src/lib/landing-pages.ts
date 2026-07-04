@@ -72,7 +72,7 @@ export const LANDING_PAGES: LandingPage[] = [
       { q: 'What can I upload?', a: 'A PDF resume, a portfolio site URL, or a GitHub profile URL. CVCheck reads whichever you give it.' },
       { q: 'Will it show the exact keywords I am missing?', a: 'The free check tells you whether keyword coverage is a problem. The full report lists the specific missing keywords for your field so you can add the ones that matter.' },
     ],
-    related: ['rate-my-resume', 'resume-review'],
+    related: ['rate-my-resume', 'resume-review', 'cv-checker'],
   },
   {
     slug: 'rate-my-resume',
@@ -112,7 +112,7 @@ export const LANDING_PAGES: LandingPage[] = [
       { q: 'Is rating my resume free?', a: 'Yes. The score and full breakdown are free with no signup. Bullet rewrites and priority fixes are in the one-time €1.99 report.' },
       { q: 'What counts as a good score?', a: 'Most first drafts land in the 50s and 60s. Anything in the 80s is genuinely strong. The breakdown matters more than the number: a low dimension is your fastest win.' },
     ],
-    related: ['ats-resume-checker', 'resume-review'],
+    related: ['ats-resume-checker', 'resume-review', 'resume-job-match'],
   },
   {
     slug: 'resume-review',
@@ -152,7 +152,127 @@ export const LANDING_PAGES: LandingPage[] = [
       { q: 'How long does the review take?', a: 'About thirty seconds. Paste a link or upload a PDF and the analysis comes back right away.' },
       { q: 'Can I review a URL instead of uploading a file?', a: 'Yes. You can paste a portfolio site or a GitHub profile URL, or upload a PDF resume.' },
     ],
-    related: ['rate-my-resume', 'ats-resume-checker'],
+    related: ['rate-my-resume', 'ats-resume-checker', 'cover-letter-generator'],
+  },
+  {
+    slug: 'cv-checker',
+    title: 'Free CV Checker',
+    metaDescription:
+      'Check your CV instantly and see the score, red flags, and ATS compatibility recruiters actually check. Free, no signup, results in seconds.',
+    eyebrow: 'CV Checker',
+    h1: 'Free CV checker',
+    lead: 'Upload your CV, paste a portfolio link, or drop a GitHub profile, and get an honest score out of 100 in seconds. See what is working, what is not, and what to fix first, before you send it anywhere.',
+    ctaLabel: 'Check my CV free',
+    bulletsLabel: 'What you get for free',
+    bullets: [
+      { title: 'Score out of 100', desc: 'A single number plus the seven-part breakdown behind it.' },
+      { title: 'ATS compatibility check', desc: 'Whether your CV parses cleanly through the software that screens it first.' },
+      { title: 'Red flags, ranked', desc: 'Dealbreakers and warnings, so you know what to fix first.' },
+      { title: 'Works with PDF or a link', desc: 'Upload a CV file, or paste a portfolio or GitHub URL instead.' },
+    ],
+    sections: [
+      {
+        h2: 'What a CV checker actually checks',
+        body: [
+          'A CV checker should do more than spot typos. CVCheck reads your CV the way a recruiter and an applicant tracking system both do: whether your title is searchable, whether your achievements are quantified, and whether anything in your work history raises a flag before anyone gets to your skills.',
+          'The result is a score out of 100 built from seven weighted parts, so a low score always comes with a reason attached instead of one unexplained number.',
+        ],
+      },
+      {
+        h2: 'Free score, paid fixes',
+        body: [
+          'The score, the breakdown, and every red flag are free with no account. You will know exactly where your CV stands before deciding whether to fix anything.',
+          'If you want the fixes done for you, the one-time €1.99 report rewrites your weakest bullet points, lists the keywords your field expects, and writes a cover letter based on your actual experience.',
+        ],
+      },
+    ],
+    faq: [
+      { q: 'Is this the same as a resume checker?', a: '"CV" and "resume" mean the same thing here. Both PDF uploads and profile links work either way.' },
+      { q: 'What formats can I check?', a: 'A PDF CV, a portfolio site URL, or a GitHub profile URL.' },
+      { q: 'Do I need an account?', a: 'No. The score, breakdown, and red flags are free with no signup.' },
+      { q: 'How is the score calculated?', a: 'Seven weighted parts: first impression, impact and achievements, ATS compatibility, red flags, career story, format, and credibility.' },
+    ],
+    related: ['rate-my-resume', 'ats-resume-checker', 'resume-job-match'],
+  },
+  {
+    slug: 'resume-job-match',
+    title: 'Resume Job Match Checker',
+    metaDescription:
+      'Paste a job description and see how well your resume matches it, plus the exact keywords you are missing for that specific role. Free, no signup.',
+    eyebrow: 'Job Match Checker',
+    h1: 'Match your resume to a job',
+    lead: 'Generic resume advice tells you to "tailor it more." This tells you exactly what to change: paste the job description and see your match score against that specific role, plus the keywords it is looking for that your resume does not have yet.',
+    ctaLabel: 'Check my match free',
+    bulletsLabel: 'What the match check shows',
+    bullets: [
+      { title: 'Match score for that job', desc: 'Not a generic score. How your resume specifically lines up with the role you pasted.' },
+      { title: 'Missing keywords', desc: 'The exact terms the job description uses that your resume does not.' },
+      { title: 'Fit verdict', desc: 'Strong fit, possible fit, or weak fit, so you know if it is worth applying before you spend the time.' },
+      { title: 'Works alongside your full score', desc: 'You still get the overall CV score and red flags in the same free check.' },
+    ],
+    sections: [
+      {
+        h2: '"Tailor your resume" is not specific enough',
+        body: [
+          'Most advice stops at "customize your resume for each job" without saying what to actually change. Pasting the job description alongside your resume turns that into a specific, checkable list: which keywords from the posting are missing, and how close your experience is to what they are asking for.',
+          'This matters most when you are close to qualified but not an obvious match on paper, which is exactly the resume that gets filtered out by keyword-based screening before a person reads it.',
+        ],
+      },
+      {
+        h2: 'One CV, many jobs',
+        body: [
+          'You do not need a different resume for every application. Running the same CV against a few job descriptions shows which keywords are consistently missing across postings in that field, usually a faster fix than rewriting the whole document.',
+          'The match score and missing keywords are free every time you check. The full report also rewrites the specific bullet points that would raise your match.',
+        ],
+      },
+    ],
+    faq: [
+      { q: 'Do I need a job description to use this?', a: 'No, you can get your general CV score without one. Adding a job description unlocks the match score and keyword comparison against that specific role.' },
+      { q: 'Is the match check free?', a: 'Yes, the match score, fit verdict, and your overall CV score are free with no signup.' },
+      { q: 'Can I check the same resume against multiple jobs?', a: 'Yes, run a new check for each job description you want to compare against.' },
+      { q: 'What counts as a strong match?', a: 'It depends on the role, but the fit verdict (strong, possible, or weak) gives you a quick read before you spend time on missing keywords.' },
+    ],
+    related: ['ats-resume-checker', 'rate-my-resume', 'cv-checker'],
+  },
+  {
+    slug: 'cover-letter-generator',
+    title: 'AI Cover Letter Generator',
+    metaDescription:
+      'Generate a cover letter based on your actual resume and a specific job description, not a generic template. Starts with a free CV score.',
+    eyebrow: 'Cover Letter Generator',
+    h1: 'AI cover letter generator',
+    lead: 'A cover letter template with your name swapped in reads like a template. This writes one from your actual resume and the job description you are applying to, so it references real experience instead of generic filler.',
+    ctaLabel: 'Get my free CV score',
+    bulletsLabel: 'How it works',
+    bullets: [
+      { title: 'Start with your CV score', desc: 'Upload your resume or paste a link, free, no signup, to see your score first.' },
+      { title: 'Add the job description', desc: 'Paste the posting you are applying to so the letter can reference it directly.' },
+      { title: 'Get a letter from your real experience', desc: 'Not a generic template. It pulls from your actual bullet points and history.' },
+      { title: 'Included in the full report', desc: 'One-time €1.99, alongside your rewritten bullets and ATS keyword list.' },
+    ],
+    sections: [
+      {
+        h2: 'Why generic cover letter templates fall flat',
+        body: [
+          'A cover letter generator that only knows your name and the job title produces the same three paragraphs everyone else gets: "I am excited to apply," "I believe I would be a great fit," and nothing specific underneath. Recruiters read hundreds of these.',
+          'CVCheck writes the letter after reading your actual resume and the job description you pasted, so it references specific experience and specific requirements instead of filling in a template.',
+        ],
+      },
+      {
+        h2: 'Part of the full report, not a separate tool',
+        body: [
+          'The cover letter is not a standalone product. It comes with the same one-time €1.99 report that rewrites your bullets and lists your missing ATS keywords, so you get the full picture of your application in one pass instead of three different tools.',
+          'The free score, red flags, and ATS verdict still apply with no account needed. The cover letter is one part of what unlocks with the paid report.',
+        ],
+      },
+    ],
+    faq: [
+      { q: 'Is the cover letter generator free?', a: 'The CV score is free. The cover letter is part of the one-time €1.99 full report, alongside bullet rewrites and ATS keywords.' },
+      { q: 'Does it need a job description?', a: 'Yes, paste the job posting so the letter can reference the specific role instead of writing something generic.' },
+      { q: 'Does it use my real experience?', a: 'Yes, it is generated from your actual resume content, not a fill-in-the-blank template.' },
+      { q: 'Can I edit the letter after?', a: 'Yes, it is a starting draft based on your real experience, meant to be edited to sound like you.' },
+    ],
+    related: ['resume-job-match', 'ats-resume-checker', 'cv-checker'],
   },
 ]
 
