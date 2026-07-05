@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isPromoActive } from '@/lib/tiers'
 
 export const runtime = 'nodejs'
 
@@ -22,15 +21,14 @@ export async function POST(req: NextRequest) {
     const Stripe = (await import('stripe')).default
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-    // Intro price (STRIPE_*_PRICE_ID) holds until PROMO_ENDS_AT in tiers.ts, then
-    // checkout switches to the full-price Stripe Price (STRIPE_*_PRICE_ID_FULL).
-    // Falls back to the intro price if the full-price ID isn't configured yet,
-    // so a missing env var never breaks checkout — it just delays the price bump.
-    const promoActive = isPromoActive()
+    // Whatever these Stripe Price IDs point to is charged as-is. When the
+    // regular €5/€10 price kicks in, update the price on these IDs in Stripe
+    // (or swap the env vars) and flip PROMO_ACTIVE in tiers.ts to match the
+    // on-site copy — no separate "full price" env var to keep in sync here.
     const priceId =
       plan === 'pro'
-        ? (!promoActive && process.env.STRIPE_PRO_PRICE_ID_FULL) || process.env.STRIPE_PRO_PRICE_ID
-        : (!promoActive && process.env.STRIPE_PREMIUM_PRICE_ID_FULL) || process.env.STRIPE_PREMIUM_PRICE_ID
+        ? process.env.STRIPE_PRO_PRICE_ID
+        : process.env.STRIPE_PREMIUM_PRICE_ID
 
     if (!priceId) {
       return NextResponse.json(
