@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getPlans, promoDaysLeft } from '@/lib/tiers'
+import { getPlans } from '@/lib/tiers'
 import { createSupabaseBrowser } from '@/lib/supabase'
 
 interface Props {
@@ -15,7 +15,6 @@ type Step = 'plans' | 'login'
 
 export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
   const PLANS = getPlans()
-  const daysLeft = promoDaysLeft()
   const [loading, setLoading]       = useState<'pro' | 'premium' | null>(null)
   const [step, setStep]             = useState<Step>('plans')
   const [pendingPlan, setPendingPlan] = useState<'pro' | 'premium' | null>(null)
@@ -183,7 +182,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                 </h2>
                 {PLANS.pro.wasPrice && (
                   <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-text)', margin: '0 0 10px' }}>
-                    Intro price · goes to {PLANS.pro.wasPrice} in {daysLeft} day{daysLeft === 1 ? '' : 's'}
+                    Intro price for a limited time · goes to {PLANS.pro.wasPrice}
                   </p>
                 )}
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, maxWidth: 440 }}>

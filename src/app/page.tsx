@@ -23,7 +23,7 @@ import {
   ATS_VERDICT_LABELS, ATS_VERDICT_COLORS, LEVEL_LABELS,
 } from '@/lib/constants'
 import { createSupabaseBrowser } from '@/lib/supabase'
-import { getPlans, promoDaysLeft } from '@/lib/tiers'
+import { getPlans } from '@/lib/tiers'
 
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
@@ -840,7 +840,6 @@ function planDefs() {
 function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; userId?:string; userEmail?:string; onClose:()=>void; onBuy:()=>void }) {
   const PLAN_DEFS = planDefs()
   const plans = getPlans()
-  const daysLeft = promoDaysLeft()
   const [buying, setBuying] = useState<string|null>(null)
   const handleBuy = async (plan:'pro'|'premium') => {
     if (!userId) { onBuy(); return }
@@ -879,7 +878,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
                     <span className="plan-price-num">{p.price}</span>
                     {p.period&&<span className="plan-price-period">{p.period}</span>}
                   </div>
-                  {p.wasPrice&&<p className="plan-price-promo">Intro price · {daysLeft} day{daysLeft===1?'':'s'} left</p>}
+                  {p.wasPrice&&<p className="plan-price-promo">Intro price for a limited time</p>}
                 </div>
                 <div className="plan-card-body">
                   <ul className="plan-features">
@@ -1708,7 +1707,6 @@ export default function Home() {
               <div className="pricing-grid">
                 {(() => {
                   const plans = getPlans()
-                  const daysLeft = promoDaysLeft()
                   return [
                     { key:'free',    label:'Free',    price:'€0',              wasPrice:null,              period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Match score vs a job you paste','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
                     { key:'pro',     label:'Pro',     price:plans.pro.price,     wasPrice:plans.pro.wasPrice,     period:'one-time', badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:`Get Pro · ${plans.pro.price}`,   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
@@ -1723,7 +1721,7 @@ export default function Home() {
                         <span className="pricing-price-num">{p.price}</span>
                         <span className="pricing-period">{p.period}</span>
                       </div>
-                      {p.wasPrice&&<p className="pricing-promo-note">Intro price · {daysLeft} day{daysLeft===1?'':'s'} left</p>}
+                      {p.wasPrice&&<p className="pricing-promo-note">Intro price for a limited time</p>}
                       <ul className="pricing-features">
                         {p.features.map(f=><li key={f} className="pricing-feature"><svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
                       </ul>

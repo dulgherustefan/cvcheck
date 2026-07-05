@@ -34,16 +34,12 @@ export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisRes
 }
 
 // ── Intro pricing ─────────────────────────────────────────────────────────────
-// Regular price is €5 (Pro) / €10 (Premium). Intro price holds until PROMO_ENDS_AT,
-// then checkout and every price display switch to the regular price automatically.
-export const PROMO_ENDS_AT = '2026-08-04T23:59:59Z'
+// Regular price is €5 (Pro) / €10 (Premium). Intro price holds until this flag is
+// flipped to false by hand — no fixed end date, that's a manual, deliberate switch.
+const PROMO_ACTIVE = true
 
 export function isPromoActive(): boolean {
-  return Date.now() < new Date(PROMO_ENDS_AT).getTime()
-}
-
-export function promoDaysLeft(): number {
-  return Math.max(0, Math.floor((new Date(PROMO_ENDS_AT).getTime() - Date.now()) / 86_400_000))
+  return PROMO_ACTIVE
 }
 
 const REGULAR_PRICE = { pro: '€5', premium: '€10' } as const
