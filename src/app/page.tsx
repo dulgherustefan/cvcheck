@@ -23,6 +23,7 @@ import {
   ATS_VERDICT_LABELS, ATS_VERDICT_COLORS, LEVEL_LABELS,
 } from '@/lib/constants'
 import { createSupabaseBrowser } from '@/lib/supabase'
+import { getPlans, promoDaysLeft } from '@/lib/tiers'
 
 type InputMode = 'url' | 'pdf'
 type AppState  = 'idle' | 'loading' | 'result' | 'error'
@@ -827,13 +828,19 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
   )
 }
 
-const PLAN_DEFS = {
-  free:    { label:'Free',    price:'€0',    period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats: bullets with/without metrics','Red flag count + severity','ATS verdict','Match score vs a job you paste','History saved (requires account)'] },
-  pro:     { label:'Pro',     price:'€1.99', period:'one-time', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','Bullet rewrites on your actual text','How to fix every red flag','Missing ATS keywords + job requirements','Top 3 priority actions with examples'] },
-  premium: { label:'Premium', price:'€5.99', period:'/month',   features:['Everything in Pro','Unlimited analyses','Job matching: live listings matched to your profile'] },
+function planDefs() {
+  const plans = getPlans()
+  return {
+    free:    { label:'Free',    price:'€0',              wasPrice:null,              period:'',         features:['Overall score /100 + rating','First impression (7-second test)','Impact stats: bullets with/without metrics','Red flag count + severity','ATS verdict','Match score vs a job you paste','History saved (requires account)'] },
+    pro:     { label:'Pro',     price:plans.pro.price,     wasPrice:plans.pro.wasPrice,     period:'one-time', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','Bullet rewrites on your actual text','How to fix every red flag','Missing ATS keywords + job requirements','Top 3 priority actions with examples'] },
+    premium: { label:'Premium', price:plans.premium.price, wasPrice:plans.premium.wasPrice, period:'/month',   features:['Everything in Pro','Unlimited analyses','Job matching: live listings matched to your profile'] },
+  }
 }
 
 function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; userId?:string; userEmail?:string; onClose:()=>void; onBuy:()=>void }) {
+  const PLAN_DEFS = planDefs()
+  const plans = getPlans()
+  const daysLeft = promoDaysLeft()
   const [buying, setBuying] = useState<string|null>(null)
   const handleBuy = async (plan:'pro'|'premium') => {
     if (!userId) { onBuy(); return }
@@ -850,7 +857,7 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
         <div className="plans-modal-header">
           <div>
             <h2 className="plans-modal-title">Plans</h2>
-            <p className="plans-modal-sub">See your score free. Pay €1.99 once to fix it.</p>
+            <p className="plans-modal-sub">See your score free. Pay {plans.pro.price} once to fix it.</p>
           </div>
           <button onClick={onClose} className="plans-modal-close">
             <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -868,15 +875,17 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
                     {isCurrent&&<span className="plan-badge-current">Current</span>}
                   </div>
                   <div className="plan-card-price">
+                    {p.wasPrice&&<span className="plan-price-was">{p.wasPrice}</span>}
                     <span className="plan-price-num">{p.price}</span>
                     {p.period&&<span className="plan-price-period">{p.period}</span>}
                   </div>
+                  {p.wasPrice&&<p className="plan-price-promo">Intro price · {daysLeft} day{daysLeft===1?'':'s'} left</p>}
                 </div>
                 <div className="plan-card-body">
                   <ul className="plan-features">
                     {p.features.map(f=><li key={f} className="plan-feature"><svg width="12" height="12" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
                   </ul>
-                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} className="plan-cta">{buying===pk?'Loading…':pk==='pro'?'Get Pro · €1.99':'Get Premium · €5.99/mo'}</button>}
+                  {!isCurrent&&pk!=='free'&&<button onClick={()=>handleBuy(pk)} disabled={!!buying} className="plan-cta">{buying===pk?'Loading…':pk==='pro'?`Get Pro · ${plans.pro.price}`:`Get Premium · ${plans.premium.price}/mo`}</button>}
                 </div>
               </div>
             )
@@ -1697,25 +1706,31 @@ export default function Home() {
               </div>
 
               <div className="pricing-grid">
-                {([
-                  { key:'free',    label:'Free',    price:'€0',    period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Match score vs a job you paste','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
-                  { key:'pro',     label:'Pro',     price:'€1.99', period:'one-time',       badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:'Get Pro · €1.99',   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
-                  { key:'premium', label:'Premium', price:'€5.99', period:'/month',         badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
-                ] as const).map((p,i)=>(
-                  <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
-                    {p.badge&&<BorderTrail/>}
-                    {p.badge&&<div className="pricing-badge"><svg className="pricing-badge-star" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>{p.badge}</span></div>}
-                    <div className={`pricing-plan-label ${p.badge?'pricing-plan-label-featured':'pricing-plan-label-normal'}`}>{p.label}</div>
-                    <div className="pricing-price">
-                      <span className="pricing-price-num">{p.price}</span>
-                      <span className="pricing-period">{p.period}</span>
+                {(() => {
+                  const plans = getPlans()
+                  const daysLeft = promoDaysLeft()
+                  return [
+                    { key:'free',    label:'Free',    price:'€0',              wasPrice:null,              period:'forever free',  badge:null,           features:['Overall score /100 + rating','First impression analysis','Red flag count + severity','ATS verdict','Match score vs a job you paste','2 job matches visible','History (with account)'],         cta:'Get Started Free',  ctaFilled:false, ctaAction:scrollToUpload },
+                    { key:'pro',     label:'Pro',     price:plans.pro.price,     wasPrice:plans.pro.wasPrice,     period:'one-time', badge:'Most Popular', features:['Everything in Free','Optimized CV, ready to download','Cover letter for a job you paste','AI bullet rewrites on your text','Missing ATS keywords + job requirements','Top 3 actions with examples'], cta:`Get Pro · ${plans.pro.price}`,   ctaFilled:true,  ctaAction:()=>setShowUpgradeModal(true) },
+                    { key:'premium', label:'Premium', price:plans.premium.price, wasPrice:plans.premium.wasPrice, period:'/month',   badge:null,           features:['Everything in Pro','Unlimited analyses','All matched jobs visible','Fit score 0–100 per job','Strengths & gaps per job','Weekly job alert emails'],                           cta:'Start Premium',     ctaFilled:false, ctaAction:()=>setShowUpgradeModal(true) },
+                  ].map((p,i)=>(
+                    <div key={p.key} data-sr data-sr-delay={`${i * 0.12}`} className={`pricing-card ${p.badge?'pricing-card-featured':'pricing-card-normal'}`}>
+                      {p.badge&&<BorderTrail/>}
+                      {p.badge&&<div className="pricing-badge"><svg className="pricing-badge-star" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>{p.badge}</span></div>}
+                      <div className={`pricing-plan-label ${p.badge?'pricing-plan-label-featured':'pricing-plan-label-normal'}`}>{p.label}</div>
+                      <div className="pricing-price">
+                        {p.wasPrice&&<span className="pricing-price-was">{p.wasPrice}</span>}
+                        <span className="pricing-price-num">{p.price}</span>
+                        <span className="pricing-period">{p.period}</span>
+                      </div>
+                      {p.wasPrice&&<p className="pricing-promo-note">Intro price · {daysLeft} day{daysLeft===1?'':'s'} left</p>}
+                      <ul className="pricing-features">
+                        {p.features.map(f=><li key={f} className="pricing-feature"><svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
+                      </ul>
+                      <button onClick={p.ctaAction} className={`pricing-cta ${p.ctaFilled?'pricing-cta-filled':'pricing-cta-outline'}`}>{tier===p.key?'Current plan':p.cta}</button>
                     </div>
-                    <ul className="pricing-features">
-                      {p.features.map(f=><li key={f} className="pricing-feature"><svg width="13" height="13" fill="none" stroke="var(--score-high)" strokeWidth="2.5" viewBox="0 0 24 24" className="svg-shrink"><polyline points="20 6 9 17 4 12"/></svg>{f}</li>)}
-                    </ul>
-                    <button onClick={p.ctaAction} className={`pricing-cta ${p.ctaFilled?'pricing-cta-filled':'pricing-cta-outline'}`}>{tier===p.key?'Current plan':p.cta}</button>
-                  </div>
-                ))}
+                  ))
+                })()}
               </div>
               <p className="pricing-trust">
                 <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>

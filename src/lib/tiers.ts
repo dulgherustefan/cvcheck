@@ -33,41 +33,72 @@ export function gateResult(result: AnalysisResult, tier: Tier): GatedAnalysisRes
   }
 }
 
+// ── Intro pricing ─────────────────────────────────────────────────────────────
+// Regular price is €5 (Pro) / €10 (Premium). Intro price holds until PROMO_ENDS_AT,
+// then checkout and every price display switch to the regular price automatically.
+export const PROMO_ENDS_AT = '2026-08-04T23:59:59Z'
+
+export function isPromoActive(): boolean {
+  return Date.now() < new Date(PROMO_ENDS_AT).getTime()
+}
+
+export function promoDaysLeft(): number {
+  return Math.max(0, Math.floor((new Date(PROMO_ENDS_AT).getTime() - Date.now()) / 86_400_000))
+}
+
+const REGULAR_PRICE = { pro: '€5', premium: '€10' } as const
+const INTRO_PRICE    = { pro: '€1.99', premium: '€5.99' } as const
+
+export function planPrice(plan: 'pro' | 'premium'): string {
+  return isPromoActive() ? INTRO_PRICE[plan] : REGULAR_PRICE[plan]
+}
+
+// Non-null only while the intro price is active — the "was" price to show struck through.
+export function planWasPrice(plan: 'pro' | 'premium'): string | null {
+  return isPromoActive() ? REGULAR_PRICE[plan] : null
+}
+
 // ── Plans shown in UI ─────────────────────────────────────────────────────────
-export const PLANS = {
-  pro: {
-    name: 'Pro Analysis',
-    price: '€1.99',
-    period: 'one-time',
-    description: 'Full breakdown for this CV',
-    features: [
-      'Optimized CV, ready to download',
-      'Cover letter for a job you paste',
-      'Bullet rewrites on your exact text, improved',
-      'How to fix every red flag',
-      'Missing ATS keywords + job requirements',
-      'Top 3 priority actions with examples',
-      'Saved to history',
-    ],
-    cta: 'Unlock Full Analysis · €1.99',
-    stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PRO_PRICE_ID',
-  },
-  premium: {
-    name: 'Premium',
-    price: '€5.99',
-    period: 'month',
-    description: 'Unlimited full analyses',
-    features: [
-      'Everything in Pro',
-      'Unlimited analyses',
-      'Job matching: live listings matched to your profile',
-      'Full history on all scans',
-      'Track CV progress over time',
-    ],
-    cta: 'Start Premium · €5.99/mo',
-    stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
-  },
-} as const
+export function getPlans() {
+  const proPrice = planPrice('pro')
+  const premiumPrice = planPrice('premium')
+  return {
+    pro: {
+      name: 'Pro Analysis',
+      price: proPrice,
+      wasPrice: planWasPrice('pro'),
+      period: 'one-time',
+      description: 'Full breakdown for this CV',
+      features: [
+        'Optimized CV, ready to download',
+        'Cover letter for a job you paste',
+        'Bullet rewrites on your exact text, improved',
+        'How to fix every red flag',
+        'Missing ATS keywords + job requirements',
+        'Top 3 priority actions with examples',
+        'Saved to history',
+      ],
+      cta: `Unlock Full Analysis · ${proPrice}`,
+      stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PRO_PRICE_ID',
+    },
+    premium: {
+      name: 'Premium',
+      price: premiumPrice,
+      wasPrice: planWasPrice('premium'),
+      period: 'month',
+      description: 'Unlimited full analyses',
+      features: [
+        'Everything in Pro',
+        'Unlimited analyses',
+        'Job matching: live listings matched to your profile',
+        'Full history on all scans',
+        'Track CV progress over time',
+      ],
+      cta: `Start Premium · ${premiumPrice}/mo`,
+      stripePriceEnv: 'NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID',
+    },
+  } as const
+}
 
 // ── History access ────────────────────────────────────────────────────────────
 // History is available to ALL logged-in users regardless of tier.

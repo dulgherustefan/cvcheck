@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PLANS } from '@/lib/tiers'
+import { getPlans, promoDaysLeft } from '@/lib/tiers'
 import { createSupabaseBrowser } from '@/lib/supabase'
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
 type Step = 'plans' | 'login'
 
 export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
+  const PLANS = getPlans()
+  const daysLeft = promoDaysLeft()
   const [loading, setLoading]       = useState<'pro' | 'premium' | null>(null)
   const [step, setStep]             = useState<Step>('plans')
   const [pendingPlan, setPendingPlan] = useState<'pro' | 'premium' | null>(null)
@@ -177,8 +179,13 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                   Unlock full access
                 </p>
                 <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-heading)', margin: '0 0 10px', lineHeight: 1.15, fontFamily: 'var(--font-display)' }}>
-                  Your free preview is ready. Unlock everything for €1.99.
+                  Your free preview is ready. Unlock everything for {PLANS.pro.price}.
                 </h2>
+                {PLANS.pro.wasPrice && (
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-text)', margin: '0 0 10px' }}>
+                    Intro price · goes to {PLANS.pro.wasPrice} in {daysLeft} day{daysLeft === 1 ? '' : 's'}
+                  </p>
+                )}
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, margin: 0, maxWidth: 440 }}>
                   The free scan shows your overall score and a glimpse of what's holding you back.
                   Pro unlocks all 7 dimension scores, every red flag fix, bullet rewrites, and priority actions with how-to steps.
@@ -230,6 +237,11 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, flexShrink: 0 }}>
+                      {PLANS.pro.wasPrice && (
+                        <span style={{ fontSize: 14, color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>
+                          {PLANS.pro.wasPrice}
+                        </span>
+                      )}
                       <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
                         {PLANS.pro.price}
                       </span>
@@ -284,6 +296,11 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
                         {PLANS.premium.name}
                       </p>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                        {PLANS.premium.wasPrice && (
+                          <span style={{ fontSize: 12, color: 'var(--text-tertiary)', textDecoration: 'line-through' }}>
+                            {PLANS.premium.wasPrice}
+                          </span>
+                        )}
                         <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', lineHeight: 1 }}>
                           {PLANS.premium.price}
                         </span>
@@ -357,7 +374,7 @@ export function UpgradeModal({ onClose, roastId, userId, userEmail }: Props) {
               {/* Header */}
               <div style={{ marginBottom: 24, paddingRight: 32 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px' }}>
-                  {pendingPlan === 'pro' ? 'Pro · €1.99 one-time' : 'Premium · €5.99/month'}
+                  {pendingPlan === 'pro' ? `Pro · ${PLANS.pro.price} one-time` : `Premium · ${PLANS.premium.price}/month`}
                 </p>
                 <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-heading)', margin: '0 0 8px', lineHeight: 1.25, fontFamily: 'var(--font-display)' }}>
                   Sign in to continue

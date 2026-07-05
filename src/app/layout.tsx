@@ -4,6 +4,7 @@ import { ThemeScript } from '@/components/ThemeScript'
 import { Inter, DM_Mono, Bricolage_Grotesque } from 'next/font/google'
 import { PageTransition } from '@/components/PageTransition'
 import { ConsentBanner } from '@/components/ConsentBanner'
+import { planPrice } from '@/lib/tiers'
 import './globals.css'
 
 const GA_ID = 'G-PCXBRDLGBZ'
@@ -99,6 +100,9 @@ export const metadata: Metadata = {
   },
 }
 
+const proPrice = planPrice('pro').replace('€', '')
+const premiumPrice = planPrice('premium').replace('€', '')
+
 const schemaOrg = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
@@ -119,19 +123,19 @@ const schemaOrg = {
     {
       '@type': 'Offer',
       name: 'Pro',
-      price: '1.99',
+      price: proPrice,
       priceCurrency: 'EUR',
       description: 'Full CV analysis with bullet rewrites, red flag fixes, missing ATS keywords, and priority actions (one-time payment)',
     },
     {
       '@type': 'Offer',
       name: 'Premium',
-      price: '5.99',
+      price: premiumPrice,
       priceCurrency: 'EUR',
       description: 'Unlimited CV checks, full job matching with fit scores, and weekly job alert emails',
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
-        price: '5.99',
+        price: premiumPrice,
         priceCurrency: 'EUR',
         billingDuration: 'P1M',
       },
