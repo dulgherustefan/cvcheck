@@ -1495,7 +1495,8 @@ html:not(.js) .hero-mockup-wrap {
 .topbar-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: var(--radius-md); background: none; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
 .topbar-btn:hover { border-color: var(--border-strong); color: var(--text-heading); background: var(--bg-subtle); }
 .topbar-btn-saved { color: var(--score-high); border-color: rgba(30,158,90,0.25); background: rgba(30,158,90,0.06); }
-.topbar-btn-share  { }
+.topbar-btn-share  { color: var(--accent-text); border-color: var(--accent-border); background: var(--accent-subtle); }
+.topbar-btn-share:hover { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent-hover); }
 .topbar-btn-loading { opacity: 0.6; pointer-events: none; }
 .share-btn { margin-left: auto; }
 
