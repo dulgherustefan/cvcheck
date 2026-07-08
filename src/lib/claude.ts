@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO, JD_ADDENDUM_FREE, JD_ADDENDUM_PAID } from './prompt'
+import {
+  SYSTEM_PROMPT_FREE, SYSTEM_PROMPT_PRO, JD_ADDENDUM_FREE, JD_ADDENDUM_PAID,
+  OPTIMIZE_SYSTEM_PROMPT, OPTIMIZE_JD_ADDENDUM,
+} from './prompt'
 import type { AnalysisResult, CVScores, Rating, Tier } from './types'
 import { randomUUID } from 'crypto'
 
@@ -125,9 +128,10 @@ export async function getRoast(content: string, tier: Tier, jobDescription?: str
 
   const message = await getClient().messages.create({
     model: isPro ? MODEL_PAID : MODEL_FREE,
-    // Pro also emits a full optimized CV (+ a cover letter when a job is pasted),
-    // so it needs more output room. Free stays tight.
-    max_tokens: isPro ? 9000 : (hasJd ? 3000 : 2500),
+    // Kept tight on purpose — this call no longer emits the optimized CV or
+    // cover letter (see getOptimizedCv), which were most of the output size
+    // and risked pushing analysis past the platform's request timeout.
+    max_tokens: isPro ? 4000 : (hasJd ? 3000 : 2500),
     // Low temperature: scoring/JSON should be consistent run-to-run, not creative.
     temperature: 0.3,
     // Cache the (static) system prompt. On the paid Sonnet path this saves ~90%
@@ -232,17 +236,65 @@ export async function getRoast(content: string, tier: Tier, jobDescription?: str
     parsed.job_match = null
   }
 
-  // ── Optimized CV + cover letter (Pro only; free never generates them) ──────
-  if (isPro) {
-    parsed.optimized_cv = typeof parsed.optimized_cv === 'string' && parsed.optimized_cv.trim()
-      ? parsed.optimized_cv.trim() : null
-    parsed.cover_letter = hasJd && typeof parsed.cover_letter === 'string' && parsed.cover_letter.trim()
-      ? parsed.cover_letter.trim() : null
-  } else {
-    parsed.optimized_cv = null
-    parsed.cover_letter = null
-  }
+  // Optimized CV + cover letter are generated on demand by a separate call
+  // (getOptimizedCv below), not as part of this analysis — see that function's
+  // comment for why. The frontend fetches them after the user asks for them.
+  parsed.optimized_cv = null
+  parsed.cover_letter = null
 
   // Final safety net: strip any em/en dashes the model slipped past the prompt rule.
   return dedash(parsed)
+}
+
+// ── Optimized CV + cover letter — separate call, Pro/Premium only ────────────
+// Split out from getRoast because a full CV rewrite plus a cover letter was
+// the bulk of that call's output tokens, and generating all of it in one shot
+// risked running past the deployment platform's request timeout, especially
+// on plans with a hard duration cap the app's own maxDuration can't override.
+// Kept small and focused so it reliably finishes fast on its own.
+export async function getOptimizedCv(
+  content: string,
+  jobDescription?: string,
+): Promise<{ optimized_cv: string | null; cover_letter: string | null }> {
+  const prepared = prepareContent(content, MAX_CONTENT_CHARS_PAID)
+
+  const jd = (jobDescription ?? '').trim()
+  const hasJd = jd.length >= 30
+  const preparedJd = hasJd ? prepareContent(jd, MAX_JD_CHARS_PAID) : ''
+
+  const systemPrompt = OPTIMIZE_SYSTEM_PROMPT + (hasJd ? OPTIMIZE_JD_ADDENDUM : '')
+  const userMessage = hasJd
+    ? `Rewrite this CV/portfolio content:\n\n${prepared}\n\n─── TARGET JOB ───\n${preparedJd}`
+    : `Rewrite this CV/portfolio content:\n\n${prepared}`
+
+  const message = await getClient().messages.create({
+    model: MODEL_PAID,
+    max_tokens: 2500,
+    temperature: 0.3,
+    system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
+    messages: [{ role: 'user', content: userMessage }],
+  })
+
+  const raw = message.content
+    .filter(b => b.type === 'text')
+    .map(b => (b as { type: 'text'; text: string }).text)
+    .join('')
+
+  const cleaned = extractJson(raw)
+
+  let parsed: { optimized_cv?: string; cover_letter?: string }
+  try {
+    parsed = JSON.parse(cleaned)
+  } catch {
+    try {
+      parsed = JSON.parse(sanitizeJson(cleaned))
+    } catch {
+      throw new Error(`Failed to parse AI response: ${cleaned.slice(0, 200)}`)
+    }
+  }
+
+  return dedash({
+    optimized_cv: typeof parsed.optimized_cv === 'string' && parsed.optimized_cv.trim() ? parsed.optimized_cv.trim() : null,
+    cover_letter: hasJd && typeof parsed.cover_letter === 'string' && parsed.cover_letter.trim() ? parsed.cover_letter.trim() : null,
+  })
 }

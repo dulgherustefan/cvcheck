@@ -2111,6 +2111,7 @@ html:not(.js) .hero-mockup-wrap {
 .deliv-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .deliv-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-heading); }
 .deliv-sub { margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--text-tertiary); max-width: 380px; }
+.deliv-error { margin-top: 8px; font-size: 12px; line-height: 1.45; color: #D14343; }
 .deliv-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .deliv-btn {
   font-size: 13px; font-weight: 600; color: var(--text-inverse); background: var(--accent);

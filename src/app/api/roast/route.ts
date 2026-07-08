@@ -3,14 +3,13 @@ import { getRoast } from '@/lib/claude'
 import { gateResult } from '@/lib/tiers'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { checkRateLimit, makeIdentifier } from '@/lib/ratelimit'
+import { extractContentFromRequest } from '@/lib/extract-content'
 import type { Tier } from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 const FREE_SCAN_LIMIT   = 1
-const MAX_FILE_SIZE     = 5 * 1024 * 1024          // 5 MB
-const ALLOWED_MIME      = new Set(['application/pdf', 'text/plain'])
 const MIN_CONTENT_CHARS = 50
 const MAX_CONTENT_CHARS = 14000                     // matches MAX_CONTENT_CHARS in claude.ts
 const MAX_JD_CHARS      = 6000                      // hard cap; claude.ts caps tighter per tier
@@ -144,11 +143,6 @@ function applyServerSideGating(gated: ReturnType<typeof gateResult>) {
 
 export async function POST(req: NextRequest) {
   try {
-    const contentType = req.headers.get('content-type') ?? ''
-    let content = ''
-    let source: string | undefined
-    let jobDescription = ''
-
     const userId = await getUserIdFromRequest(req)
     const tier   = await getTierForUser(userId)
     const ip     = getClientIp(req)
@@ -185,113 +179,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Parse request body
-    if (contentType.includes('multipart/form-data')) {
-      const formData = await req.formData()
-      const file = formData.get('file') as File | null
-      const url  = formData.get('url') as string | null
-      const jd   = formData.get('jobDescription')
-      if (typeof jd === 'string') jobDescription = jd
-
-      if (file) {
-        // ── Server-side file validation ──────────────────────────────────────
-        if (file.size > MAX_FILE_SIZE) {
-          return NextResponse.json({ error: 'File too large (max 5 MB)' }, { status: 400 })
-        }
-        // Validate MIME type from the file object (client-provided) AND magic bytes
-        if (!ALLOWED_MIME.has(file.type)) {
-          return NextResponse.json({ error: 'Only PDF and plain-text files are accepted' }, { status: 400 })
-        }
-
-        const buffer = Buffer.from(await file.arrayBuffer())
-
-        // Magic-byte check for PDF — %PDF header
-        if (file.type === 'application/pdf') {
-          if (buffer.length < 4 || buffer.slice(0, 4).toString('ascii') !== '%PDF') {
-            return NextResponse.json({ error: 'Invalid PDF file' }, { status: 400 })
-          }
-        }
-
-        if (file.type === 'text/plain') {
-          // text/plain is in the allowlist — read it directly instead of
-          // running it through the PDF parser (which throws InvalidPDFException)
-          content = buffer.toString('utf8')
-          source = 'text-upload'
-        } else {
-          const { extractPdfText } = await import('@/lib/pdf')
-          content = await extractPdfText(buffer)
-          // Strip source filename to avoid storing user filesystem paths
-          source = 'pdf-upload'
-        }
-      } else if (url) {
-        // Basic URL validation
-        let parsed: URL
-        try {
-          parsed = new URL(url)
-        } catch {
-          return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
-        }
-        if (!['http:', 'https:'].includes(parsed.protocol)) {
-          return NextResponse.json({ error: 'Only http/https URLs are accepted' }, { status: 400 })
-        }
-        // Block SSRF — private/loopback ranges
-        const host = parsed.hostname
-        if (
-          host === 'localhost' ||
-          host.startsWith('127.') ||
-          host.startsWith('192.168.') ||
-          host.startsWith('10.') ||
-          host.startsWith('172.16.') ||
-          host === '0.0.0.0' ||
-          host === '[::1]'
-        ) {
-          return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
-        }
-        const { scrapeUrl } = await import('@/lib/scraper')
-        content = await scrapeUrl(url)
-        source = url
-      } else {
-        return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 })
-      }
-    } else if (contentType.includes('application/json')) {
-      let body: { url?: string; jobDescription?: string }
-      try {
-        body = await req.json()
-      } catch {
-        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-      }
-      if (typeof body?.jobDescription === 'string') jobDescription = body.jobDescription
-      const url = body?.url
-      if (!url || typeof url !== 'string') {
-        return NextResponse.json({ error: 'No URL provided' }, { status: 400 })
-      }
-      let parsed: URL
-      try {
-        parsed = new URL(url)
-      } catch {
-        return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
-      }
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        return NextResponse.json({ error: 'Only http/https URLs are accepted' }, { status: 400 })
-      }
-      const host = parsed.hostname
-      if (
-        host === 'localhost' ||
-        host.startsWith('127.') ||
-        host.startsWith('192.168.') ||
-        host.startsWith('10.') ||
-        host.startsWith('172.16.') ||
-        host === '0.0.0.0' ||
-        host === '[::1]'
-      ) {
-        return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
-      }
-      const { scrapeUrl } = await import('@/lib/scraper')
-      content = await scrapeUrl(url)
-      source = url
-    } else {
-      return NextResponse.json({ error: 'Unsupported content type' }, { status: 415 })
+    // Parse request body (file/URL → raw text), shared with /api/roast/optimize
+    const extracted = await extractContentFromRequest(req)
+    if (!extracted.ok) {
+      return NextResponse.json({ error: extracted.error }, { status: extracted.status })
     }
+    let { content, source, jobDescription } = extracted.data
 
     // Cap content length (prevent huge prompt injection)
     content = content.slice(0, MAX_CONTENT_CHARS)

@@ -481,16 +481,54 @@ function JobMatchCard({ jm, locked, onUnlock }: { jm: JobTargetAnalysis; locked:
   )
 }
 
-function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnlock: () => void }) {
+function Deliverables({ result, onUnlock, token, sourceFile, sourceUrl, jobDescription, analysisId }: {
+  result: GatedAnalysisResult; onUnlock: () => void
+  token: string | null; sourceFile: File | null; sourceUrl: string; jobDescription: string; analysisId: string
+}) {
   const [copied, setCopied] = useState(false)
   const [letterOpen, setLetterOpen] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [generateError, setGenerateError] = useState('')
+  const [generated, setGenerated] = useState<{ optimized_cv: string | null; cover_letter: string | null } | null>(null)
+
   const hasJob = !!result.job_match
-  const optimized = result.optimized_cv
-  const letter = result.cover_letter
+  const optimized = generated?.optimized_cv ?? result.optimized_cv
+  const letter = generated?.cover_letter ?? result.cover_letter
+  const canGenerate = !result.optimized_cv_locked && !optimized
 
   const copyLetter = () => {
     if (!letter) return
     navigator.clipboard?.writeText(letter).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800) }).catch(() => {})
+  }
+
+  const generate = async () => {
+    if (!token) { setGenerateError('Please sign in again and retry.'); return }
+    setGenerating(true); setGenerateError('')
+    try {
+      let res: Response
+      const path = `/api/roast/optimize?analysis_id=${encodeURIComponent(analysisId)}`
+      if (sourceFile) {
+        const form = new FormData()
+        form.append('file', sourceFile)
+        if (jobDescription) form.append('jobDescription', jobDescription)
+        res = await fetch(path, { method: 'POST', body: form, headers: { Authorization: `Bearer ${token}` } })
+      } else {
+        res = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ url: sourceUrl, ...(jobDescription ? { jobDescription } : {}) }),
+        })
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let data: any
+      try { data = await res.json() } catch { throw new Error('Took too long. Try again in a moment.') }
+      if (!res.ok) throw new Error(data.error || 'Could not generate this right now.')
+      setGenerated({ optimized_cv: data.optimized_cv ?? null, cover_letter: data.cover_letter ?? null })
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : 'Could not generate this right now.')
+    } finally {
+      setGenerating(false)
+    }
   }
 
   return (
@@ -517,6 +555,18 @@ function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnl
             <p className="deliv-sub">Get a full ATS-clean rewrite of your CV, ready to download.</p>
           </div>
           <span className="deliv-unlock">Unlock with Pro · €1.99</span>
+        </div>
+      ) : canGenerate ? (
+        <div className="deliv-card">
+          <div className="deliv-info">
+            <div className="deliv-title">
+              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+              Optimized CV{hasJob ? ' & cover letter' : ''}
+            </div>
+            <p className="deliv-sub">Generate an ATS-clean rewrite of your CV{hasJob ? ', plus a tailored cover letter for the job you pasted' : ''}.</p>
+            {generateError && <p className="deliv-error">{generateError}</p>}
+          </div>
+          <button className="deliv-btn" onClick={generate} disabled={generating}>{generating ? 'Generating…' : 'Generate'}</button>
         </div>
       ) : null}
 
@@ -555,8 +605,9 @@ function Deliverables({ result, onUnlock }: { result: GatedAnalysisResult; onUnl
   )
 }
 
-function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
+function ResultContent({ result, isPro, user, token, sourceFile, sourceUrl, jobDescription, setShowUpgradeModal, setShowPlansModal, setShowAuthModal }: {
   result:GatedAnalysisResult; isPro:boolean; user:{email?:string}|null; token:string|null
+  sourceFile:File|null; sourceUrl:string; jobDescription:string
   setShowUpgradeModal:(v:boolean)=>void; setShowPlansModal:(v:boolean)=>void; setShowAuthModal:(v:boolean)=>void
 }) {
   const unlock = () => setShowUpgradeModal(true)
@@ -589,7 +640,7 @@ function ResultContent({ result, isPro, user, token, setShowUpgradeModal, setSho
 
       {result.job_match && <JobMatchCard jm={result.job_match} locked={result.job_match_locked} onUnlock={unlock}/>}
 
-      <Deliverables result={result} onUnlock={unlock}/>
+      <Deliverables result={result} onUnlock={unlock} token={token} sourceFile={sourceFile} sourceUrl={sourceUrl} jobDescription={jobDescription} analysisId={result.analysis_id}/>
 
       {result.quick_win && (
         <div className="quick-win">
@@ -1456,7 +1507,7 @@ export default function Home() {
                 {copied?<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Link copied!</>:shareLoading?<>Generating…</>:<><svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share score</>}
               </button>
             </div>
-            <ResultContent result={result} isPro={isPro} user={user} token={session?.access_token??null} setShowUpgradeModal={setShowUpgradeModal} setShowPlansModal={setShowPlansModal} setShowAuthModal={setShowAuthModal}/>
+            <ResultContent result={result} isPro={isPro} user={user} token={session?.access_token??null} sourceFile={mode==='pdf'?file:null} sourceUrl={mode==='url'?url:''} jobDescription={jobDescription} setShowUpgradeModal={setShowUpgradeModal} setShowPlansModal={setShowPlansModal} setShowAuthModal={setShowAuthModal}/>
           </section>
         )}
 

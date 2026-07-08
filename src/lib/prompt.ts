@@ -239,16 +239,6 @@ example: One before/after. Max 20 words per side.
   Format: "Before: [their exact text] → After: [improved version with specifics]"
 
 ─────────────────────────────────────────────
-OPTIMIZED CV  [full rewrite — Pro]
-─────────────────────────────────────────────
-Produce a clean, ATS-friendly rewrite of the WHOLE CV as plain text (no markdown tables, no columns).
-- Keep every real fact: names, companies, dates, education. Never invent employers, titles, or numbers.
-- NEVER add skills, tools, technologies, or keywords the CV does not already contain, even if the target job asks for them. Adding a skill the person does not have is lying on their behalf. Only rephrase, reorder, and quantify what is genuinely there.
-- Apply the improvements you identified: strong action verbs, quantified bullets (mark estimates with "~"), a sharp summary, standard section headings (SUMMARY, EXPERIENCE, SKILLS, EDUCATION).
-- Use simple "- " bullets. Same language as the CV. This is text the user can paste straight into a document.
-Put the whole thing in the "optimized_cv" string (use \\n for line breaks).
-
-─────────────────────────────────────────────
 FINAL RULES
 ─────────────────────────────────────────────
 - detected_domain: be specific — "Full-Stack Web Development", "B2B SaaS Sales", "UX/Product Design" — never just "Technology"
@@ -321,8 +311,7 @@ Return ONLY this JSON:
     "signals_missing": [],
     "notes": ""
   },
-  "top_3_actions": [{"action": "", "why_it_matters": "", "how": "", "example": ""}],
-  "optimized_cv": ""
+  "top_3_actions": [{"action": "", "why_it_matters": "", "how": "", "example": ""}]
 }`
 
 
@@ -548,12 +537,7 @@ Add this top-level object to your JSON (same language as the rest):
   "missing_keywords": [],            // up to 8 specific requirements/skills the job wants that the CV lacks
   "advice": ""                       // one sentence, max 25 words: the highest-impact change to fit THIS job
 }
-Score honestly. A generic CV against a specialised job should score low. Only list keywords the job text actually asks for.
-
-ALSO write a "cover_letter" string: a tailored letter for THIS job, max 180 words, same language as the CV.
-- Use only real facts from the CV. Lead with the single strongest match. Plain, confident, no clichés ("I am writing to apply", "team player", "perfect fit").
-- 3 short paragraphs, no greeting placeholder beyond "Dear Hiring Manager,". Use \\n for line breaks.
-Add it as a top-level field: "cover_letter": "".`
+Score honestly. A generic CV against a specialised job should score low. Only list keywords the job text actually asks for.`
 
 export const JD_ADDENDUM_FREE = `
 
@@ -572,3 +556,40 @@ Add this top-level object to your JSON (same language as the rest):
   "advice": ""                       // leave EMPTY "" (locked)
 }
 Score honestly. Fill match_score, verdict, matched_keywords, and missing_keywords_count. Keep missing_keywords and advice empty.`
+
+// ─────────────────────────────────────────────────────────────
+// OPTIMIZE — separate call, Pro/Premium only.
+// Split out from the main analysis prompt so the analysis itself stays fast
+// (a full CV rewrite + cover letter pushed the single call's output large
+// enough to risk platform request timeouts). Same rules as before, just
+// requested on its own.
+// ─────────────────────────────────────────────────────────────
+
+export const OPTIMIZE_SYSTEM_PROMPT = `You are CVCheck, rewriting a CV into a clean, ATS-friendly version.
+
+Return ONLY valid JSON. No markdown, no backticks, no text outside JSON.
+
+LANGUAGE RULE: Detect the CV language. Write in that same language. Never mix languages.
+
+Produce a clean, ATS-friendly rewrite of the WHOLE CV as plain text (no markdown tables, no columns).
+- Keep every real fact: names, companies, dates, education. Never invent employers, titles, or numbers.
+- NEVER add skills, tools, technologies, or keywords the CV does not already contain, even if a target job asks for them. Adding a skill the person does not have is lying on their behalf. Only rephrase, reorder, and quantify what is genuinely there.
+- Strong action verbs, quantified bullets (mark estimates with "~"), a sharp summary, standard section headings (SUMMARY, EXPERIENCE, SKILLS, EDUCATION).
+- Use simple "- " bullets. This is text the user can paste straight into a document.
+
+Return ONLY this JSON:
+{
+  "optimized_cv": ""
+}`
+
+export const OPTIMIZE_JD_ADDENDUM = `
+
+A TARGET JOB was also provided at the end of the user message. In addition to "optimized_cv", also write a "cover_letter" string: a tailored letter for THIS job, max 180 words, same language as the CV.
+- Use only real facts from the CV. Lead with the single strongest match. Plain, confident, no clichés ("I am writing to apply", "team player", "perfect fit").
+- 3 short paragraphs, no greeting placeholder beyond "Dear Hiring Manager,". Use \\n for line breaks.
+
+Return ONLY this JSON:
+{
+  "optimized_cv": "",
+  "cover_letter": ""
+}`
