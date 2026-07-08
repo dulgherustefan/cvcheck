@@ -1125,7 +1125,15 @@ export default function Home() {
       } else {
         res=await fetch('/api/roast',{method:'POST',headers:{'Content-Type':'application/json',...(session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},body:JSON.stringify({url:url.trim(),...(jd?{jobDescription:jd}:{})})})
       }
-      const data=await res.json()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let data: any
+      try {
+        data = await res.json()
+      } catch {
+        // Non-JSON body — a platform-level failure (e.g. function timeout) returned
+        // its own error page instead of our route handler's response.
+        throw new Error(!res.ok?'Analysis took too long. Try a shorter CV, or try again in a moment.':'Something went wrong. Please try again.')
+      }
       if (!res.ok) {
         if (res.status===403&&data.error==='free_limit_reached'){setShowUpgradeModal(true);safeSetAppState('idle');return}
         if (res.status===429){const mins=data.retryAfter?Math.ceil(data.retryAfter/60):60;setError(`Too many analyses. Try again in ${mins} minute${mins!==1?'s':''}.`);safeSetAppState('error');return}
