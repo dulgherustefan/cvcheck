@@ -173,8 +173,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Free tier scan limit — only for anonymous users
-    if (tier === 'free' && !userId) {
+    // Free tier scan limit — applies whether or not the free-tier user is
+    // logged in. Previously this only ran for anonymous requests, so any
+    // free account (trivial to create) got unlimited full analyses, bounded
+    // only by the generic 30/hour rate limit that resets every hour forever.
+    if (tier === 'free') {
       const identifier = getIdentifier(req, userId)
       const { allowed } = await checkAndIncrementFreeLimit(identifier)
       if (!allowed) {
