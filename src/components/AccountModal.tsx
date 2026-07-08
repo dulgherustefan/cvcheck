@@ -7,6 +7,7 @@ import { useTier } from '@/hooks/useTier'
 interface AccountModalProps {
   userId: string
   userEmail: string
+  token: string | null
   onClose: () => void
   onUpgrade: () => void
   onSignOut: () => void
@@ -18,7 +19,7 @@ const TIER_META: Record<string, { label: string; color: string; bg: string; bord
   premium: { label: 'Premium', color: 'var(--text-inverse)',   bg: 'var(--accent)',             border: 'transparent',          dot: 'var(--text-inverse)' },
 }
 
-export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut }: AccountModalProps) {
+export function AccountModal({ userId, userEmail, token, onClose, onUpgrade, onSignOut }: AccountModalProps) {
   const [pwNew, setPwNew] = useState('')
   const [pwConfirm, setPwConfirm] = useState('')
   const [pwError, setPwError] = useState('')
@@ -26,10 +27,33 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
   const [pwLoading, setPwLoading] = useState(false)
   const [showPwForm, setShowPwForm] = useState(false)
 
+  const [cancelConfirming, setCancelConfirming] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+  const [cancelDone, setCancelDone] = useState(false)
+
   const { tier } = useTier(userId)
   const supabase = createSupabaseBrowser()
   const meta = TIER_META[tier] ?? TIER_META.free
   const initials = userEmail.slice(0, 2).toUpperCase()
+
+  async function handleCancelSubscription() {
+    if (!token) { setCancelError('Please sign in again to cancel.'); return }
+    setCancelLoading(true); setCancelError('')
+    try {
+      const res = await fetch('/api/stripe/cancel', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Failed to cancel subscription')
+      setCancelDone(true)
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : 'Failed to cancel subscription')
+    } finally {
+      setCancelLoading(false)
+    }
+  }
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
@@ -381,6 +405,88 @@ export function AccountModal({ userId, userEmail, onClose, onUpgrade, onSignOut 
                 </svg>
               </a>
             </div>
+
+            {/* Cancel subscription (Premium only) */}
+            {tier === 'premium' && (
+              <>
+                <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
+                {cancelDone ? (
+                  <div style={{
+                    fontSize: 12, color: 'var(--text-secondary)',
+                    padding: '10px 12px',
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                  }}>
+                    Subscription cancelled. You'll keep Premium until the end of your current billing period.
+                  </div>
+                ) : cancelConfirming ? (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', gap: 10,
+                    padding: '12px', background: 'rgba(255,95,95,0.05)',
+                    border: '1px solid rgba(255,95,95,0.18)', borderRadius: 10,
+                  }}>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+                      Cancel Premium? You'll keep access until the end of the current billing period, then drop to Free.
+                    </p>
+                    {cancelError && (
+                      <p style={{ fontSize: 12, color: '#D14343', margin: 0 }}>{cancelError}</p>
+                    )}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={handleCancelSubscription}
+                        disabled={cancelLoading}
+                        style={{
+                          flex: 1, padding: '8px', background: '#D14343', border: 'none',
+                          borderRadius: 8, color: '#fff', fontSize: 12.5, fontWeight: 700,
+                          cursor: cancelLoading ? 'not-allowed' : 'pointer',
+                          opacity: cancelLoading ? 0.6 : 1, fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        {cancelLoading ? 'Cancelling…' : 'Confirm cancel'}
+                      </button>
+                      <button
+                        onClick={() => { setCancelConfirming(false); setCancelError('') }}
+                        disabled={cancelLoading}
+                        style={{
+                          flex: 1, padding: '8px', background: 'var(--bg-elevated)',
+                          border: '1px solid var(--border)', borderRadius: 8,
+                          color: 'var(--text-primary)', fontSize: 12.5, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        Never mind
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="_acc-row _acc-danger"
+                    onClick={() => setCancelConfirming(true)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      background: 'none', border: 'none',
+                      color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500,
+                      cursor: 'pointer', padding: '10px 12px', width: '100%',
+                      fontFamily: 'var(--font-sans)',
+                    }}
+                  >
+                    <span style={{
+                      width: 28, height: 28,
+                      background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                      </svg>
+                    </span>
+                    Cancel subscription
+                  </button>
+                )}
+              </>
+            )}
 
             {/* Divider */}
             <div style={{ height: 1, background: 'var(--border)', margin: '8px 0' }} />
