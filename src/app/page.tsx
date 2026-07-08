@@ -845,9 +845,10 @@ function PlansModal({ tier, userId, userEmail, onClose, onBuy }: { tier:string; 
     if (!userId) { onBuy(); return }
     setBuying(plan)
     try {
-      const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan,userId,email:userEmail})})
+      const res = await fetch('/api/stripe/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan,user_id:userId})})
       const { url } = await res.json()
       if (url) window.location.href=url
+      else setBuying(null)
     } catch { setBuying(null) }
   }
   return (
